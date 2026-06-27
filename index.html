@@ -200,6 +200,8 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .qr-close{width:100%;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:15px;cursor:pointer}
 
 /* TOAST */
+.file-warning{position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:14px 20px;font-size:14px;font-weight:600;text-align:center;z-index:2000;display:none;line-height:1.5}
+.file-warning a{color:#fef08a;text-decoration:underline}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -216,6 +218,10 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 <body>
 
 <!-- LOGIN -->
+<div class="file-warning" id="fileWarning">
+  ⚠️ Arquivo aberto localmente — Firebase não conecta via <strong>file://</strong><br>
+  <span style="font-size:12px;font-weight:400">Use o <strong>ABRIR_ESTOQUE.bat</strong> no PC, ou hospede online para funcionar em celular</span>
+</div>
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-logo">💊</div>
@@ -412,6 +418,12 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+// Detectar file:// e avisar usuário
+if(window.location.protocol==='file:'){
+  document.getElementById('fileWarning').style.display='block';
+  console.warn('App aberto via file:// — Firebase não funciona. Use um servidor HTTP.');
+}
+
 import{getFirestore,doc,onSnapshot,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const FB={apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",authDomain:"estoque-remedios-7b785.firebaseapp.com",projectId:"estoque-remedios-7b785",storageBucket:"estoque-remedios-7b785.firebasestorage.app",messagingSenderId:"1005921072336",appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"};
@@ -492,6 +504,14 @@ window.doCadastro=async function(){
   if(!name){err.textContent='Informe seu nome';return}
   if(pass.length<4){err.textContent='Senha deve ter ao menos 4 dígitos';return}
   if(pass===ADM_PASS){err.textContent='Essa senha não pode ser usada';return}
+  // Busca dados FRESCOS do Firebase antes de salvar (evita sobrescrever dados)
+  try{
+    const snap=await getDoc(ref);
+    if(snap.exists()){
+      const d=snap.data();
+      meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
+    }
+  }catch(e){err.textContent='Sem conexão com internet';return}
   if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){err.textContent='Nome já cadastrado';return}
   if(users.find(x=>x.pass===pass)){err.textContent='Essa senha já está em uso';return}
   const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
@@ -554,17 +574,22 @@ function startApp(){
 
 // Busca dados frescos (fallback)
 async function fetchFresh(){
+  if(window.location.protocol==='file:') return; // não tenta via file://
   try{
     const snap=await getDoc(ref);
     if(snap.exists()){
       const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
       saveCache();render();setSP('ok','✅ Ao vivo');
     }
-  }catch(e){setSP('err','❌ Offline')}
+  }catch(e){
+    console.error('fetchFresh error:', e.message);
+    setSP('err','❌ Offline');
+  }
 }
 
 function initFB(){
   if(unsub){try{unsub()}catch(e){}unsub=null;}
+  let primeiroSnapshot=true; // flag para não notificar na carga inicial
   unsub=onSnapshot(ref,(snap)=>{
     if(snap.exists()){const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[]}
     else{meds=DEFAULTS;movs=[];users=[];logs=[];setDoc(ref,{meds,movs,users,logs})}
@@ -574,22 +599,25 @@ function initFB(){
     setSP('ok','✅ Ao vivo');
 
     if(isAdm){
-      // Notif novas movimentações
-      if(movs.length>prevMovLen&&prevMovLen>0){
-        movs.slice(prevMovLen).forEach(mv=>{
-          const med=meds.find(x=>x.id===mv.mid);
-          pushNotif(mv.tipo==='entrada'?'📥 Entrada':'📤 Saída',`${med?med.n:'Medicamento'} — ${mv.qtd}un por ${mv.resp}`);
-          document.getElementById('ndot').style.display='block';
-        });
-      }
-      // Notif novos cadastros
-      if(logs.length>prevLogsLen&&prevLogsLen>0){
-        logs.slice(prevLogsLen).filter(l=>l.tipo==='cadastro').forEach(l=>{
-          pushNotif('👤 Novo usuário cadastrado',`${l.nome} criou uma conta`);
-          document.getElementById('ndot').style.display='block';
-        });
+      if(!primeiroSnapshot){
+        // Notif novas movimentações
+        if(movs.length>prevMovLen){
+          movs.slice(prevMovLen).forEach(mv=>{
+            const med=meds.find(x=>x.id===mv.mid);
+            pushNotif(mv.tipo==='entrada'?'📥 Entrada':'📤 Saída',`${med?med.n:'Medicamento'} — ${mv.qtd}un por ${mv.resp}`);
+            document.getElementById('ndot').style.display='block';
+          });
+        }
+        // Notif novos cadastros de usuários
+        if(logs.length>prevLogsLen){
+          logs.slice(prevLogsLen).filter(l=>l.tipo==='cadastro').forEach(l=>{
+            pushNotif('👤 Novo cadastro',`${l.nome} se cadastrou no sistema`);
+            document.getElementById('ndot').style.display='block';
+          });
+        }
       }
       prevMovLen=movs.length;prevUsersLen=users.length;prevLogsLen=logs.length;
+      primeiroSnapshot=false;
       if(document.getElementById('admPanel').classList.contains('open'))renderPTab();
     }
     // Verificar bloqueio
@@ -599,19 +627,49 @@ function initFB(){
     }
     render();
   },(e)=>{
-    setSP('err','❌ Offline');
-    setTimeout(()=>{if(curUser)initFB()},5000);
+    console.error('onSnapshot error:', e.code, e.message);
+    if(e.code==='permission-denied'){
+      setSP('err','❌ Sem permissão');
+    } else if(window.location.protocol==='file:'){
+      setSP('err','❌ file:// bloqueado');
+    } else {
+      setSP('err','❌ Offline');
+      // Tenta reconectar em 5 segundos
+      setTimeout(()=>{if(curUser)initFB()},5000);
+    }
   });
   prevMovLen=movs.length;prevLogsLen=logs.length;
 }
 
 async function save(){
   setSP('sync','⏳');
-  try{await setDoc(ref,{meds,movs,users,logs});saveCache();setSP('ok','✅ Ao vivo')}
+  try{
+    // Merge: busca dados frescos e mescla para não perder dados de outros usuários
+    const snap=await getDoc(ref);
+    if(snap.exists()){
+      const d=snap.data();
+      // Preserva movimentações que outros fizeram enquanto este usuário trabalhava
+      const movsExtras=(d.movs||[]).filter(m=>!movs.find(x=>x.id===m.id));
+      if(movsExtras.length>0) movs=[...movs,...movsExtras].sort((a,b)=>a.dt.localeCompare(b.dt));
+      // Preserva logs extras
+      const logsExtras=(d.logs||[]).filter(l=>!logs.find(x=>x.id===l.id));
+      if(logsExtras.length>0) logs=[...logs,...logsExtras];
+    }
+    await setDoc(ref,{meds,movs,users,logs});
+    saveCache();setSP('ok','✅ Ao vivo');
+  }
   catch(e){setSP('err','❌ Erro');showToast('❌ Erro ao salvar')}
 }
 
 async function saveMov(medId,delta,tipo,qtd){
+  // Busca dados frescos antes de salvar para não sobrescrever movimentações de outros
+  try{
+    const snap=await getDoc(ref);
+    if(snap.exists()){
+      const d=snap.data();
+      meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
+    }
+  }catch(e){/* usa dados locais se offline */}
   const idx=meds.findIndex(m=>m.id===medId);
   if(idx===-1)return;
   meds[idx].q=Math.max(0,meds[idx].q+delta);
