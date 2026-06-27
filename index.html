@@ -475,7 +475,24 @@ function startListener(){
 
 async function save(){
   setSP("sync","⏳");
-  try{await setDoc(REF,{meds,movs,users,logs});saveCache();setSP("ok","✅ Ao vivo");}
+  try{
+    // Busca dados frescos para não perder movimentações de outros dispositivos
+    const snap=await getDoc(REF);
+    if(snap.exists()){
+      const d=snap.data();
+      // Mescla movimentações que outros fizeram
+      const movsExt=(d.movs||[]).filter(m=>!movs.find(x=>x.id===m.id));
+      if(movsExt.length)movs=[...movs,...movsExt].sort((a,b)=>a.dt.localeCompare(b.dt));
+      // Mescla logs extras
+      const logsExt=(d.logs||[]).filter(l=>!logs.find(x=>x.id===l.id));
+      if(logsExt.length)logs=[...logs,...logsExt];
+      // Mescla usuários extras (cadastrados por outros)
+      const usersExt=(d.users||[]).filter(u=>!users.find(x=>x.id===u.id));
+      if(usersExt.length)users=[...users,...usersExt];
+    }
+    await setDoc(REF,{meds,movs,users,logs});
+    saveCache();setSP("ok","✅ Ao vivo");
+  }
   catch(e){setSP("err","❌ Erro");showToast("❌ Erro ao salvar: "+e.message);}
 }
 
