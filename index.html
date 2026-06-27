@@ -512,59 +512,63 @@ window.doLogin=async function(){
 
 window.doCadastro=async function(){
   const name=document.getElementById('cName').value.trim();
-  const pass=document.getElementById('cPass').value;
-  const err=document.getElementById('lErr');err.textContent='';
-  if(!name){err.textContent='Informe seu nome';return}
+  const pass=document.getElementById('cPass').value.trim();
+  const err=document.getElementById('lErr');
+  err.textContent='';
+  // Validações básicas
+  if(!name||name.length<2){err.textContent='Informe seu nome (mín. 2 caracteres)';return}
   if(!pass||pass.length<4){err.textContent='Crie uma senha com pelo menos 4 números';return}
   if(pass===ADM_PASS){err.textContent='Essa senha não pode ser usada';return}
-  // Busca dados FRESCOS do Firebase antes de salvar (evita sobrescrever dados)
+  // Indicar carregamento
+  err.style.color='var(--amber)';
+  err.textContent='⏳ Cadastrando...';
+  // Buscar dados frescos do Firebase
   try{
     const snap=await getDoc(ref);
     if(snap.exists()){
       const d=snap.data();
       meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
     }
-  }catch(e){
-    // Se não conseguir buscar dados, verifica se tem internet
-    if(!navigator.onLine){err.textContent='Sem conexão com internet';return}
-    // Se tiver internet mas Firebase demorou, usa dados do cache e tenta salvar
+  }catch(e){console.warn('getDoc failed, using cache')}
+  // Verificar duplicatas
+  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){
+    err.style.color='var(--red)';err.textContent='❌ Nome já cadastrado';return
   }
-  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){err.textContent='Nome já cadastrado';return}
-  if(users.find(x=>x.pass===pass)){err.textContent='Essa senha já está em uso';return}
+  if(users.find(x=>x.pass===pass)){
+    err.style.color='var(--red)';err.textContent='❌ Senha já está em uso';return
+  }
+  // Criar usuário e salvar
   const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
   users.push(novoUser);
-  // Log de cadastro
   logs.push({id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()});
   try{
     await setDoc(ref,{meds,movs,users,logs});
-    // SUCESSO: esconde form, mostra mensagem de sucesso
+    // SUCESSO
     document.getElementById('fCAD').style.display='none';
+    document.getElementById('lErr').textContent='';
     document.getElementById('cadSuccess').style.display='flex';
     document.getElementById('cName').value='';
     document.getElementById('cPass').value='';
-    // Após 2s: vai para tela de login com mensagem
+    // Após 2s vai para tela de login
     setTimeout(()=>{
-      // 1. Esconde sucesso
       document.getElementById('cadSuccess').style.display='none';
-      // 2. Muda abas manualmente (sem usar setLTab para não resetar mensagem)
       loginTab='ent';
       document.getElementById('ltENT').className='ltab active';
       document.getElementById('ltCAD').className='ltab';
       document.getElementById('fENT').style.display='block';
       document.getElementById('fCAD').style.display='none';
-      // 3. Mensagem verde orientando
-      const errEl=document.getElementById('lErr');
-      errEl.style.color='var(--green)';
-      errEl.textContent='✅ Cadastro realizado! Digite sua senha para entrar.';
-      // 4. Foca no campo de senha
+      const e2=document.getElementById('lErr');
+      e2.style.color='var(--green)';
+      e2.textContent='✅ Cadastro OK! Digite sua senha para entrar.';
       document.getElementById('passInput').value='';
       document.getElementById('passInput').focus();
-      // 5. Limpa mensagem após 5s
-      setTimeout(()=>{errEl.style.color='var(--red)';errEl.textContent='';},5000);
+      setTimeout(()=>{e2.style.color='var(--red)';e2.textContent='';},5000);
     },2000);
   }catch(e){
     users=users.filter(x=>x.id!==novoUser.id);
-    err.textContent='Erro ao salvar. Verifique a conexão.';
+    logs=logs.filter(x=>x.nome!==name);
+    err.style.color='var(--red)';
+    err.textContent='❌ Erro ao salvar. Verifique a conexão.';
   }
 }
 
