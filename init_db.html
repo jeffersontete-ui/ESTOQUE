@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Inicializar Firebase</title>
+<style>
+body{font-family:sans-serif;padding:20px;max-width:500px;margin:0 auto}
+.ok{background:#d1fae5;padding:12px;border-radius:8px;margin:8px 0;color:#065f46;font-weight:700}
+.err{background:#fee2e2;padding:12px;border-radius:8px;margin:8px 0;color:#991b1b}
+.info{background:#e0f2fe;padding:12px;border-radius:8px;margin:8px 0}
+button{width:100%;padding:16px;border-radius:8px;border:none;background:#1a9e6b;color:#fff;font-size:18px;font-weight:700;cursor:pointer;margin:8px 0}
+</style>
+</head>
+<body>
+<h2>🔧 Inicializar Banco de Dados</h2>
+<div id="status" class="info">Pronto para inicializar...</div>
+<button onclick="inicializar()">🚀 INICIALIZAR BANCO DE DADOS</button>
+<button onclick="verificar()">🔍 VERIFICAR DADOS</button>
+<div id="log"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const db=getFirestore(initializeApp({
+  apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
+  authDomain:"estoque-remedios-7b785.firebaseapp.com",
+  projectId:"estoque-remedios-7b785",
+  storageBucket:"estoque-remedios-7b785.firebasestorage.app",
+  messagingSenderId:"1005921072336",
+  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+}));
+
+const REF=doc(db,"estoque","dados");
+
+const MEDS=[
+  {id:"a01",n:"ALPRAZOLAM 0,25MG",q:1,v:"12/27"},
+  {id:"a02",n:"ARIPIPRAZOL 15MG",q:1,v:"08/26"},
+  {id:"a03",n:"BACTRIM 400MG",q:3,v:"07/27"},
+  {id:"a04",n:"BETOGENTA CREME",q:4,v:"05/27"},
+  {id:"a05",n:"BETOGENTA POMADA",q:2,v:"09/27"},
+  {id:"a06",n:"CEFALEXINA SUSP",q:2,v:"08/27"},
+  {id:"a07",n:"CEFATRIOXONA 500MG",q:1,v:"06/27"},
+  {id:"a08",n:"CLINDAMICINA",q:2,v:"12/26"},
+  {id:"a09",n:"CLONZEPAM GOTAS",q:1,v:"11/27"},
+  {id:"a10",n:"CODEINA 30MG",q:1,v:"12/27"},
+  {id:"a11",n:"DESVE 100MG 28COMP",q:1,v:"10/27"},
+  {id:"a12",n:"DEXAVISON",q:2,v:"09/27"},
+  {id:"a13",n:"ESCITOPRAM GOTAS",q:1,v:"07/27"},
+  {id:"a14",n:"ESCITOPRAM GOTAS",q:2,v:"11/27"},
+  {id:"a15",n:"FENITOINA 100MG",q:4,v:"10/27"},
+  {id:"a16",n:"LISDEXA 70MG",q:1,v:"06/27"},
+  {id:"a17",n:"METILFENIDATO 10MG",q:8,v:"02/28"},
+  {id:"a18",n:"METRONIDAZOL 250",q:4,v:"09/27"},
+  {id:"a19",n:"NEULEPTIL 10MG",q:1,v:"05/28"},
+  {id:"a20",n:"NITROFUROTEINA",q:2,v:"04/28"},
+  {id:"a21",n:"OTOSYLASE",q:1,v:"07/27"},
+  {id:"a22",n:"PARACE+CODEINA 24C",q:1,v:"03/28"},
+  {id:"a23",n:"PREGABALINA 150MG",q:1,v:"07/27"},
+  {id:"a24",n:"PREGABALINA 50MG",q:2,v:"10/28"},
+  {id:"a25",n:"QUADRIDERM CREME",q:6,v:"12/27"},
+  {id:"a26",n:"SERTRALINA 50MG",q:1,v:"08/27"},
+  {id:"a27",n:"SIBUTRAMINA 10MG",q:2,v:"12/27"},
+  {id:"a28",n:"SIBUTRAMINA 15MG",q:3,v:"03/28"},
+  {id:"a29",n:"TRAM+CODEINA",q:2,v:"03/28"},
+  {id:"a30",n:"VELIJA 30MG 30 COMP",q:1,v:"05/27"},
+  {id:"a31",n:"VENLAFAXINA 75MG",q:3,v:"12/27"},
+  {id:"a32",n:"VENLAXIN 150MG",q:1,v:"10/26"},
+  {id:"a33",n:"VENLAXIN 75MG",q:1,v:"05/27"},
+  {id:"a34",n:"ZOLPIDEM 10MG 30 C",q:9,v:"06/27"}
+];
+
+const log=(msg,tipo="info")=>{
+  document.getElementById("log").innerHTML=`<div class="${tipo}">${msg}</div>`+document.getElementById("log").innerHTML;
+  document.getElementById("status").textContent=msg;
+  document.getElementById("status").className=tipo;
+};
+
+window.inicializar=async()=>{
+  log("Verificando banco de dados...","info");
+  try{
+    const snap=await getDoc(REF);
+    let users=[],movs=[],logs2=[];
+    if(snap.exists()){
+      const d=snap.data();
+      users=d.users||[];
+      movs=d.movs||[];
+      logs2=d.logs||[];
+      log(`Documento existe. Users: ${users.length}, Movs: ${movs.length}. Preservando...`,"info");
+    }
+    await setDoc(REF,{
+      meds:MEDS,
+      movs:movs,
+      users:users,
+      logs:logs2
+    });
+    log(`✅ SUCESSO! ${MEDS.length} medicamentos salvos! Users preservados: ${users.length}`,"ok");
+  }catch(e){
+    log("❌ ERRO: "+e.message,"err");
+  }
+};
+
+window.verificar=async()=>{
+  try{
+    const snap=await getDoc(REF);
+    if(snap.exists()){
+      const d=snap.data();
+      log(`✅ Dados encontrados: ${(d.meds||[]).length} meds | ${(d.users||[]).length} users | ${(d.movs||[]).length} movs`,"ok");
+      // Mostrar usuários
+      if(d.users&&d.users.length>0){
+        d.users.forEach(u=>{
+          log(`👤 User: ${u.name} | Senha: ${u.pass}`,"ok");
+        });
+      }
+    }else{
+      log("❌ Documento não existe!","err");
+    }
+  }catch(e){log("❌ ERRO: "+e.message,"err");}
+};
+
+log("Pronto! Clique em INICIALIZAR para popular o banco de dados.","info");
+</script>
+</body>
+</html>
