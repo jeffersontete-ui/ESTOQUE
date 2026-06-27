@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Estoque">
+<meta name="theme-color" content="#1a9e6b">
+<link rel="preconnect" href="https://www.gstatic.com">
+<title>Estoque</title>
+<style>
+:root{--green:#1a9e6b;--green-d:#0f6e4a;--green-bg:#e6f7f1;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--blue:#185fa5;--blue-bg:#e6f1fb;--purple:#7c3aed;--purple-bg:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--r:14px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--g900)}
+
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0f6e4a,#1a9e6b);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:#fff;border-radius:24px;padding:32px 24px 28px;width:100%;max-width:360px;box-shadow:0 12px 48px rgba(0,0,0,.2)}
+.login-logo{text-align:center;font-size:52px;margin-bottom:10px}
+.login-box h2{text-align:center;font-size:24px;font-weight:700;margin-bottom:2px}
+.login-sub{text-align:center;font-size:13px;color:var(--g500);margin-bottom:24px}
+.ltabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:24px;background:var(--g100);border-radius:12px;padding:4px}
+.ltab{height:38px;border-radius:8px;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--g500);cursor:pointer;transition:all .15s}
+.ltab.active{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.fl{margin-bottom:16px}
+.fl label{display:block;font-size:12px;font-weight:700;color:var(--g700);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.fl input{width:100%;height:50px;border-radius:var(--rs);border:1.5px solid var(--g200);padding:0 16px;font-size:18px;color:var(--g900);background:var(--g50);outline:none;letter-spacing:3px;text-align:center}
+.fl input.left{letter-spacing:0;text-align:left;font-size:16px}
+.fl input:focus{border-color:var(--green);background:#fff}
+.lbtn{width:100%;height:52px;border-radius:var(--r);background:var(--green);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-top:4px}
+.lbtn:active{background:var(--green-d)}
+.lbtn.amber{background:var(--amber)}
+.lerr{font-size:13px;color:var(--red);text-align:center;margin-top:12px;min-height:18px;font-weight:500}
+.lsuccess{display:none;flex-direction:column;align-items:center;gap:12px;padding:8px 0;text-align:center}
+.lsuccess .sico{font-size:52px}
+.lsuccess h3{font-size:18px;font-weight:700;color:var(--green)}
+.lsuccess p{font-size:13px;color:var(--g500)}
+
+/* HEADER */
+.hdr{background:#fff;padding:14px 20px 12px;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-title{display:flex;align-items:center;gap:8px}
+.hdr-title h1{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.mbadge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badm{background:var(--purple);color:#fff}.buser{background:var(--blue);color:#fff}
+.sp{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--g100);color:var(--g500);transition:all .3s}
+.sp.ok{background:var(--green-bg);color:var(--green)}.sp.err{background:var(--red-bg);color:var(--red)}.sp.sync{background:var(--amber-bg);color:var(--amber)}
+.hdr-right{display:flex;align-items:center;gap:6px}
+.icon-btn{width:38px;height:38px;border-radius:50%;background:var(--g100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;position:relative}
+.ndot{width:10px;height:10px;background:var(--red);border-radius:50%;position:absolute;top:4px;right:4px;border:2px solid #fff;display:none}
+.search-wrap{position:relative}
+.search-wrap input{width:100%;height:40px;border-radius:20px;border:1px solid var(--g200);background:var(--g100);padding:0 16px 0 38px;font-size:15px;color:var(--g900);outline:none}
+.search-wrap input::placeholder{color:var(--g400)}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
+.stat{background:#fff;border-radius:var(--rs);padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.stat-n{font-size:21px;font-weight:700;line-height:1}.stat-l{font-size:10px;color:var(--g500);margin-top:2px}
+.sn{color:var(--green)}.sw2{color:var(--amber)}.sd{color:var(--red)}
+.filters{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fb{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1px solid var(--g200);background:#fff;font-size:13px;color:var(--g500);cursor:pointer;font-weight:500;white-space:nowrap}
+.fb.active{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* CARDS */
+.list{padding:0 16px 100px;display:flex;flex-direction:column;gap:8px}
+.card{background:#fff;border-radius:var(--r);padding:13px 14px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid transparent;display:flex;align-items:flex-start;gap:11px}
+.card.ok{border-left-color:var(--green)}.card.soon{border-left-color:var(--amber)}.card.expired{border-left-color:var(--red)}.card.zero{border-left-color:var(--g300)}
+.cico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;margin-top:2px}
+.ico-ok{background:var(--green-bg)}.ico-soon{background:var(--amber-bg)}.ico-expired{background:var(--red-bg)}.ico-zero{background:var(--g100)}
+.cbody{flex:1;min-width:0}
+.cname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csub{font-size:12px;margin-top:2px}
+.tok{color:var(--green)}.tso{color:var(--amber)}.tex{color:var(--red);font-weight:600}.tze{color:var(--g400)}
+.cvenc{font-size:15px;font-weight:700;margin-top:4px}
+.vok{color:var(--green)}.vso{color:var(--amber)}.vex{color:var(--red)}.vze{color:var(--g400)}
+.clm{font-size:11px;color:var(--g400);margin-top:4px}
+.cacts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.abtn{padding:6px 11px;border-radius:6px;font-size:12px;border:1px solid var(--g200);background:var(--g50);color:var(--g500);cursor:pointer;font-weight:500}
+.abtn:active{background:var(--g200)}
+.adel{color:var(--red);border-color:#fecaca;background:var(--red-bg)}
+.ahist{color:var(--purple);border-color:#ddd6fe;background:var(--purple-bg)}
+.cright{flex-shrink:0;display:flex;align-items:flex-start;padding-top:2px}
+.qty-badge-card{font-size:15px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--g100);color:var(--g700);min-width:44px;text-align:center}
+.qty-badge-card.qbz{background:var(--red-bg);color:var(--red)}
+.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--green);border:none;box-shadow:0 4px 16px rgba(26,158,107,.45);color:#fff;font-size:28px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.fab:active{transform:scale(.94)}
+.scan-fab{position:fixed;bottom:94px;right:20px;width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid var(--green);box-shadow:0 2px 10px rgba(0,0,0,.15);color:var(--green);font-size:22px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center}
+
+/* MODAIS */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:22px 22px 0 0;padding:22px 20px 40px;width:100%;max-height:92vh;overflow-y:auto}
+.mh{width:36px;height:4px;background:var(--g300);border-radius:2px;margin:0 auto 18px}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:18px}
+.mfield{margin-bottom:14px}
+.mfield label{display:block;font-size:13px;font-weight:600;color:var(--g700);margin-bottom:5px}
+.mfield input{width:100%;height:48px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
+.mfield input:focus{border-color:var(--green);background:#fff}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mbtn{width:100%;height:52px;border-radius:var(--r);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-top:6px}
+.mbtn.green{background:var(--green)}.mbtn.green:active{background:var(--green-d)}.mbtn.red{background:var(--red)}
+.mcan{width:100%;height:44px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:16px;cursor:pointer;margin-top:10px}
+.back-home{width:100%;height:44px;border-radius:var(--r);background:var(--g100);border:none;color:var(--g700);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.back-home:active{background:var(--g200)}
+.mt2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.mtt{height:52px;border-radius:var(--rs);border:2px solid var(--g200);background:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.mtt.entrada.sel{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.mtt.saida.sel{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.mtt:not(.sel){color:var(--g400)}
+
+/* CONFIRMAÇÃO */
+.confirm-box{background:var(--green-bg);border:1px solid #6ee7b7;border-radius:var(--rs);padding:14px;text-align:center;margin-bottom:16px;display:none}
+.confirm-box.red{background:var(--red-bg);border-color:#fca5a5}
+.confirm-box p{font-size:15px;font-weight:700;color:var(--green-d)}
+.confirm-box.red p{color:var(--red)}
+.confirm-box span{font-size:13px;color:var(--g500)}
+
+/* HISTÓRICO */
+.hist-list{display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.hi{background:var(--g50);border-radius:var(--rs);padding:11px 14px}
+.hi.entrada{border-left:3px solid var(--green)}.hi.saida{border-left:3px solid var(--red)}
+.hi-top{display:flex;align-items:center;justify-content:space-between}
+.hi-tipo{font-size:13px;font-weight:700}
+.hi-tipo.entrada{color:var(--green)}.hi-tipo.saida{color:var(--red)}
+.hi-qtd{font-size:15px;font-weight:700}
+.hi-info{font-size:12px;color:var(--g500);margin-top:3px}
+
+/* PAINEL ADM */
+.panel{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100%;background:#fff;z-index:400;transition:right .25s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
+.panel.open{right:0}
+.ph{padding:18px 20px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between}
+.ph h3{font-size:17px;font-weight:700}
+.ph-close{background:none;border:none;font-size:24px;color:var(--g400);cursor:pointer}
+.ptabs{display:flex;border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{flex-shrink:0;height:44px;border:none;background:none;font-size:11px;font-weight:700;color:var(--g400);cursor:pointer;border-bottom:2px solid transparent;padding:0 10px;white-space:nowrap}
+.ptab.active{color:var(--green);border-bottom-color:var(--green)}
+.pbody{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+
+/* NOTIF ITEMS */
+.ni{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
+.ni.mov-e{border-left:3px solid var(--green)}.ni.mov-s{border-left:3px solid var(--red)}
+.ni.cad-u{border-left:3px solid var(--purple);background:var(--purple-bg)}
+.ni.alerta{border-left:3px solid var(--red)}.ni.alerta-w{border-left:3px solid var(--amber)}
+.ni p{font-size:14px;font-weight:600}.ni span{font-size:12px;color:var(--g500);margin-top:3px;display:block}
+.ni-time{font-size:10px;color:var(--g400);margin-top:4px}
+
+/* USUÁRIOS */
+.user-card{background:var(--g50);border-radius:var(--rs);padding:12px 14px;margin-bottom:2px}
+.user-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.user-name{font-size:15px;font-weight:700}
+.user-meta{font-size:11px;color:var(--g500);margin-top:2px}
+.ustatus{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.u-ok{background:var(--green-bg);color:var(--green)}.u-blocked{background:var(--red-bg);color:var(--red)}
+.user-actions{display:flex;gap:6px;margin-bottom:10px}
+.ua{flex:1;height:34px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer}
+.ua-block{background:var(--amber-bg);color:var(--amber)}
+.ua-unblock{background:var(--green-bg);color:var(--green)}
+.ua-del{background:var(--red-bg);color:var(--red)}
+.perms-title{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--g200)}
+.perm-row:last-child{border-bottom:none}
+.perm-label{font-size:13px;color:var(--g700)}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--g300);border-radius:11px;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--green)}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
+
+.panel-empty{text-align:center;color:var(--g400);padding:32px 20px;font-size:14px}
+.sms-banner{background:var(--amber-bg);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--amber);font-weight:600;text-align:center;margin-bottom:8px}
+
+/* SCANNER */
+.scan-overlay{position:fixed;inset:0;background:#000;z-index:500;display:flex;flex-direction:column}
+.scan-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.6)}
+.scan-header h3{color:#fff;font-size:17px;font-weight:700}
+.scan-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.scan-video{flex:1;object-fit:cover;width:100%}
+.scan-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:260px;height:160px;border:3px solid var(--green);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+.scan-hint{position:absolute;bottom:110px;left:0;right:0;text-align:center;color:#fff;font-size:14px;font-weight:500}
+.scan-manual{position:absolute;bottom:30px;left:20px;right:20px}
+.scan-manual input{width:100%;height:48px;border-radius:var(--r);border:none;padding:0 16px;font-size:16px;background:rgba(255,255,255,.15);color:#fff;outline:none;text-align:center;letter-spacing:2px}
+.scan-manual input::placeholder{color:rgba(255,255,255,.5)}
+.scan-pc{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:24px}
+.barcode-med{background:var(--green-bg);border-radius:var(--rs);padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.barcode-notfound{background:var(--amber-bg);border-radius:var(--rs);padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--amber);font-weight:600;text-align:center}
+
+/* QR CODE MODAL */
+.qr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.qr-overlay.open{display:flex}
+.qr-box{background:#fff;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.3)}
+.qr-box h3{font-size:18px;font-weight:700;margin-bottom:4px}
+.qr-box p{font-size:13px;color:var(--g500);margin-bottom:20px}
+.qr-canvas-wrap{background:var(--g50);border-radius:16px;padding:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:center}
+.qr-url{font-size:11px;color:var(--g400);word-break:break-all;margin-bottom:16px;padding:8px 12px;background:var(--g100);border-radius:8px}
+.qr-copy{width:100%;height:44px;border-radius:var(--r);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.qr-close{width:100%;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:15px;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SKELETON */
+.sk{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.skc{background:#fff;border-radius:var(--r);padding:16px;border-left:4px solid var(--g200);display:flex;gap:12px;align-items:center}
+.ski{width:40px;height:40px;border-radius:50%;background:var(--g200);flex-shrink:0;animation:pulse 1.2s infinite}
+.skb{flex:1;display:flex;flex-direction:column;gap:8px}
+.skl{height:12px;border-radius:6px;background:var(--g200);animation:pulse 1.2s infinite}
+.w80{width:80%}.w50{width:50%}.w30{width:30%}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">💊</div>
+    <h2>Estoque</h2>
+    <p class="login-sub">Controle de medicamentos</p>
+    <div class="ltabs">
+      <button class="ltab active" id="ltENT" onclick="setLTab('ent')">🔑 Entrar</button>
+      <button class="ltab" id="ltCAD" onclick="setLTab('cad')">✏️ Cadastrar</button>
+    </div>
+    <div id="fENT">
+      <div class="fl"><label>Senha de acesso</label>
+        <input type="password" id="passInput" placeholder="••••" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="lbtn" onclick="doLogin()">Entrar</button>
+    </div>
+    <div id="fCAD" style="display:none">
+      <div class="fl"><label>Seu nome</label>
+        <input type="text" id="cName" class="left" placeholder="Ex: Maria" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('cPass').focus()">
+      </div>
+      <div class="fl"><label>Crie uma senha (números)</label>
+        <input type="password" id="cPass" placeholder="••••" inputmode="numeric" maxlength="8" onkeydown="if(event.key==='Enter')doCadastro()">
+      </div>
+      <button class="lbtn amber" onclick="doCadastro()">✅ Cadastrar</button>
+    </div>
+    <!-- Sucesso cadastro -->
+    <div class="lsuccess" id="cadSuccess">
+      <div class="sico">✅</div>
+      <h3>Cadastro realizado!</h3>
+      <p>Já pode entrar com sua senha.<br>Redirecionando...</p>
+    </div>
+    <div class="lerr" id="lErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appMain" style="display:none">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-title">
+        <span style="font-size:22px">💊</span>
+        <h1>Estoque</h1>
+        <span class="mbadge" id="mBadge">ADM</span>
+      </div>
+      <div class="hdr-right">
+        <span class="sp sync" id="spPill">⏳</span>
+        <button class="icon-btn" id="panelBtn" onclick="openPanel()" style="display:none">🔔<span class="ndot" id="ndot"></span></button>
+        <button class="icon-btn" id="qrBtn" onclick="openQR()">🔗</button>
+        <button class="icon-btn" onclick="doLogout()" title="Sair">🚪</button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="si">🔍</span>
+      <input type="text" id="srch" placeholder="Buscar medicamento..." oninput="render()" autocomplete="off">
+    </div>
+  </div>
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-n sn">—</div><div class="stat-l">Cadastrados</div></div>
+    <div class="stat"><div class="stat-n sw2">—</div><div class="stat-l">Vence em breve</div></div>
+    <div class="stat"><div class="stat-n sd">—</div><div class="stat-l">Atenção</div></div>
+  </div>
+  <div class="filters">
+    <button class="fb active" onclick="setF(this,'all')">Todos</button>
+    <button class="fb" onclick="setF(this,'expired')">⚠️ Vencidos</button>
+    <button class="fb" onclick="setF(this,'soon')">🕐 Vence em breve</button>
+    <button class="fb" onclick="setF(this,'zero')">📭 Sem estoque</button>
+    <button class="fb" onclick="setF(this,'ok')">✅ OK</button>
+  </div>
+  <div class="sk" id="skeleton">
+    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+  </div>
+  <div class="list" id="list" style="display:none"></div>
+  <button class="scan-fab" id="scanFabBtn" onclick="openScanner()" style="display:none">📷</button>
+  <button class="fab" id="fabBtn" onclick="openModal()" style="display:none">+</button>
+</div>
+
+<!-- MODAL MEDICAMENTO -->
+<div class="ov" id="ovMed" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2 id="medTitle">Novo medicamento</h2>
+    <div class="mfield"><label>Nome</label><input type="text" id="fNome" placeholder="Ex: Paracetamol 500mg" autocomplete="off"></div>
+    <div class="frow">
+      <div class="mfield"><label>Quantidade</label><input type="number" id="fQtd" placeholder="0" min="0" inputmode="numeric"></div>
+      <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="fVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
+    </div>
+    <div class="confirm-box" id="medConfirm"><p id="medConfirmTxt"></p></div>
+    <button class="mbtn green" onclick="saveMed()">Salvar</button>
+    <button class="mcan" onclick="closeModal()">Cancelar</button>
+    <button class="back-home" onclick="closeModal();scrollToTop()">🏠 Voltar à tela inicial</button>
+  </div>
+</div>
+
+<!-- MODAL MOVIMENTAÇÃO -->
+<div class="ov" id="ovMov" onclick="closeMovModal(event)">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2 id="movTitle" style="font-size:15px;margin-bottom:4px"></h2>
+    <div id="movEstoque" style="font-size:13px;color:var(--g500);margin-bottom:14px;font-weight:500"></div>
+    <div class="mt2">
+      <button class="mtt entrada sel" id="btnE" onclick="selTipo('entrada')">📥 Entrada</button>
+      <button class="mtt saida" id="btnS" onclick="selTipo('saida')">📤 Saída</button>
+    </div>
+    <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="1" inputmode="numeric"></div>
+    <div class="confirm-box" id="movConfirm">
+      <p id="movConfirmTxt"></p>
+      <span id="movConfirmSub"></span>
+    </div>
+    <button class="mbtn green" id="movBtn" onclick="saveMov()">✅ Confirmar entrada</button>
+    <button class="mcan" onclick="closeMovModal()">Cancelar</button>
+    <button class="back-home" onclick="closeMovModal();scrollToTop()">🏠 Voltar à tela inicial</button>
+  </div>
+</div>
+
+<!-- MODAL HISTÓRICO -->
+<div class="ov" id="ovHist" onclick="closeHistModal(event)">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2 id="histTitle">Histórico</h2>
+    <div id="histContent"></div>
+    <button class="mcan" onclick="closeHistModal()">Fechar</button>
+  </div>
+</div>
+
+<!-- SCANNER -->
+<div class="scan-overlay" id="scanOverlay" style="display:none">
+  <div class="scan-header">
+    <h3>📷 Código de barras</h3>
+    <button class="scan-close" onclick="closeScanner()">✕</button>
+  </div>
+  <video class="scan-video" id="scanVideo" autoplay playsinline muted></video>
+  <div class="scan-frame"></div>
+  <div class="scan-hint">Aponte para o código de barras</div>
+  <div class="scan-manual"><input type="text" id="manualBarcode" placeholder="Ou digite o código..." inputmode="numeric" onkeydown="if(event.key==='Enter')onBarcodeDetected(this.value.trim())" oninput="autoDetectBarcode(this.value)"></div>
+  <div class="scan-pc" id="scanPCArea">
+    <div style="font-size:72px">🔫</div>
+    <div style="text-align:center"><div style="color:#fff;font-size:18px;font-weight:700;margin-bottom:8px">Leitor USB conectado?</div><div style="color:rgba(255,255,255,.7);font-size:14px">Passe o produto no leitor.<br>O código será capturado automaticamente.</div></div>
+    <div style="width:100%;max-width:360px">
+      <input type="text" id="manualBarcode2" placeholder="Aguardando leitura..." inputmode="numeric" style="width:100%;height:56px;border-radius:12px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:20px;text-align:center;letter-spacing:3px;outline:none;padding:0 16px" onkeydown="if(event.key==='Enter')onBarcodeDetected(this.value.trim())" oninput="autoDetectBarcode(this.value)">
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BARCODE -->
+<div class="ov" id="ovBarcode" onclick="closeBarcodeModal(event)">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2>📥 Entrada por código de barras</h2>
+    <div id="barcodeResult"></div>
+    <div id="barcodeMedFields" style="display:none">
+      <div class="mfield"><label>Quantidade que está entrando</label><input type="number" id="bcQtd" placeholder="0" min="1" inputmode="numeric"></div>
+      <button class="mbtn green" onclick="saveBarcodeEntry()">✅ Confirmar entrada</button>
+    </div>
+    <div id="barcodeNewFields" style="display:none">
+      <div class="mfield"><label>Nome do medicamento</label><input type="text" id="bcNome" placeholder="Ex: Paracetamol 500mg" autocomplete="off"></div>
+      <div class="frow">
+        <div class="mfield"><label>Quantidade</label><input type="number" id="bcQtdNew" placeholder="0" min="0" inputmode="numeric"></div>
+        <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="bcVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
+      </div>
+      <button class="mbtn green" onclick="saveBarcodeNew()">✅ Cadastrar e dar entrada</button>
+    </div>
+    <button class="mcan" onclick="closeBarcodeModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- QR CODE MODAL -->
+<div class="qr-overlay" id="qrOverlay" onclick="closeQR(event)">
+  <div class="qr-box">
+    <h3>📱 Acesso ao Sistema</h3>
+    <p id="qrDesc">Escaneie para abrir em qualquer dispositivo</p>
+    <div class="qr-canvas-wrap">
+      <canvas id="qrCanvas"></canvas>
+    </div>
+    <div class="qr-url" id="qrUrl"></div>
+    <button class="qr-copy" onclick="copyQRUrl()">📋 Copiar link</button>
+    <button class="qr-close" onclick="closeQR()">Fechar</button>
+  </div>
+</div>
+
+<!-- PAINEL ADM -->
+<div class="panel" id="admPanel">
+  <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-close" onclick="closePanel()">✕</button></div>
+  <div class="ptabs">
+    <button class="ptab active" id="ptMov" onclick="setPTab('mov')">🔔 Movim.</button>
+    <button class="ptab" id="ptCad" onclick="setPTab('cad')">👤 Cadastros</button>
+    <button class="ptab" id="ptUsers" onclick="setPTab('users')">👥 Usuários</button>
+    <button class="ptab" id="ptAlert" onclick="setPTab('alert')">⚠️ Alertas</button>
+  </div>
+  <div class="pbody" id="pBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,onSnapshot,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const FB={apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",authDomain:"estoque-remedios-7b785.firebaseapp.com",projectId:"estoque-remedios-7b785",storageBucket:"estoque-remedios-7b785.firebasestorage.app",messagingSenderId:"1005921072336",appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"};
+const db=getFirestore(initializeApp(FB));
+const ref=doc(db,"estoque","dados");
+const CK='estoque_cache_v5',SK='estoque_sess_v5',ADM_PASS='2407';
+
+const DEFAULTS=[
+  {id:"a01",n:"ALPRAZOLAM 0,25MG",q:1,v:"12/27"},{id:"a02",n:"ARIPIPRAZOL 15MG",q:1,v:"08/26"},
+  {id:"a03",n:"BACTRIM 400MG",q:3,v:"07/27"},{id:"a04",n:"BETOGENTA CREME",q:4,v:"05/27"},
+  {id:"a05",n:"BETOGENTA POMADA",q:2,v:"09/27"},{id:"a06",n:"CEFALEXINA SUSP",q:2,v:"08/27"},
+  {id:"a07",n:"CEFATRIOXONA 500MG",q:1,v:"06/27"},{id:"a08",n:"CLINDAMICINA",q:2,v:"12/26"},
+  {id:"a09",n:"CLONZEPAM GOTAS",q:1,v:"11/27"},{id:"a10",n:"CODEINA 30MG",q:1,v:"12/27"},
+  {id:"a11",n:"DESVE 100MG 28COMP",q:1,v:"10/27"},{id:"a12",n:"DEXAVISON",q:2,v:"09/27"},
+  {id:"a13",n:"ESCITOPRAM GOTAS",q:1,v:"07/27"},{id:"a14",n:"ESCITOPRAM GOTAS",q:2,v:"11/27"},
+  {id:"a15",n:"FENITOINA 100MG",q:4,v:"10/27"},{id:"a16",n:"LISDEXA 70MG",q:1,v:"06/27"},
+  {id:"a17",n:"METILFENIDATO 10MG",q:8,v:"02/28"},{id:"a18",n:"METRONIDAZOL 250",q:4,v:"09/27"},
+  {id:"a19",n:"NEULEPTIL 10MG",q:1,v:"05/28"},{id:"a20",n:"NITROFUROTEINA",q:2,v:"04/28"},
+  {id:"a21",n:"OTOSYLASE",q:1,v:"07/27"},{id:"a22",n:"PARACE+CODEINA 24C",q:1,v:"03/28"},
+  {id:"a23",n:"PREGABALINA 150MG",q:1,v:"07/27"},{id:"a24",n:"PREGABALINA 50MG",q:2,v:"10/28"},
+  {id:"a25",n:"QUADRIDERM CREME",q:6,v:"12/27"},{id:"a26",n:"SERTRALINA 50MG",q:1,v:"08/27"},
+  {id:"a27",n:"SIBUTRAMINA 10MG",q:2,v:"12/27"},{id:"a28",n:"SIBUTRAMINA 15MG",q:3,v:"03/28"},
+  {id:"a29",n:"TRAM+CODEINA",q:2,v:"03/28"},{id:"a30",n:"VELIJA 30MG 30 COMP",q:1,v:"05/27"},
+  {id:"a31",n:"VENLAFAXINA 75MG",q:3,v:"12/27"},{id:"a32",n:"VENLAXIN 150MG",q:1,v:"10/26"},
+  {id:"a33",n:"VENLAXIN 75MG",q:1,v:"05/27"},{id:"a34",n:"ZOLPIDEM 10MG 30 C",q:9,v:"06/27"}
+];
+
+// Permissões padrão para novos usuários
+const DEFAULT_PERMS={verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false};
+
+let meds=[],movs=[],users=[],logs=[];
+let filter='all',editId=null,movId=null,movTipo='entrada';
+let curUser=null,isAdm=false,loginTab='ent',pTab='mov',unsub=null;
+let prevMovLen=0,prevUsersLen=0,prevLogsLen=0;
+let currentBarcode=null,bcMedId=null;
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function setSP(s,t){const p=document.getElementById('spPill');if(p){p.className='sp '+s;p.textContent=t}}
+function saveCache(){try{localStorage.setItem(CK,JSON.stringify({meds,movs,users,logs}))}catch(e){}}
+function loadCache(){try{const c=localStorage.getItem(CK);if(c){const d=JSON.parse(c);if(d.meds&&d.meds.length>0){meds=d.meds;movs=d.movs||[];users=d.users||[];logs=d.logs||[];return true}}}catch(e){}return false}
+function sessSave(d){try{sessionStorage.setItem(SK,JSON.stringify(d))}catch(e){}}
+function sessLoad(){try{const s=sessionStorage.getItem(SK);if(s)return JSON.parse(s)}catch(e){}return null}
+
+// Permissões do usuário atual
+function myPerms(){
+  if(isAdm) return {verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true};
+  const u=users.find(x=>x.name===curUser);
+  return u&&u.perms?{...DEFAULT_PERMS,...u.perms}:DEFAULT_PERMS;
+}
+
+// LOGIN
+window.setLTab=function(t){
+  loginTab=t;
+  document.getElementById('ltENT').className='ltab'+(t==='ent'?' active':'');
+  document.getElementById('ltCAD').className='ltab'+(t==='cad'?' active':'');
+  document.getElementById('fENT').style.display=t==='ent'?'block':'none';
+  document.getElementById('fCAD').style.display=t==='cad'?'block':'none';
+  document.getElementById('cadSuccess').style.display='none';
+  document.getElementById('lErr').textContent='';
+}
+
+window.doLogin=function(){
+  const pass=document.getElementById('passInput').value;
+  const err=document.getElementById('lErr');err.textContent='';
+  if(!pass){err.textContent='Digite a senha';return}
+  if(pass===ADM_PASS){curUser='ADM';isAdm=true;sessSave({u:'ADM',a:true});startApp();return}
+  const u=users.find(x=>x.pass===pass);
+  if(u){
+    if(u.blocked){err.textContent='❌ Seu acesso foi bloqueado. Fale com o ADM.';return}
+    curUser=u.name;isAdm=false;sessSave({u:u.name,a:false});startApp();
+  }else{err.textContent='❌ Senha incorreta';document.getElementById('passInput').value=''}
+}
+
+window.doCadastro=async function(){
+  const name=document.getElementById('cName').value.trim();
+  const pass=document.getElementById('cPass').value;
+  const err=document.getElementById('lErr');err.textContent='';
+  if(!name){err.textContent='Informe seu nome';return}
+  if(pass.length<4){err.textContent='Senha deve ter ao menos 4 dígitos';return}
+  if(pass===ADM_PASS){err.textContent='Essa senha não pode ser usada';return}
+  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){err.textContent='Nome já cadastrado';return}
+  if(users.find(x=>x.pass===pass)){err.textContent='Essa senha já está em uso';return}
+  const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
+  users.push(novoUser);
+  // Log de cadastro
+  logs.push({id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()});
+  try{
+    await setDoc(ref,{meds,movs,users,logs});
+    // Mostrar sucesso e voltar para tela de login
+    document.getElementById('fCAD').style.display='none';
+    document.getElementById('cadSuccess').style.display='flex';
+    document.getElementById('cName').value='';
+    document.getElementById('cPass').value='';
+    setTimeout(()=>{
+      document.getElementById('cadSuccess').style.display='none';
+      document.getElementById('fCAD').style.display='block';
+      setLTab('ent');
+    },2500);
+  }catch(e){
+    users=users.filter(x=>x.id!==novoUser.id);
+    err.textContent='Erro ao salvar. Verifique a conexão.';
+  }
+}
+
+window.doLogout=function(){
+  sessionStorage.removeItem(SK);curUser=null;isAdm=false;
+  document.getElementById('appMain').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('passInput').value='';
+  document.getElementById('lErr').textContent='';
+}
+
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appMain').style.display='block';
+  const b=document.getElementById('mBadge');
+  if(isAdm){
+    b.textContent='ADM';b.className='mbadge badm';
+    document.getElementById('panelBtn').style.display='flex';
+    document.getElementById('fabBtn').style.display='flex';
+    document.getElementById('scanFabBtn').style.display='flex';
+  }else{
+    b.textContent=curUser;b.className='mbadge buser';
+    document.getElementById('panelBtn').style.display='none';
+    document.getElementById('fabBtn').style.display='none';
+    document.getElementById('scanFabBtn').style.display='none';
+  }
+  const hasCached=loadCache();
+  if(hasCached&&meds.length>0){
+    document.getElementById('skeleton').style.display='none';
+    document.getElementById('list').style.display='flex';
+    render();
+  }else{
+    document.getElementById('skeleton').style.display='flex';
+    document.getElementById('list').style.display='none';
+  }
+  if(unsub){try{unsub()}catch(e){}unsub=null;}
+  initFB();
+}
+
+// Busca dados frescos (fallback)
+async function fetchFresh(){
+  try{
+    const snap=await getDoc(ref);
+    if(snap.exists()){
+      const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
+      saveCache();render();setSP('ok','✅ Ao vivo');
+    }
+  }catch(e){setSP('err','❌ Offline')}
+}
+
+function initFB(){
+  if(unsub){try{unsub()}catch(e){}unsub=null;}
+  unsub=onSnapshot(ref,(snap)=>{
+    if(snap.exists()){const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[]}
+    else{meds=DEFAULTS;movs=[];users=[];logs=[];setDoc(ref,{meds,movs,users,logs})}
+    saveCache();
+    document.getElementById('skeleton').style.display='none';
+    document.getElementById('list').style.display='flex';
+    setSP('ok','✅ Ao vivo');
+
+    if(isAdm){
+      // Notif novas movimentações
+      if(movs.length>prevMovLen&&prevMovLen>0){
+        movs.slice(prevMovLen).forEach(mv=>{
+          const med=meds.find(x=>x.id===mv.mid);
+          pushNotif(mv.tipo==='entrada'?'📥 Entrada':'📤 Saída',`${med?med.n:'Medicamento'} — ${mv.qtd}un por ${mv.resp}`);
+          document.getElementById('ndot').style.display='block';
+        });
+      }
+      // Notif novos cadastros
+      if(logs.length>prevLogsLen&&prevLogsLen>0){
+        logs.slice(prevLogsLen).filter(l=>l.tipo==='cadastro').forEach(l=>{
+          pushNotif('👤 Novo usuário cadastrado',`${l.nome} criou uma conta`);
+          document.getElementById('ndot').style.display='block';
+        });
+      }
+      prevMovLen=movs.length;prevUsersLen=users.length;prevLogsLen=logs.length;
+      if(document.getElementById('admPanel').classList.contains('open'))renderPTab();
+    }
+    // Verificar bloqueio
+    if(!isAdm&&curUser){
+      const me=users.find(x=>x.name===curUser);
+      if(me&&me.blocked){alert('⛔ Seu acesso foi bloqueado pelo ADM.');doLogout();}
+    }
+    render();
+  },(e)=>{
+    setSP('err','❌ Offline');
+    setTimeout(()=>{if(curUser)initFB()},5000);
+  });
+  prevMovLen=movs.length;prevLogsLen=logs.length;
+}
+
+async function save(){
+  setSP('sync','⏳');
+  try{await setDoc(ref,{meds,movs,users,logs});saveCache();setSP('ok','✅ Ao vivo')}
+  catch(e){setSP('err','❌ Erro');showToast('❌ Erro ao salvar')}
+}
+
+async function saveMov(medId,delta,tipo,qtd){
+  const idx=meds.findIndex(m=>m.id===medId);
+  if(idx===-1)return;
+  meds[idx].q=Math.max(0,meds[idx].q+delta);
+  movs.push({id:uid(),mid:medId,tipo,qtd,resp:curUser,dt:new Date().toISOString()});
+  await save();
+}
+
+// HELPERS
+function parseV(v){const p=v.split('/');if(p.length!==2)return null;const m=parseInt(p[0]),y=parseInt(p[1]);if(isNaN(m)||isNaN(y))return null;return new Date(2000+y,m-1,1)}
+function status(m){if(m.q<=0)return'zero';const d=parseV(m.v);if(!d)return'ok';const diff=(d-new Date())/86400000;if(diff<0)return'expired';if(diff<=90)return'soon';return'ok'}
+function subLbl(m){const s=status(m);if(s==='zero')return{t:'Sem estoque',c:'tze'};const d=parseV(m.v);if(!d)return{t:'Inválida',c:'tze'};const days=Math.floor((d-new Date())/86400000);if(s==='expired')return{t:'VENCIDO',c:'tex'};if(s==='soon'){if(days<=30)return{t:'Vence em '+days+' dias!',c:'tso'};return{t:'Vence em breve',c:'tso'}}return{t:'Válido',c:'tok'}}
+function vC(s){return{expired:'vex',soon:'vso',zero:'vze',ok:'vok'}[s]}
+function ico(s){return{expired:{e:'⚠️',c:'ico-expired'},soon:{e:'🕐',c:'ico-soon'},zero:{e:'📭',c:'ico-zero'},ok:{e:'💊',c:'ico-ok'}}[s]}
+function fmt(iso){const d=new Date(iso);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
+
+// RENDER
+window.render=function(){
+  const p=myPerms();
+  if(!p.verEstoque&&!isAdm){
+    document.getElementById('list').innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--g400)">🔒 Sem permissão para ver o estoque</div>';
+    return;
+  }
+  const q=document.getElementById('srch').value.toLowerCase();
+  let data=meds.filter(m=>m.n.toLowerCase().includes(q));
+  if(filter!=='all')data=data.filter(m=>status(m)===filter);
+  const exp=meds.filter(m=>status(m)==='expired').length;
+  const soon=meds.filter(m=>status(m)==='soon').length;
+  const zero=meds.filter(m=>status(m)==='zero').length;
+  document.getElementById('stats').innerHTML=`<div class="stat"><div class="stat-n sn">${meds.length}</div><div class="stat-l">Cadastrados</div></div><div class="stat"><div class="stat-n sw2">${soon}</div><div class="stat-l">Vence em breve</div></div><div class="stat"><div class="stat-n sd">${exp+zero}</div><div class="stat-l">Atenção</div></div>`;
+  const ord={expired:0,zero:1,soon:2,ok:3};
+  data.sort((a,b)=>ord[status(a)]-ord[status(b)]||a.n.localeCompare(b.n));
+  if(!data.length){document.getElementById('list').innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--g400)">🔍 Nenhum encontrado</div>';return}
+  document.getElementById('list').innerHTML=data.map(m=>{
+    const s=status(m),lb=subLbl(m),ic=ico(s),qz=m.q<=0,vc=vC(s);
+    // Última movimentação — só mostra se usuário tem permissão verResponsavel
+    const lm=[...movs].reverse().find(x=>x.mid===m.id);
+    const showResp=isAdm||p.verResponsavel;
+    const lmH=lm&&showResp?`<div class="clm">${lm.tipo==='entrada'?'📥':'📤'} ${lm.resp} — ${fmt(lm.dt)}</div>`:lm?`<div class="clm">${lm.tipo==='entrada'?'📥 Entrada':'📤 Saída'} — ${fmt(lm.dt)}</div>`:'';
+    const canMove=isAdm||p.movimentar;
+    const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="editMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
+    const actsUser=canMove?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:'';
+    const showHist=!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:'';
+    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${m.n}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${lmH}<div class="cacts">${isAdm?actsADM:actsUser+showHist}</div></div><div class="cright"><div class="qty-badge-card ${qz?'qbz':''}">${m.q}x</div></div></div>`;
+  }).join('');
+}
+
+// MOVIMENTAÇÃO
+window.openMovModal=(id)=>{
+  movId=id;movTipo='entrada';
+  const m=meds.find(x=>x.id===id);
+  document.getElementById('movTitle').textContent='💊 '+m.n;
+  document.getElementById('movEstoque').textContent='Estoque atual: '+m.q+' un.';
+  document.getElementById('mQtd').value='';
+  document.getElementById('movConfirm').style.display='none';
+  selTipo('entrada');
+  document.getElementById('ovMov').classList.add('open');
+  setTimeout(()=>document.getElementById('mQtd').focus(),300);
+}
+window.closeMovModal=(e)=>{if(e&&e.target!==document.getElementById('ovMov'))return;document.getElementById('ovMov').classList.remove('open')}
+window.selTipo=(t)=>{
+  movTipo=t;
+  document.getElementById('btnE').className='mtt entrada'+(t==='entrada'?' sel':'');
+  document.getElementById('btnS').className='mtt saida'+(t==='saida'?' sel':'');
+  document.getElementById('movBtn').textContent=t==='entrada'?'✅ Confirmar entrada':'✅ Confirmar saída';
+  document.getElementById('movBtn').style.background=t==='saida'?'var(--red)':'var(--green)';
+  document.getElementById('movConfirm').style.display='none';
+}
+window.saveMov=async()=>{
+  const qtd=parseInt(document.getElementById('mQtd').value);
+  if(!qtd||qtd<=0){showToast('Informe a quantidade');return}
+  const m=meds.find(x=>x.id===movId);if(!m)return;
+  if(movTipo==='saida'&&qtd>m.q){showToast('Qtd maior que estoque ('+m.q+')');return}
+  const delta=movTipo==='entrada'?qtd:-qtd;
+  const novaQ=Math.max(0,m.q+delta);
+  // Mostrar confirmação
+  const box=document.getElementById('movConfirm');
+  const txt=document.getElementById('movConfirmTxt');
+  const sub=document.getElementById('movConfirmSub');
+  box.className='confirm-box'+(movTipo==='saida'?' red':'');
+  txt.textContent=movTipo==='entrada'?`✅ Entrada de ${qtd} un. confirmada!`:`✅ Saída de ${qtd} un. confirmada!`;
+  sub.textContent=`Novo estoque: ${novaQ} un.`;
+  box.style.display='block';
+  // Salvar
+  await saveMov(movId,delta,movTipo,qtd);
+  showToast(movTipo==='entrada'?'📥 Entrada registrada!':'📤 Saída registrada!');
+  // Fechar após 1.5s
+  setTimeout(()=>{
+    document.getElementById('ovMov').classList.remove('open');
+    scrollToTop();
+  },1500);
+}
+
+// HISTÓRICO
+window.openHist=(id)=>{
+  const p=myPerms();
+  if(!isAdm&&!p.verHistorico)return;
+  const m=meds.find(x=>x.id===id);
+  document.getElementById('histTitle').textContent='📋 '+m.n;
+  const hist=[...movs].filter(x=>x.mid===id).reverse();
+  const showResp=isAdm||p.verResponsavel;
+  document.getElementById('histContent').innerHTML=hist.length
+    ?'<div class="hist-list">'+hist.map(h=>`<div class="hi ${h.tipo}"><div class="hi-top"><span class="hi-tipo ${h.tipo}">${h.tipo==='entrada'?'📥 ENTRADA':'📤 SAÍDA'}</span><span class="hi-qtd">${h.tipo==='entrada'?'+':'−'}${h.qtd} un.</span></div>${showResp?`<div class="hi-info">👤 ${h.resp}</div>`:''}<div class="hi-info">🕐 ${fmt(h.dt)}</div></div>`).join('')+'</div>'
+    :'<div style="text-align:center;padding:24px;color:var(--g400)">Sem movimentações.</div>';
+  document.getElementById('ovHist').classList.add('open');
+}
+window.closeHistModal=(e)=>{if(e&&e.target!==document.getElementById('ovHist'))return;document.getElementById('ovHist').classList.remove('open')}
+
+// CADASTRO/EDIÇÃO (ADM)
+window.openModal=(r=true)=>{
+  if(!isAdm)return;
+  if(r){editId=null;document.getElementById('medTitle').textContent='Novo medicamento';document.getElementById('fNome').value='';document.getElementById('fQtd').value='';document.getElementById('fVenc').value=''}
+  document.getElementById('medConfirm').style.display='none';
+  document.getElementById('ovMed').classList.add('open');setTimeout(()=>document.getElementById('fNome').focus(),300);
+}
+window.closeModal=(e)=>{if(e&&e.target!==document.getElementById('ovMed'))return;document.getElementById('ovMed').classList.remove('open');editId=null}
+window.editMed=(id)=>{if(!isAdm)return;const m=meds.find(x=>x.id===id);if(!m)return;editId=id;document.getElementById('medTitle').textContent='Editar medicamento';document.getElementById('fNome').value=m.n;document.getElementById('fQtd').value=m.q;document.getElementById('fVenc').value=m.v;openModal(false)}
+window.delMed=async(id)=>{if(!isAdm)return;const m=meds.find(x=>x.id===id);if(!m)return;if(!confirm('Excluir "'+m.n+'"?'))return;meds=meds.filter(x=>x.id!==id);movs=movs.filter(x=>x.mid!==id);await save();showToast('✅ Excluído')}
+window.saveMed=async()=>{
+  const n=document.getElementById('fNome').value.trim().toUpperCase();
+  const q=parseInt(document.getElementById('fQtd').value);
+  const v=document.getElementById('fVenc').value.trim();
+  if(!n){showToast('Informe o nome');return}if(isNaN(q)||q<0){showToast('Qtd inválida');return}
+  if(!/^\d{2}\/\d{2}$/.test(v)){showToast('Validade: MM/AA');return}
+  const isEdit=!!editId;
+  if(isEdit){const m=meds.find(x=>x.id===editId);if(m){m.n=n;m.q=q;m.v=v}}
+  else{meds.push({id:uid(),n,q,v})}
+  // Mostrar confirmação
+  const box=document.getElementById('medConfirm');
+  document.getElementById('medConfirmTxt').textContent=isEdit?'✅ Medicamento atualizado!':'✅ Medicamento cadastrado!';
+  box.style.display='block';
+  await save();
+  setTimeout(()=>{document.getElementById('ovMed').classList.remove('open');editId=null;scrollToTop();},1500);
+}
+window.maskV=(el)=>{let v=el.value.replace(/\D/g,'');if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2,4);el.value=v}
+window.setF=(btn,f)=>{document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filter=f;render()}
+
+// PAINEL ADM
+window.openPanel=()=>{
+  document.getElementById('admPanel').classList.add('open');
+  document.getElementById('ndot').style.display='none';
+  prevMovLen=movs.length;prevLogsLen=logs.length;
+  renderPTab();
+  if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
+}
+window.closePanel=()=>document.getElementById('admPanel').classList.remove('open')
+window.setPTab=function(t){
+  pTab=t;
+  ['mov','cad','users','alert'].forEach(x=>{const el=document.getElementById('pt'+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.className='ptab'+(t===x?' active':'')});
+  renderPTab();
+}
+
+function renderPTab(){
+  const body=document.getElementById('pBody');
+  if(pTab==='mov'){
+    // Movimentações com responsável
+    const all=[...movs].reverse().slice(0,80);
+    body.innerHTML=all.length?all.map(h=>{
+      const med=meds.find(x=>x.id===h.mid);
+      return`<div class="ni ${h.tipo==='entrada'?'mov-e':'mov-s'}"><p>${h.tipo==='entrada'?'📥 Entrada':'📤 Saída'} — ${med?med.n:'(removido)'}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;
+    }).join(''):'<div class="panel-empty">Nenhuma movimentação.</div>';
+
+  } else if(pTab==='cad'){
+    // Histórico de cadastros de usuários
+    const cads=[...logs].filter(l=>l.tipo==='cadastro').reverse();
+    body.innerHTML=cads.length?cads.map(l=>`
+      <div class="ni cad-u">
+        <p>👤 ${l.nome} se cadastrou</p>
+        <div class="ni-time">🕐 ${fmt(l.dt)}</div>
+      </div>`).join(''):'<div class="panel-empty">Nenhum cadastro registrado ainda.</div>';
+
+  } else if(pTab==='users'){
+    // Usuários com permissões
+    body.innerHTML=users.length?users.map(u=>{
+      const p=u.perms||DEFAULT_PERMS;
+      return`<div class="user-card">
+        <div class="user-top">
+          <div><div class="user-name">👤 ${u.name}</div><div class="user-meta">Senha: ${u.pass} • ${fmt(u.dt)}</div></div>
+          <span class="ustatus ${u.blocked?'u-blocked':'u-ok'}">${u.blocked?'Bloqueado':'Ativo'}</span>
+        </div>
+        <div class="user-actions">
+          <button class="ua ${u.blocked?'ua-unblock':'ua-block'}" onclick="toggleBlock('${u.id}')">${u.blocked?'✅ Desbloquear':'🚫 Bloquear'}</button>
+          <button class="ua ua-del" onclick="delUser('${u.id}')">🗑️ Excluir</button>
+        </div>
+        <div class="perms-title">Permissões</div>
+        <div class="perm-row"><span class="perm-label">👁️ Ver estoque</span><label class="toggle"><input type="checkbox" ${p.verEstoque?'checked':''} onchange="togglePerm('${u.id}','verEstoque',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="perm-row"><span class="perm-label">📥 Movimentar</span><label class="toggle"><input type="checkbox" ${p.movimentar?'checked':''} onchange="togglePerm('${u.id}','movimentar',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="perm-row"><span class="perm-label">📋 Ver histórico</span><label class="toggle"><input type="checkbox" ${p.verHistorico?'checked':''} onchange="togglePerm('${u.id}','verHistorico',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="perm-row"><span class="perm-label">👤 Ver responsável</span><label class="toggle"><input type="checkbox" ${p.verResponsavel?'checked':''} onchange="togglePerm('${u.id}','verResponsavel',this.checked)"><span class="toggle-slider"></span></label></div>
+      </div>`;
+    }).join(''):'<div class="panel-empty">Nenhum usuário cadastrado.</div>';
+
+  } else {
+    const exp=meds.filter(m=>status(m)==='expired');
+    const soon=meds.filter(m=>status(m)==='soon');
+    const zero=meds.filter(m=>status(m)==='zero');
+    const its=[
+      ...exp.map(m=>`<div class="ni alerta"><p>⚠️ VENCIDO — ${m.n}</p><span>Validade: ${m.v}</span></div>`),
+      ...soon.map(m=>{const d=parseV(m.v);const days=Math.floor((d-new Date())/86400000);return`<div class="ni alerta-w"><p>🕐 Vence em ${days} dias — ${m.n}</p><span>Validade: ${m.v}</span></div>`}),
+      ...zero.map(m=>`<div class="ni alerta"><p>📭 Sem estoque — ${m.n}</p></div>`)
+    ];
+    body.innerHTML=its.length?its.join(''):'<div class="panel-empty">✅ Nenhum alerta!</div>';
+  }
+}
+
+window.toggleBlock=async(id)=>{
+  const u=users.find(x=>x.id===id);if(!u)return;
+  u.blocked=!u.blocked;await save();
+  showToast(u.blocked?'🚫 '+u.name+' bloqueado':'✅ '+u.name+' desbloqueado');
+  renderPTab();
+}
+window.delUser=async(id)=>{
+  const u=users.find(x=>x.id===id);if(!u)return;
+  if(!confirm('Excluir "'+u.name+'"?'))return;
+  users=users.filter(x=>x.id!==id);await save();showToast('Usuário excluído');renderPTab();
+}
+window.togglePerm=async(uid,perm,val)=>{
+  const u=users.find(x=>x.id===uid);if(!u)return;
+  if(!u.perms)u.perms={...DEFAULT_PERMS};
+  u.perms[perm]=val;
+  await save();showToast('✅ Permissão atualizada');
+}
+
+// SCANNER
+let scanStream=null,barcodeDetector=null,scanInterval=null;
+window.autoDetectBarcode=function(val){
+  const v=val.trim();
+  if(v.length>=8&&v.length<=14&&/^[0-9]+$/.test(v)){
+    clearTimeout(window._barcodeTimer);
+    window._barcodeTimer=setTimeout(()=>{onBarcodeDetected(v);if(document.getElementById('manualBarcode2'))document.getElementById('manualBarcode2').value='';if(document.getElementById('manualBarcode'))document.getElementById('manualBarcode').value='';},150);
+  }
+}
+window.openScanner=async()=>{
+  if(!isAdm)return;
+  document.getElementById('scanOverlay').style.display='flex';
+  document.getElementById('manualBarcode').value='';
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){
+    document.getElementById('scanVideo').style.display='block';
+    document.getElementById('scanPCArea').style.display='none';
+    document.querySelector('.scan-frame').style.display='block';
+    document.querySelector('.scan-hint').style.display='block';
+    document.querySelector('.scan-manual').style.display='block';
+    await startCamera();
+  }else{
+    document.getElementById('scanVideo').style.display='none';
+    document.querySelector('.scan-frame').style.display='none';
+    document.querySelector('.scan-hint').style.display='none';
+    document.querySelector('.scan-manual').style.display='none';
+    document.getElementById('scanPCArea').style.display='flex';
+    setTimeout(()=>document.getElementById('manualBarcode2').focus(),100);
+  }
+}
+window.closeScanner=()=>{stopCamera();document.getElementById('scanOverlay').style.display='none'}
+async function startCamera(){
+  try{
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const v=document.getElementById('scanVideo');v.srcObject=scanStream;
+    if('BarcodeDetector'in window){
+      barcodeDetector=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code']});
+      scanInterval=setInterval(async()=>{if(v.readyState===v.HAVE_ENOUGH_DATA){try{const c=await barcodeDetector.detect(v);if(c.length>0)onBarcodeDetected(c[0].rawValue)}catch(e){}}},300);
+    }
+  }catch(e){showToast('⚠️ Câmera não disponível')}
+}
+function stopCamera(){if(scanInterval){clearInterval(scanInterval);scanInterval=null}if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}}
+window.onBarcodeDetected=function(code){
+  if(!code||code.length<4)return;
+  stopCamera();closeScanner();currentBarcode=code;bcMedId=null;
+  const med=meds.find(m=>m.barcode===code);
+  const res=document.getElementById('barcodeResult');
+  if(med){
+    bcMedId=med.id;
+    res.innerHTML=`<div class="barcode-med"><div style="font-size:24px">💊</div><div><div style="font-size:14px;font-weight:700;color:var(--green-d)">${med.n}</div><div style="font-size:12px;color:var(--g500)">Validade: ${med.v} • Estoque: ${med.q} un.</div></div></div><div style="font-size:12px;color:var(--g400);margin-bottom:12px">Código: ${code}</div>`;
+    document.getElementById('barcodeMedFields').style.display='block';
+    document.getElementById('barcodeNewFields').style.display='none';
+    document.getElementById('bcQtd').value='';
+  }else{
+    res.innerHTML=`<div class="barcode-notfound">⚠️ Código ${code} não encontrado.<br>Cadastre o medicamento abaixo.</div>`;
+    document.getElementById('barcodeMedFields').style.display='none';
+    document.getElementById('barcodeNewFields').style.display='block';
+    document.getElementById('bcNome').value='';document.getElementById('bcQtdNew').value='';document.getElementById('bcVenc').value='';
+  }
+  document.getElementById('ovBarcode').classList.add('open');
+}
+window.saveBarcodeEntry=async()=>{
+  const qtd=parseInt(document.getElementById('bcQtd').value);
+  if(!qtd||qtd<=0){showToast('Informe a quantidade');return}
+  const m=meds.find(x=>x.id===bcMedId);if(!m)return;
+  await saveMov(m.id,qtd,'entrada',qtd);
+  document.getElementById('ovBarcode').classList.remove('open');
+  showToast('📥 '+qtd+' un. de '+m.n+' adicionadas!');
+}
+window.saveBarcodeNew=async()=>{
+  const n=document.getElementById('bcNome').value.trim().toUpperCase();
+  const q=parseInt(document.getElementById('bcQtdNew').value);
+  const v=document.getElementById('bcVenc').value.trim();
+  if(!n){showToast('Informe o nome');return}if(isNaN(q)||q<0){showToast('Qtd inválida');return}
+  if(!/^\d{2}\/\d{2}$/.test(v)){showToast('Validade: MM/AA');return}
+  const nm={id:uid(),n,q,v,barcode:currentBarcode};meds.push(nm);
+  if(q>0)movs.push({id:uid(),mid:nm.id,tipo:'entrada',qtd:q,resp:curUser+' (barcode)',dt:new Date().toISOString()});
+  await save();
+  document.getElementById('ovBarcode').classList.remove('open');
+  showToast('✅ '+n+' cadastrado!');
+}
+window.closeBarcodeModal=(e)=>{if(e&&e.target!==document.getElementById('ovBarcode'))return;document.getElementById('ovBarcode').classList.remove('open')}
+
+function pushNotif(title,body){if('Notification'in window&&Notification.permission==='granted')new Notification(title,{body,tag:'estoque-'+Date.now()})}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'})}
+
+// Reconexão automática quando app volta ao foco
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&curUser){
+    fetchFresh();
+    if(!unsub)initFB();
+  }
+});
+// Heartbeat 30s
+setInterval(()=>{if(curUser&&document.visibilityState==='visible'){fetchFresh()}},30000);
+
+// ===== QR CODE =====
+// Gera QR code usando canvas sem biblioteca externa
+function drawQR(canvas, text){
+  // Usa API do QR Server (imagem) ou gera via canvas
+  const size=200;
+  canvas.width=size;canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  // Usa qrcode.js via CDN carregado dinamicamente
+  if(window.QRCode){
+    canvas.width=0;canvas.height=0; // limpa
+    const wrap=canvas.parentElement;
+    wrap.innerHTML='';
+    new window.QRCode(wrap,{text,width:200,height:200,colorDark:'#111827',colorLight:'#f9fafb',correctLevel:window.QRCode.CorrectLevel.M});
+  } else {
+    // Fallback: imagem do QR Server
+    ctx.fillStyle='#f9fafb';ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#111827';ctx.font='12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('Carregando QR...', size/2, size/2);
+    const img=new Image();
+    img.onload=()=>{ctx.clearRect(0,0,size,size);ctx.drawImage(img,0,0,size,size)};
+    img.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(text);
+  }
+}
+
+function loadQRLib(cb){
+  if(window.QRCode){cb();return}
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload=cb;s.onerror=cb; // fallback mesmo se falhar
+  document.head.appendChild(s);
+}
+
+window.openQR=function(){
+  const url=window.location.href.split('?')[0];
+  document.getElementById('qrUrl').textContent=url;
+  if(isAdm){
+    document.getElementById('qrDesc').textContent='Compartilhe este QR com os usuários';
+  } else {
+    document.getElementById('qrDesc').textContent='Escaneie para abrir em outro dispositivo';
+  }
+  document.getElementById('qrOverlay').classList.add('open');
+  loadQRLib(()=>{
+    const canvas=document.getElementById('qrCanvas');
+    const wrap=canvas.parentElement;
+    wrap.innerHTML='<canvas id="qrCanvas"></canvas>';
+    const c2=document.getElementById('qrCanvas');
+    drawQR(c2,url);
+  });
+}
+
+window.closeQR=function(e){
+  if(e&&e.target!==document.getElementById('qrOverlay'))return;
+  document.getElementById('qrOverlay').classList.remove('open');
+}
+
+window.copyQRUrl=function(){
+  const url=document.getElementById('qrUrl').textContent;
+  navigator.clipboard.writeText(url).then(()=>showToast('✅ Link copiado!')).catch(()=>{
+    // fallback para navegadores sem clipboard API
+    const t=document.createElement('textarea');
+    t.value=url;document.body.appendChild(t);t.select();
+    document.execCommand('copy');document.body.removeChild(t);
+    showToast('✅ Link copiado!');
+  });
+}
+// ===== FIM QR CODE =====
+
+// RESTORE SESSION
+const sess=sessLoad();
+if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp()}
+</script>
+</body>
+</html>
