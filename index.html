@@ -485,12 +485,24 @@ window.setLTab=function(t){
   document.getElementById('lErr').textContent='';
 }
 
-window.doLogin=function(){
+window.doLogin=async function(){
   const pass=document.getElementById('passInput').value;
   const err=document.getElementById('lErr');err.textContent='';
   if(!pass){err.textContent='Digite a senha';return}
   if(pass===ADM_PASS){curUser='ADM';isAdm=true;sessSave({u:'ADM',a:true});startApp();return}
-  const u=users.find(x=>x.pass===pass);
+  let u=users.find(x=>x.pass===pass);
+  // Se não encontrou localmente, busca do Firebase (pode ser cadastro recente)
+  if(!u){
+    try{
+      const snap=await getDoc(ref);
+      if(snap.exists()){
+        const d=snap.data();
+        users=d.users||[];meds=d.meds||[];movs=d.movs||[];logs=d.logs||[];
+        saveCache();
+        u=users.find(x=>x.pass===pass);
+      }
+    }catch(e){}
+  }
   if(u){
     if(u.blocked){err.textContent='❌ Seu acesso foi bloqueado. Fale com o ADM.';return}
     curUser=u.name;isAdm=false;sessSave({u:u.name,a:false});startApp();
@@ -502,7 +514,7 @@ window.doCadastro=async function(){
   const pass=document.getElementById('cPass').value;
   const err=document.getElementById('lErr');err.textContent='';
   if(!name){err.textContent='Informe seu nome';return}
-  if(pass.length<4){err.textContent='Senha deve ter ao menos 4 dígitos';return}
+  if(!pass||pass.length<4){err.textContent='Crie uma senha com pelo menos 4 números';return}
   if(pass===ADM_PASS){err.textContent='Essa senha não pode ser usada';return}
   // Busca dados FRESCOS do Firebase antes de salvar (evita sobrescrever dados)
   try{
@@ -511,7 +523,11 @@ window.doCadastro=async function(){
       const d=snap.data();
       meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
     }
-  }catch(e){err.textContent='Sem conexão com internet';return}
+  }catch(e){
+    // Se não conseguir buscar dados, verifica se tem internet
+    if(!navigator.onLine){err.textContent='Sem conexão com internet';return}
+    // Se tiver internet mas Firebase demorou, usa dados do cache e tenta salvar
+  }
   if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){err.textContent='Nome já cadastrado';return}
   if(users.find(x=>x.pass===pass)){err.textContent='Essa senha já está em uso';return}
   const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
@@ -529,7 +545,12 @@ window.doCadastro=async function(){
       document.getElementById('cadSuccess').style.display='none';
       document.getElementById('fCAD').style.display='block';
       setLTab('ent');
-    },2500);
+      // Foca no campo de senha e mostra mensagem orientando
+      document.getElementById('lErr').style.color='var(--green)';
+      document.getElementById('lErr').textContent='✅ Cadastro realizado! Digite sua senha para entrar.';
+      setTimeout(()=>{ document.getElementById('lErr').style.color='var(--red)'; document.getElementById('lErr').textContent=''; },4000);
+      document.getElementById('passInput').focus();
+    },2000);
   }catch(e){
     users=users.filter(x=>x.id!==novoUser.id);
     err.textContent='Erro ao salvar. Verifique a conexão.';
