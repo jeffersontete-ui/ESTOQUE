@@ -34,11 +34,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .lbtn:active{background:var(--green-d)}
 .lbtn.amber{background:var(--amber)}
 .lerr{font-size:13px;color:var(--red);text-align:center;margin-top:12px;min-height:18px;font-weight:500}
-.login-loading{text-align:center;padding:20px;color:var(--g500);font-size:14px}
-.login-loading .spin{display:inline-block;animation:spin 1s linear infinite;font-size:24px}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .lbtn:disabled{opacity:.5;cursor:not-allowed}
-.ltab:disabled{opacity:.5;cursor:not-allowed}
 .lsuccess{display:none;flex-direction:column;align-items:center;gap:12px;padding:8px 0;text-align:center}
 .lsuccess .sico{font-size:52px}
 .lsuccess h3{font-size:18px;font-weight:700;color:var(--green)}
@@ -235,12 +231,6 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <div class="login-logo">💊</div>
     <h2>Estoque</h2>
     <p class="login-sub">Controle de medicamentos</p>
-    <!-- Loading enquanto Firebase conecta -->
-    <div class="login-loading" id="loginLoading">
-      <div class="spin">🔄</div>
-      <div style="margin-top:8px">Conectando...</div>
-    </div>
-    <div id="loginContent" style="display:none">
     <div class="ltabs">
       <button class="ltab active" id="ltENT" onclick="setLTab('ent')">🔑 Entrar</button>
       <button class="ltab" id="ltCAD" onclick="setLTab('cad')">✏️ Cadastrar</button>
@@ -267,7 +257,6 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <p>Já pode entrar com sua senha.<br>Redirecionando...</p>
     </div>
     <div class="lerr" id="lErr"></div>
-    </div><!-- fim loginContent -->
   </div>
 </div>
 
@@ -598,15 +587,7 @@ function initFB(){
   if(unsub){try{unsub()}catch(e){}unsub=null;}
   // Garantir que Firebase está conectado
   enableNetwork(db).catch(()=>{});
-  // Timeout: se Firebase não conectar em 4s, libera tela mesmo assim
-  setTimeout(()=>{
-    const ll=document.getElementById('loginLoading');
-    const lc=document.getElementById('loginContent');
-    if(ll&&ll.style.display!=='none'){
-      ll.style.display='none';
-      if(lc) lc.style.display='block';
-    }
-  },4000);
+
   let primeiroSnapshot=true; // flag para não notificar na carga inicial
   unsub=onSnapshot(ref,(snap)=>{
     if(snap.exists()){const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[]}
@@ -615,12 +596,7 @@ function initFB(){
     document.getElementById('skeleton').style.display='none';
     document.getElementById('list').style.display='flex';
     setSP('ok','✅ Ao vivo');
-    // Liberar tela de login se ainda estiver conectando
-    if(document.getElementById('loginLoading')){
-      document.getElementById('loginLoading').style.display='none';
-      const lc=document.getElementById('loginContent');
-      if(lc) lc.style.display='block';
-    }
+
 
     if(isAdm){
       if(!primeiroSnapshot){
@@ -1082,10 +1058,6 @@ window.copyQRUrl=function(){
 }
 // ===== FIM QR CODE =====
 
-// Iniciar Firebase IMEDIATAMENTE para liberar tela de login mais rápido
-// (mesmo sem usuário logado, para o onSnapshot liberar loginContent)
-initFB();
-
 // RESTORE SESSION
 const sess=sessLoad();
 if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp()}
@@ -1095,45 +1067,48 @@ if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp()}
   const name=document.getElementById('cName').value.trim();
   const pass=document.getElementById('cPass').value.trim();
   const err=document.getElementById('lErr');
-  err.style.color='var(--red)'; err.textContent='';
 
-  // Validações
-  if(!name||name.length<2){err.textContent='Informe seu nome (mín. 2 letras)';return}
-  if(!pass||pass.length<4){err.textContent='Senha: mínimo 4 números';return}
-  if(pass===ADM_PASS){err.textContent='Essa senha não pode ser usada';return}
-
-  // Verificar duplicatas com dados locais
-  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){err.textContent='❌ Nome já cadastrado';return}
-  if(users.find(x=>x.pass===pass)){err.textContent='❌ Senha já em uso';return}
-
-  // Loading
-  err.style.color='var(--amber)'; err.textContent='⏳ Cadastrando...';
-  document.querySelector('.lbtn.amber').disabled=true;
-
-  // Criar usuário localmente primeiro
-  const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
-  const novoLog={id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()};
-  users.push(novoUser);
-  logs.push(novoLog);
-
-  // Tentar salvar no Firebase com retry
-  let salvou=false;
-  for(let tentativa=1;tentativa<=3;tentativa++){
-    try{
-      await setDoc(ref,{meds,movs,users,logs});
-      saveCache();
-      salvou=true;
-      break;
-    }catch(e){
-      console.warn('Tentativa '+tentativa+' falhou:',e.message);
-      if(tentativa<3) await new Promise(r=>setTimeout(r,1500));
-    }
+  function showErr(msg){
+    err.style.color='var(--red)';
+    err.textContent=msg;
+    document.querySelector('.lbtn.amber').disabled=false;
   }
 
-  document.querySelector('.lbtn.amber').disabled=false;
+  err.textContent='';
 
-  if(salvou){
+  // Validações básicas
+  if(!name||name.length<2)return showErr('Informe seu nome (mín. 2 letras)');
+  if(!pass||pass.length<4)return showErr('Senha: mínimo 4 números');
+  if(pass===ADM_PASS)return showErr('Essa senha não pode ser usada');
+
+  // Loading
+  err.style.color='var(--amber)';
+  err.textContent='⏳ Cadastrando...';
+  document.querySelector('.lbtn.amber').disabled=true;
+
+  try{
+    // Buscar dados FRESCOS do Firebase (importante para evitar duplicatas)
+    const snap=await getDoc(ref);
+    if(snap.exists()){
+      const d=snap.data();
+      meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
+      saveCache();
+    }
+    // Verificar duplicatas com dados frescos
+    if(users.find(x=>x.name.toLowerCase()===name.toLowerCase()))return showErr('❌ Nome já cadastrado');
+    if(users.find(x=>x.pass===pass))return showErr('❌ Senha já em uso');
+
+    // Adicionar usuário
+    const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
+    users.push(novoUser);
+    logs.push({id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()});
+
+    // Salvar no Firebase
+    await setDoc(ref,{meds,movs,users,logs});
+    saveCache();
+
     // SUCESSO
+    document.querySelector('.lbtn.amber').disabled=false;
     document.getElementById('cName').value='';
     document.getElementById('cPass').value='';
     document.getElementById('fCAD').style.display='none';
@@ -1152,12 +1127,13 @@ if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp()}
       document.getElementById('passInput').focus();
       setTimeout(()=>{e2.style.color='var(--red)';e2.textContent='';},6000);
     },1500);
-  } else {
-    // Falhou nas 3 tentativas — remove usuário local
-    users=users.filter(x=>x.id!==novoUser.id);
-    logs=logs.filter(x=>x.id!==novoLog.id);
-    err.style.color='var(--red)';
-    err.textContent='❌ Sem conexão com internet. Verifique e tente novamente.';
+
+  }catch(e){
+    console.error('Erro cadastro:',e);
+    if(e.message&&e.message.includes('offline')){
+      showErr('⚠️ Sem conexão. Aguarde "✅ Ao vivo" aparecer e tente novamente.');
+    } else {
+      showErr('❌ Erro: '+e.message);
+    }
   }
 }
-
