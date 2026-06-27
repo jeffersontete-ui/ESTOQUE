@@ -427,7 +427,7 @@ if(window.location.protocol==='file:'){
   console.warn('App aberto via file:// — Firebase não funciona. Use um servidor HTTP.');
 }
 
-import{getFirestore,doc,onSnapshot,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,onSnapshot,setDoc,getDoc,enableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const FB={apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",authDomain:"estoque-remedios-7b785.firebaseapp.com",projectId:"estoque-remedios-7b785",storageBucket:"estoque-remedios-7b785.firebasestorage.app",messagingSenderId:"1005921072336",appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"};
 const db=getFirestore(initializeApp(FB));
@@ -538,31 +538,41 @@ window.doCadastro=async function(){
   err.style.color='var(--amber)';
   err.textContent='⏳ Salvando...';
   document.querySelector('.lbtn.amber').disabled=true;
+  // Tentar buscar dados frescos do Firebase (não bloqueia se falhar)
   try{
-    // Buscar dados atuais do Firebase
     const snap=await getDoc(ref);
     if(snap.exists()){
       const d=snap.data();
-      meds=d.meds||[];movs=d.movs||[];
-      users=d.users||[];logs=d.logs||[];
+      meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
+      saveCache();
     }
-    // Checar duplicatas com dados frescos
-    if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){
-      err.style.color='var(--red)';err.textContent='❌ Nome já cadastrado';
-      document.querySelector('.lbtn.amber').disabled=false;return
+  }catch(e){
+    console.warn('getDoc offline, usando cache local');
+    // Se não tem dados locais, avisa
+    if(meds.length===0){
+      err.style.color='var(--red)';
+      err.textContent='⚠️ Sem conexão. Aguarde e tente novamente.';
+      document.querySelector('.lbtn.amber').disabled=false;
+      return;
     }
-    if(users.find(x=>x.pass===pass)){
-      err.style.color='var(--red)';err.textContent='❌ Senha já em uso';
-      document.querySelector('.lbtn.amber').disabled=false;return
-    }
-    // Adicionar usuário
-    const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
-    users.push(novoUser);
-    logs.push({id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()});
-    // Salvar
+  }
+  // Checar duplicatas
+  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){
+    err.style.color='var(--red)';err.textContent='❌ Nome já cadastrado';
+    document.querySelector('.lbtn.amber').disabled=false;return;
+  }
+  if(users.find(x=>x.pass===pass)){
+    err.style.color='var(--red)';err.textContent='❌ Senha já em uso';
+    document.querySelector('.lbtn.amber').disabled=false;return;
+  }
+  // Criar e salvar usuário
+  const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
+  users.push(novoUser);
+  logs.push({id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()});
+  try{
     await setDoc(ref,{meds,movs,users,logs});
     saveCache();
-    // SUCESSO — ir direto para tela de login
+    // SUCESSO
     document.querySelector('.lbtn.amber').disabled=false;
     document.getElementById('cName').value='';
     document.getElementById('cPass').value='';
@@ -570,13 +580,11 @@ window.doCadastro=async function(){
     document.getElementById('cadSuccess').style.display='flex';
     setTimeout(()=>{
       document.getElementById('cadSuccess').style.display='none';
-      // Ir para aba Entrar
       loginTab='ent';
       document.getElementById('ltENT').className='ltab active';
       document.getElementById('ltCAD').className='ltab';
       document.getElementById('fENT').style.display='block';
       document.getElementById('fCAD').style.display='none';
-      // Mensagem orientando
       const e2=document.getElementById('lErr');
       e2.style.color='var(--green)';
       e2.textContent='✅ Cadastro realizado! Digite sua senha abaixo.';
@@ -585,13 +593,15 @@ window.doCadastro=async function(){
       setTimeout(()=>{e2.style.color='var(--red)';e2.textContent='';},6000);
     },1500);
   }catch(e){
+    users=users.filter(x=>x.id!==novoUser.id);
+    logs=logs.filter(x=>x.nome!==name||x.tipo!=='cadastro');
     document.querySelector('.lbtn.amber').disabled=false;
     err.style.color='var(--red)';
-    console.error('Cadastro error:',e);
+    console.error('Cadastro save error:',e);
     if(e.code==='permission-denied'){
-      err.textContent='❌ Sem permissão. Contate o ADM.';
-    } else {
-      err.textContent='❌ Erro: '+e.message;
+      err.textContent='❌ Sem permissão. Verifique as regras do Firebase.';
+    }else{
+      err.textContent='❌ Erro ao salvar: '+e.message;
     }
   }
 }
@@ -652,6 +662,8 @@ async function fetchFresh(){
 
 function initFB(){
   if(unsub){try{unsub()}catch(e){}unsub=null;}
+  // Garantir que Firebase está conectado
+  enableNetwork(db).catch(()=>{});
   let primeiroSnapshot=true; // flag para não notificar na carga inicial
   unsub=onSnapshot(ref,(snap)=>{
     if(snap.exists()){const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[]}
