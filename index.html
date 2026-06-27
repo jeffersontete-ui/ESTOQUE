@@ -421,7 +421,20 @@ function startListener(){
   enableNetwork(db).catch(()=>{});
   firstSnap=true;
   unsub=onSnapshot(REF,snap=>{
-    if(snap.exists()){const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];}
+    if(snap.exists()){
+      const d=snap.data();
+      // Só atualiza se tiver dados reais (evita sobrescrever com array vazio)
+      if(d.meds&&d.meds.length>0) meds=d.meds;
+      else if(meds.length===0) meds=DEFAULTS;
+      if(d.movs) movs=d.movs;
+      if(d.users) users=d.users;
+      if(d.logs) logs=d.logs;
+      // Se documento não tem meds, inicializa com DEFAULTS
+      if(!d.meds||d.meds.length===0){
+        setDoc(REF,{meds:DEFAULTS,movs:[],users:users||[],logs:logs||[]});
+        meds=DEFAULTS;movs=[];
+      }
+    }
     else{meds=DEFAULTS;movs=[];users=[];logs=[];setDoc(REF,{meds,movs,users,logs});}
     saveCache();
     document.getElementById("skeleton").style.display="none";
@@ -454,6 +467,8 @@ function startListener(){
 
 async function save(){
   setSP("sync","⏳");
+  // Proteção: nunca salvar com medicamentos vazios
+  if(meds.length===0){setSP("err","❌ Dados vazios");return;}
   try{
     await setDoc(REF,{meds,movs,users,logs});
     saveCache();
@@ -703,17 +718,24 @@ window.quickAddUser=async()=>{
   if(!name)return msg.textContent="Informe o nome";
   if(!pass||pass.length<4)return msg.textContent="Senha: mínimo 4 números";
   if(pass===ADM)return msg.textContent="Essa senha não pode ser usada";
-  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase()))return msg.textContent="Nome já cadastrado";
-  if(users.find(x=>x.pass===pass))return msg.textContent="Senha já em uso";
+  // Buscar dados frescos antes de verificar duplicatas
+  msg.style.color="var(--amber)";msg.textContent="⏳ Salvando...";
+  await fetchFresh();
+  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){msg.style.color="var(--red)";return msg.textContent="Nome já cadastrado";}
+  if(users.find(x=>x.pass===pass)){msg.style.color="var(--red)";return msg.textContent="Senha já em uso";}
   const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
   users.push(novoUser);
   logs.push({id:uid(),tipo:"cadastro",nome:name,dt:new Date().toISOString()});
   try{
-    await save();
+    await setDoc(REF,{meds,movs,users,logs});
+    saveCache();
     document.getElementById("qaName").value="";document.getElementById("qaPass").value="";
     msg.style.color="var(--green)";msg.textContent=`✅ ${name} cadastrado!`;
     setTimeout(()=>{msg.textContent="";renderPTab();},2000);
-  }catch(e){users=users.filter(x=>x.id!==novoUser.id);msg.textContent="❌ Erro: "+e.message;}
+  }catch(e){
+    users=users.filter(x=>x.id!==novoUser.id);
+    msg.style.color="var(--red)";msg.textContent="❌ Erro: "+e.message;
+  }
 };
 
 window.toggleBlock=async id=>{
