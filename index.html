@@ -481,7 +481,8 @@ window.setLTab=function(t){
   document.getElementById('ltCAD').className='ltab'+(t==='cad'?' active':'');
   document.getElementById('fENT').style.display=t==='ent'?'block':'none';
   document.getElementById('fCAD').style.display=t==='cad'?'block':'none';
-  document.getElementById('cadSuccess').style.display='none';
+  // Não esconde cadSuccess aqui — é controlado pelo doCadastro
+  document.getElementById('lErr').style.color='var(--red)';
   document.getElementById('lErr').textContent='';
 }
 
@@ -536,20 +537,30 @@ window.doCadastro=async function(){
   logs.push({id:uid(),tipo:'cadastro',nome:name,dt:new Date().toISOString()});
   try{
     await setDoc(ref,{meds,movs,users,logs});
-    // Mostrar sucesso e voltar para tela de login
+    // SUCESSO: esconde form, mostra mensagem de sucesso
     document.getElementById('fCAD').style.display='none';
     document.getElementById('cadSuccess').style.display='flex';
     document.getElementById('cName').value='';
     document.getElementById('cPass').value='';
+    // Após 2s: vai para tela de login com mensagem
     setTimeout(()=>{
+      // 1. Esconde sucesso
       document.getElementById('cadSuccess').style.display='none';
-      document.getElementById('fCAD').style.display='block';
-      setLTab('ent');
-      // Foca no campo de senha e mostra mensagem orientando
-      document.getElementById('lErr').style.color='var(--green)';
-      document.getElementById('lErr').textContent='✅ Cadastro realizado! Digite sua senha para entrar.';
-      setTimeout(()=>{ document.getElementById('lErr').style.color='var(--red)'; document.getElementById('lErr').textContent=''; },4000);
+      // 2. Muda abas manualmente (sem usar setLTab para não resetar mensagem)
+      loginTab='ent';
+      document.getElementById('ltENT').className='ltab active';
+      document.getElementById('ltCAD').className='ltab';
+      document.getElementById('fENT').style.display='block';
+      document.getElementById('fCAD').style.display='none';
+      // 3. Mensagem verde orientando
+      const errEl=document.getElementById('lErr');
+      errEl.style.color='var(--green)';
+      errEl.textContent='✅ Cadastro realizado! Digite sua senha para entrar.';
+      // 4. Foca no campo de senha
+      document.getElementById('passInput').value='';
       document.getElementById('passInput').focus();
+      // 5. Limpa mensagem após 5s
+      setTimeout(()=>{errEl.style.color='var(--red)';errEl.textContent='';},5000);
     },2000);
   }catch(e){
     users=users.filter(x=>x.id!==novoUser.id);
