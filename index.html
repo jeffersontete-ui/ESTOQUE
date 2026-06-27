@@ -644,37 +644,42 @@ function initFB(){
 async function save(){
   setSP('sync','⏳');
   try{
-    // Merge: busca dados frescos e mescla para não perder dados de outros usuários
-    const snap=await getDoc(ref);
-    if(snap.exists()){
-      const d=snap.data();
-      // Preserva movimentações que outros fizeram enquanto este usuário trabalhava
-      const movsExtras=(d.movs||[]).filter(m=>!movs.find(x=>x.id===m.id));
-      if(movsExtras.length>0) movs=[...movs,...movsExtras].sort((a,b)=>a.dt.localeCompare(b.dt));
-      // Preserva logs extras
-      const logsExtras=(d.logs||[]).filter(l=>!logs.find(x=>x.id===l.id));
-      if(logsExtras.length>0) logs=[...logs,...logsExtras];
-    }
     await setDoc(ref,{meds,movs,users,logs});
-    saveCache();setSP('ok','✅ Ao vivo');
+    saveCache();
+    setSP('ok','✅ Ao vivo');
+  }catch(e){
+    setSP('err','❌ Erro');
+    showToast('❌ Erro ao salvar');
+    console.error('save error:',e);
   }
-  catch(e){setSP('err','❌ Erro');showToast('❌ Erro ao salvar')}
 }
 
 async function saveMov(medId,delta,tipo,qtd){
-  // Busca dados frescos antes de salvar para não sobrescrever movimentações de outros
+  setSP('sync','⏳');
   try{
+    // Pega estado ATUAL do Firebase (fonte da verdade)
     const snap=await getDoc(ref);
     if(snap.exists()){
       const d=snap.data();
-      meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];
+      meds=d.meds||[];
+      movs=d.movs||[];
+      users=d.users||[];
+      logs=d.logs||[];
     }
-  }catch(e){/* usa dados locais se offline */}
-  const idx=meds.findIndex(m=>m.id===medId);
-  if(idx===-1)return;
-  meds[idx].q=Math.max(0,meds[idx].q+delta);
-  movs.push({id:uid(),mid:medId,tipo,qtd,resp:curUser,dt:new Date().toISOString()});
-  await save();
+    // Aplica alteração
+    const idx=meds.findIndex(m=>m.id===medId);
+    if(idx===-1){setSP('err','❌ Erro');return;}
+    meds[idx].q=Math.max(0,meds[idx].q+delta);
+    movs.push({id:uid(),mid:medId,tipo,qtd,resp:curUser,dt:new Date().toISOString()});
+    // Salva tudo de volta
+    await setDoc(ref,{meds,movs,users,logs});
+    saveCache();
+    setSP('ok','✅ Ao vivo');
+  }catch(e){
+    setSP('err','❌ Erro');
+    showToast('❌ Erro ao salvar. Tente novamente.');
+    console.error('saveMov error:',e);
+  }
 }
 
 // HELPERS
@@ -793,6 +798,8 @@ window.saveMed=async()=>{
   const v=document.getElementById('fVenc').value.trim();
   if(!n){showToast('Informe o nome');return}if(isNaN(q)||q<0){showToast('Qtd inválida');return}
   if(!/^\d{2}\/\d{2}$/.test(v)){showToast('Validade: MM/AA');return}
+  // Pega estado atual do Firebase antes de salvar
+  try{const snap=await getDoc(ref);if(snap.exists()){const d=snap.data();meds=d.meds||[];movs=d.movs||[];users=d.users||[];logs=d.logs||[];}}catch(e){}
   const isEdit=!!editId;
   if(isEdit){const m=meds.find(x=>x.id===editId);if(m){m.n=n;m.q=q;m.v=v}}
   else{meds.push({id:uid(),n,q,v})}
