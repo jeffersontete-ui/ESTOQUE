@@ -3,38 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Teste Sync</title>
+<title>Teste Realtime DB</title>
 <style>
 body{font-family:sans-serif;padding:20px;background:#f0f0f0;max-width:500px;margin:0 auto}
-h2{color:#1a9e6b;text-align:center;margin-bottom:20px}
+h2{color:#e65100;text-align:center;margin-bottom:20px}
 .box{background:#fff;border-radius:12px;padding:20px;margin:10px 0}
 .status{padding:14px;border-radius:8px;text-align:center;font-weight:bold;font-size:16px;margin:8px 0}
-.verde{background:#d1fae5;color:#065f46}
-.vermelho{background:#fee2e2;color:#991b1b}
-.amarelo{background:#fef3c7;color:#92400e}
+.verde{background:#d1fae5;color:#065f46}.vermelho{background:#fee2e2;color:#991b1b}.amarelo{background:#fef3c7;color:#92400e}
 button{width:100%;padding:16px;border-radius:8px;border:none;font-size:16px;font-weight:bold;cursor:pointer;margin:4px 0;color:#fff}
 .b1{background:#1a9e6b}.b2{background:#185fa5}.b3{background:#d97706}
-#contador{font-size:56px;font-weight:bold;text-align:center;color:#1a9e6b;padding:16px}
+#contador{font-size:56px;font-weight:bold;text-align:center;color:#e65100;padding:16px}
 .log div{padding:5px 4px;border-bottom:1px solid #eee;font-size:12px;font-family:monospace}
 .ok{color:#065f46}.err{color:#991b1b}.info{color:#1e40af}
 </style>
 </head>
 <body>
-<h2>🔥 Teste Sync Direto</h2>
-
+<h2>⚡ Teste Realtime Database</h2>
 <div class="box">
   <div id="stConn" class="status amarelo">Conectando...</div>
-  <div id="stSave" class="status amarelo">Aguardando...</div>
 </div>
-
 <div class="box">
   <div id="contador">0</div>
-  <p style="text-align:center;color:#666;margin-bottom:12px">Contador compartilhado em tempo real</p>
+  <p style="text-align:center;color:#666;margin-bottom:12px">Contador em tempo real</p>
   <button class="b1" onclick="incrementar()">👆 INCREMENTAR</button>
   <button class="b2" onclick="decrementar()">👇 DECREMENTAR</button>
   <button class="b3" onclick="resetar()">🔄 RESETAR</button>
 </div>
-
 <div class="box">
   <b>Log:</b>
   <div id="log" style="max-height:250px;overflow-y:auto;margin-top:8px"></div>
@@ -42,18 +36,20 @@ button{width:100%;padding:16px;border-radius:8px;border:none;font-size:16px;font
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,doc,onSnapshot,setDoc,enableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getDatabase,ref,onValue,set,get}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const db=getFirestore(initializeApp({
+const app=initializeApp({
   apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
   authDomain:"estoque-remedios-7b785.firebaseapp.com",
   projectId:"estoque-remedios-7b785",
+  databaseURL:"https://estoque-remedios-7b785-default-rtdb.firebaseio.com",
   storageBucket:"estoque-remedios-7b785.firebasestorage.app",
   messagingSenderId:"1005921072336",
   appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
-}));
+});
 
-const REF=doc(db,"teste","contador2");
+const db=getDatabase(app);
+const REF=ref(db,"teste/contador");
 const DEV=navigator.userAgent.includes("Mobile")?"📱 CELULAR":"💻 PC";
 let N=0;
 
@@ -62,43 +58,34 @@ const log=(m,t="info")=>{
   const h=new Date().toLocaleTimeString("pt-BR");
   el.innerHTML=`<div class="${t}">[${h}][${DEV}] ${m}</div>`+el.innerHTML;
 };
-const st=(id,m,c)=>{const el=document.getElementById(id);el.textContent=m;el.className="status "+c;};
+const st=(m,c)=>{const el=document.getElementById("stConn");el.textContent=m;el.className="status "+c;};
 
 // Listener em tempo real
-enableNetwork(db).catch(()=>{});
-onSnapshot(REF,snap=>{
-  if(snap.exists()){
-    const d=snap.data();
+onValue(REF,(snap)=>{
+  const d=snap.val();
+  if(d!==null){
     N=d.n||0;
     document.getElementById("contador").textContent=N;
     const de=d.de||"?";
-    st("stConn","✅ Ao vivo — último: "+de,"verde");
+    st("✅ Ao vivo — último: "+de,"verde");
     if(d.de!==DEV) log("✅ RECEBIDO de "+de+": n="+N,"ok");
     else log("↩️ Eco próprio: n="+N,"info");
   } else {
     N=0;
     document.getElementById("contador").textContent="0";
-    st("stConn","✅ Conectado (vazio)","verde");
+    st("✅ Conectado (vazio)","verde");
+    log("Conectado — banco vazio","info");
   }
-},e=>{
-  st("stConn","❌ Erro listener: "+e.message,"vermelho");
-  log("❌ Listener: "+e.message,"err");
-  setTimeout(()=>location.reload(),5000);
+},(e)=>{
+  st("❌ Erro: "+e.message,"vermelho");
+  log("❌ ERRO: "+e.message,"err");
 });
 
-// Salvar sem await
 const salvar=(novoN)=>{
-  st("stSave","⏳ Salvando n="+novoN+"...","amarelo");
   log("📤 Enviando n="+novoN,"info");
-  setDoc(REF,{n:novoN,de:DEV,ts:Date.now()})
-    .then(()=>{
-      st("stSave","✅ Salvo com sucesso! n="+novoN,"verde");
-      log("✅ setDoc OK: n="+novoN,"ok");
-    })
-    .catch(e=>{
-      st("stSave","❌ Erro setDoc: "+e.message,"vermelho");
-      log("❌ setDoc ERRO: "+e.message,"err");
-    });
+  set(REF,{n:novoN,de:DEV,ts:Date.now()})
+    .then(()=>log("✅ Salvo: n="+novoN,"ok"))
+    .catch(e=>log("❌ Erro: "+e.message,"err"));
 };
 
 window.incrementar=()=>salvar(N+1);
