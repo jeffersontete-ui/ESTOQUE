@@ -594,37 +594,48 @@ window.doCadastroLink=async()=>{
   if(!pass||pass.length<4)return setMsg("Senha: mínimo 4 números");
   if(pass===ADM)return setMsg("Essa senha não pode ser usada");
   const btn=document.getElementById("btnCadLink");
-  btn.disabled=true;setMsg("⏳ Criando conta...","msg-loading");
-  // Tenta buscar dados frescos (com timeout)
-  const ok=await fetchFresh();
-  if(!ok&&meds.length===0){
-    // Sem conexão e sem cache — avisa mas continua
-    setMsg("⚠️ Sem conexão. Tentando mesmo assim...","msg-loading");
-  }
-  if(meds.length===0)meds=DEFAULTS;
-  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){btn.disabled=false;return setMsg("❌ Nome já cadastrado");}
-  if(users.find(x=>x.pass===pass)){btn.disabled=false;return setMsg("❌ Senha já em uso");}
-  const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
-  users.push(novoUser);
-  logs.push({id:uid(),tipo:"cadastro",nome:name,dt:new Date().toISOString()});
-  try{
-    await setDoc(REF,{meds,movs,users,logs});
-    saveCache();
-    btn.disabled=false;setMsg("");
-    document.getElementById("sucCad").style.display="flex";
-    document.getElementById("inpNomeCad").closest(".field").style.display="none";
-    document.getElementById("inpSenhaCad").closest(".field").style.display="none";
-    btn.style.display="none";
-    // Login automático após 1.5s
-    setTimeout(()=>{curUser=name;isAdm=false;sessSave({u:name,a:false});startApp();},1500);
-  }catch(e){
-    users=users.filter(x=>x.id!==novoUser.id);
-    logs=logs.filter(x=>x.nome!==name||x.tipo!=="cadastro");
-    btn.disabled=false;
-    if(e.message.includes('offline')||e.message.includes('timeout')){
-      setMsg("⚠️ Sem internet. Verifique a conexão e tente novamente.");
-    } else {
-      setMsg("❌ Erro: "+e.message);
+  btn.disabled=true;
+
+  // Tentar até 5 vezes com espera crescente
+  for(let t=1;t<=5;t++){
+    setMsg(`⏳ Conectando... (${t}/5)`,"msg-loading");
+    enableNetwork(db).catch(()=>{});
+    await new Promise(r=>setTimeout(r,t===1?500:2000));
+    const ok=await fetchFresh();
+    if(meds.length===0)meds=DEFAULTS;
+
+    // Verificar duplicatas
+    if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){
+      btn.disabled=false;return setMsg("❌ Nome já cadastrado");
+    }
+    if(users.find(x=>x.pass===pass)){
+      btn.disabled=false;return setMsg("❌ Senha já em uso");
+    }
+
+    const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
+    users.push(novoUser);
+    logs.push({id:uid(),tipo:"cadastro",nome:name,dt:new Date().toISOString()});
+
+    try{
+      setMsg("⏳ Salvando...","msg-loading");
+      await setDoc(REF,{meds,movs,users,logs});
+      saveCache();
+      // SUCESSO
+      btn.disabled=false;setMsg("");
+      document.getElementById("sucCad").style.display="flex";
+      document.getElementById("inpNomeCad").closest(".field").style.display="none";
+      document.getElementById("inpSenhaCad").closest(".field").style.display="none";
+      btn.style.display="none";
+      setTimeout(()=>{curUser=name;isAdm=false;sessSave({u:name,a:false});startApp();},1500);
+      return;
+    }catch(e){
+      // Remover usuário adicionado e tentar de novo
+      users=users.filter(x=>x.id!==novoUser.id);
+      logs=logs.filter(x=>x.nome!==name||x.tipo!=="cadastro");
+      if(t===5){
+        btn.disabled=false;
+        setMsg("❌ Sem internet após 5 tentativas. Verifique a conexão.");
+      }
     }
   }
 };
