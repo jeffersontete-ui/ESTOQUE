@@ -232,7 +232,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
   <div class="box">
     <div class="logo">💊</div>
     <h2>Estoque</h2>
-    <p id="loginSubtitle">Controle de medicamentos</p>
+    <p>Controle de medicamentos</p>
     <!-- ENTRAR -->
     <div id="formEnt">
       <div class="field">
@@ -242,29 +242,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       </div>
       <button class="btn btn-green" id="btnEnt" onclick="doLogin()">Entrar</button>
     </div>
-    <!-- CADASTRO VIA LINK -->
-    <div id="formCadLink" style="display:none">
-      <div class="field">
-        <label>Seu nome</label>
-        <input type="text" id="inpNomeCad" placeholder="Ex: Maria" autocomplete="off"
-          onkeydown="if(event.key==='Enter')document.getElementById('inpSenhaCad').focus()">
-      </div>
-      <div class="field">
-        <label>Crie uma senha (números)</label>
-        <input type="password" id="inpSenhaCad" class="center" placeholder="••••"
-          inputmode="numeric" maxlength="8"
-          onkeydown="if(event.key==='Enter')doCadastroLink()">
-      </div>
-      <button class="btn btn-amber" id="btnCadLink" onclick="doCadastroLink()">✅ Criar conta</button>
-      <div class="success-box" id="sucCad">
-        <div class="ico">✅</div>
-        <h3>Conta criada!</h3>
-        <p>Entrando no sistema...</p>
-      </div>
-      <div style="margin-top:12px;text-align:center">
-        <a href="#" onclick="showLoginForm()" style="font-size:13px;color:var(--g500)">Já tenho conta → Entrar</a>
-      </div>
-    </div>
+<!-- cadastro removido -->
     <div class="msg" id="msgLogin"></div>
   </div>
 </div>
@@ -363,12 +341,10 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 <div class="panel" id="admPanel">
   <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-x" onclick="closePanel()">✕</button></div>
   <div class="ptabs">
-    <button class="ptab active" id="ptMov"    onclick="setPTab('mov')">🔔 Movim.</button>
-    <button class="ptab"        id="ptCad"    onclick="setPTab('cad')">👤 Cadastros</button>
-    <button class="ptab"        id="ptUsers"  onclick="setPTab('users')">👥 Usuários</button>
-    <button class="ptab"        id="ptRel"    onclick="setPTab('rel')">📊 Relatório</button>
-    <button class="ptab"        id="ptBuy"    onclick="setPTab('buy')">🛒 Compras</button>
-    <button class="ptab"        id="ptAlert"  onclick="setPTab('alert')">⚠️ Alertas</button>
+    <button class="ptab active" id="ptMov"   onclick="setPTab('mov')">🔔 Movim.</button>
+    <button class="ptab"        id="ptRel"   onclick="setPTab('rel')">📊 Relatório</button>
+    <button class="ptab"        id="ptBuy"   onclick="setPTab('buy')">🛒 Compras</button>
+    <button class="ptab"        id="ptAlert" onclick="setPTab('alert')">⚠️ Alertas</button>
   </div>
   <div class="pbody" id="pBody"></div>
 </div>
@@ -394,8 +370,20 @@ import{getFirestore,doc,onSnapshot,setDoc,getDoc,enableNetwork,disableNetwork}fr
 const FB={apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",authDomain:"estoque-remedios-7b785.firebaseapp.com",projectId:"estoque-remedios-7b785",storageBucket:"estoque-remedios-7b785.firebasestorage.app",messagingSenderId:"1005921072336",appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"};
 const db=getFirestore(initializeApp(FB));
 const REF=doc(db,"estoque","dados");
-const ADM="2407";
+const ADM="2407"; // mantido para compatibilidade
 const CK="est_v7_cache";
+// ===== USUÁRIOS FIXOS =====
+// 3 usuários hardcoded - sem cadastro dinâmico
+const USUARIOS=[
+  {id:"u001",name:"Jefferson",pass:"2407",isAdm:true},
+  {id:"u002",name:"D.Humanae",pass:"1991",isAdm:false,
+   perms:{verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false,somenteEntrada:false,somenteSaida:true}},
+  {id:"u003",name:"ADM",pass:"9876",isAdm:true}
+];
+// Função para encontrar usuário pela senha
+const findUser=pass=>{
+  return USUARIOS.find(u=>u.pass===pass);
+};
 const SK="est_v7_sess";
 const INVITE_KEY="cadastro";
 const DEFAULT_PERMS={verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false};
@@ -430,8 +418,8 @@ let selMonth=null; // para relatório
 // ===== UTILS =====
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const setSP=(s,t)=>{const p=document.getElementById("spPill");if(p){p.className="sp "+s;p.textContent=t}};
-const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify({meds,movs,users,logs,ts:Date.now()}))}catch(e){}};
-const loadCache=()=>{try{const c=localStorage.getItem(CK);if(c){const d=JSON.parse(c);if(d.meds?.length){meds=d.meds;movs=d.movs||[];users=d.users||[];logs=d.logs||[];return true;}}}catch(e){}return false};
+const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify({meds,movs,logs,ts:Date.now()}))}catch(e){}};
+const loadCache=()=>{try{const c=localStorage.getItem(CK);if(c){const d=JSON.parse(c);if(d.meds?.length){meds=d.meds;movs=d.movs||[];logs=d.logs||[];return true;}}}catch(e){}return false};
 const sessSave=d=>{try{sessionStorage.setItem(SK,JSON.stringify(d));localStorage.setItem(SK+"_b",JSON.stringify(d))}catch(e){}};
 const sessLoad=()=>{try{const s=sessionStorage.getItem(SK)||localStorage.getItem(SK+"_b");if(s)return JSON.parse(s)}catch(e){}return null};
 const showToast=msg=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
@@ -439,7 +427,11 @@ const scrollToTop=()=>window.scrollTo({top:0,behavior:"smooth"});
 const setMsg=(txt,cls="msg-err")=>{const m=document.getElementById("msgLogin");if(m){m.textContent=txt;m.className="msg "+cls}};
 const fmt=iso=>{const d=new Date(iso);return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
 const maskV=el=>{let v=el.value.replace(/\D/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
-const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true}:{...DEFAULT_PERMS,...(users.find(x=>x.name===curUser)?.perms||{})};
+const myPerms=()=>{
+  if(isAdm)return{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true,somenteSaida:false};
+  const u=USUARIOS.find(x=>x.name===curUser);
+  return u?.perms||{verEstoque:true,movimentar:false,verHistorico:false,verResponsavel:false,somenteSaida:false};
+};
 
 // ===== OFFLINE =====
 const setOnline=on=>{
@@ -476,22 +468,18 @@ const flushPending=async()=>{
 // ===== FIREBASE =====
 const fetchFresh=async()=>{
   try{
-    // Timeout de 8 segundos para não travar
-    const timeoutPromise=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
-    const snap=await Promise.race([getDoc(REF),timeoutPromise]);
+    const timeoutP=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
+    const snap=await Promise.race([getDoc(REF),timeoutP]);
     if(snap.exists()){
       const d=snap.data();
+      // users são fixos - não busca do Firebase
       if(d.meds?.length>0) meds=d.meds;
       if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
-      if(d.users?.length>0) users=d.users;
       if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
       saveCache();
     }
     return true;
-  }catch(e){
-    console.warn('fetchFresh falhou:',e.message);
-    return false;
-  }
+  }catch(e){return false;}
 };
 
 function startListener(){
@@ -501,15 +489,14 @@ function startListener(){
   unsub=onSnapshot(REF,snap=>{
     if(snap.exists()){
       const d=snap.data();
-      // Só atualiza se tiver dados reais — array vazio [] não substitui dados locais
+      // users são fixos - só atualiza meds, movs, logs
       if(d.meds?.length>0) meds=d.meds;
       if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
-      if(d.users?.length>0) users=d.users;
       if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
     } else {
-      // Documento não existe: inicializa
-      meds=DEFAULTS;movs=[];users=[];logs=[];
-      setDoc(REF,{meds,movs,users,logs});
+      // Documento não existe: inicializa com medicamentos padrão
+      meds=DEFAULTS;movs=[];logs=[];
+      setDoc(REF,{meds,movs,logs});
     }
     saveCache();
     document.getElementById("skeleton").style.display="none";
@@ -574,7 +561,8 @@ const save=async()=>{
     return;
   }
   try{
-    await setDoc(REF,{meds,movs,users,logs});
+    // users são fixos no código - só salva meds, movs, logs
+    await setDoc(REF,{meds,movs,logs});
     saveCache();setSP("ok","✅ Ao vivo");
   }catch(e){setSP("err","❌ Erro");showToast("❌ Erro ao salvar: "+e.message);}
 };
@@ -585,118 +573,29 @@ const getInviteUrl=()=>{
   return base+"?"+INVITE_KEY+"=1";
 };
 
-// Detectar link de convite ao abrir
-const urlParams=new URLSearchParams(window.location.search);
-const isInviteLink=urlParams.get(INVITE_KEY)==="1";
+const isInviteLink=false; // cadastro removido
 
 // ===== LOGIN =====
-window.showLoginForm=()=>{
-  document.getElementById("formCadLink").style.display="none";
-  document.getElementById("formEnt").style.display="block";
-  document.getElementById("loginSubtitle").textContent="Controle de medicamentos";
-  setMsg("");
-};
+// showLoginForm removido
 
-if(isInviteLink){
-  document.getElementById("formEnt").style.display="none";
-  document.getElementById("formCadLink").style.display="block";
-  document.getElementById("loginSubtitle").textContent="Criar sua conta";
-  // Iniciar Firebase e buscar dados em background
-  enableNetwork(db).catch(()=>{});
-  fetchFresh().then(ok=>{
-    if(!ok) console.warn('fetchFresh no invite falhou');
-  });
-}
+// link convite removido
 
 window.doLogin=async()=>{
   const pass=document.getElementById("inpSenha").value.trim();
   setMsg("");
   if(!pass)return setMsg("Digite sua senha");
   const btn=document.getElementById("btnEnt");
-  btn.disabled=true;setMsg("⏳ Verificando...","msg-loading");
-  if(pass===ADM){curUser="ADM";isAdm=true;sessSave({u:"ADM",a:true});btn.disabled=false;startApp();return;}
-  await fetchFresh();
-  const u=users.find(x=>x.pass===pass);
+  btn.disabled=true;
+  const u=findUser(pass);
   btn.disabled=false;
   if(!u){setMsg("❌ Senha incorreta");document.getElementById("inpSenha").value="";return;}
-  if(u.blocked){setMsg("❌ Acesso bloqueado. Fale com o ADM.");return;}
-  curUser=u.name;isAdm=false;sessSave({u:u.name,a:false});startApp();
+  curUser=u.name;
+  isAdm=u.isAdm;
+  sessSave({u:u.name,a:u.isAdm});
+  startApp();
 };
 
-window.doCadastroLink=async()=>{
-  const name=document.getElementById("inpNomeCad").value.trim();
-  const pass=document.getElementById("inpSenhaCad").value.trim();
-  setMsg("");
-  if(!name||name.length<2)return setMsg("Informe seu nome (mín. 2 letras)");
-  if(!pass||pass.length<4)return setMsg("Senha: mínimo 4 números");
-  if(pass===ADM)return setMsg("Essa senha não pode ser usada");
-  const btn=document.getElementById("btnCadLink");
-  btn.disabled=true;
-  setMsg("⏳ Criando conta...","msg-loading");
-
-  // Carregar cache local para verificar duplicatas
-  loadCache();
-  if(meds.length===0) meds=DEFAULTS;
-
-  // Verificar duplicatas com dados locais
-  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){
-    btn.disabled=false;return setMsg("❌ Nome já cadastrado");
-  }
-  if(users.find(x=>x.pass===pass)){
-    btn.disabled=false;return setMsg("❌ Senha já em uso");
-  }
-
-  // Criar usuário LOCALMENTE primeiro (sem esperar Firebase)
-  const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
-  users.push(novoUser);
-  logs.push({id:uid(),tipo:"cadastro",nome:name,dt:new Date().toISOString()});
-  
-  // Salvar no cache local imediatamente
-  saveCache();
-  
-  // Entrar no sistema agora (não espera Firebase)
-  btn.disabled=false;setMsg("");
-  document.getElementById("sucCad").style.display="flex";
-  document.getElementById("inpNomeCad").closest(".field").style.display="none";
-  document.getElementById("inpSenhaCad").closest(".field").style.display="none";
-  btn.style.display="none";
-  
-  // Login automático após 1.5s
-  setTimeout(()=>{
-    curUser=name;isAdm=false;
-    sessSave({u:name,a:false});
-    startApp();
-    // Marcar para sincronizar quando Firebase conectar
-    syncPending=true;
-    // Tentar salvar imediatamente em background
-    enableNetwork(db).catch(()=>{});
-    setTimeout(async()=>{
-      try{
-        const snap=await getDoc(REF);
-        const d=snap.exists()?snap.data():{meds:DEFAULTS,movs:[],users:[],logs:[]};
-        const ub=d.users||[];
-        if(!ub.find(x=>x.name.toLowerCase()===novoUser.name.toLowerCase())){
-          ub.push(novoUser);
-        }
-        const lb=d.logs||[];
-        lb.push({id:uid(),tipo:"cadastro",nome:novoUser.name,dt:new Date().toISOString()});
-        await setDoc(REF,{
-          meds:d.meds?.length>0?d.meds:DEFAULTS,
-          movs:d.movs||[],
-          users:ub,
-          logs:lb
-        });
-        users=ub;logs=lb;
-        if(d.meds?.length>0)meds=d.meds;
-        saveCache();
-        syncPending=false;
-        showToast("✅ Conta sincronizada!");
-      }catch(e){
-        // Será sincronizado pelo onSnapshot quando conectar
-      }
-    },2000);
-  },1500);
-};
+// doCadastroLink removido
 
 window.doLogout=()=>{
   sessionStorage.removeItem(SK);localStorage.removeItem(SK+"_b");
@@ -756,13 +655,21 @@ const ico=s=>({expired:{e:"⚠️",c:"ico-exp"},soon:{e:"🕐",c:"ico-soon"},zer
 
 // ===== MOVIMENTAÇÃO =====
 window.openMovModal=id=>{
-  movId=id;movTipo="ent";
+  movId=id;
   const m=meds.find(x=>x.id===id);
+  const p=myPerms();
   document.getElementById("movNome").textContent="💊 "+m.n;
   document.getElementById("movEst").textContent="Estoque atual: "+m.q+" un.";
   document.getElementById("movQtd").value="";
   document.getElementById("movConfirm").style.display="none";
-  selTipo("ent");
+  // D.Humanae só pode dar saída
+  if(p.somenteSaida){
+    document.getElementById("btnEnt2").style.display="none";
+    selTipo("sai");
+  } else {
+    document.getElementById("btnEnt2").style.display="";
+    selTipo("ent");
+  }
   document.getElementById("ovMov").classList.add("open");
   setTimeout(()=>document.getElementById("movQtd").focus(),300);
 };
@@ -829,41 +736,17 @@ window.delMed=async id=>{if(!isAdm)return;const m=meds.find(x=>x.id===id);if(!m)
 // ===== PAINEL ADM =====
 window.openPanel=()=>{document.getElementById("admPanel").classList.add("open");document.getElementById("ndot").style.display="none";renderPTab();};
 window.closePanel=()=>document.getElementById("admPanel").classList.remove("open");
-window.setPTab=t=>{pTab=t;["mov","cad","users","rel","buy","alert"].forEach(x=>{const el=document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.className="ptab"+(t===x?" active":"");});renderPTab();};
+window.setPTab=t=>{pTab=t;["mov","rel","buy","alert"].forEach(x=>{const el=document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.className="ptab"+(t===x?" active":"");});renderPTab();};
 
 function renderPTab(){
   const body=document.getElementById("pBody");
   if(pTab==="mov"){
     const all=[...movs].reverse().slice(0,100);
     body.innerHTML=all.length?all.map(h=>{const m=meds.find(x=>x.id===h.mid);return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;}).join(""):`<div class="pe">Nenhuma movimentação.</div>`;
-
-  } else if(pTab==="cad"){
-    const cads=[...logs].filter(l=>l.tipo==="cadastro").reverse();
-    const invUrl=getInviteUrl();
-    body.innerHTML=`
-      <div class="quick-add">
-        <h4>➕ Cadastrar usuário manualmente</h4>
-        <input type="text" id="qaName" placeholder="Nome do usuário" autocomplete="off">
-        <input type="password" id="qaPass" placeholder="Senha (números)" inputmode="numeric">
-        <button class="quick-add-btn" onclick="quickAddUser()">Cadastrar</button>
-        <div class="quick-add-msg" id="qaMsg"></div>
-      </div>
-      <div class="invite-box">
-        <h4>🔗 Link de convite (cadastro automático)</h4>
-        <div class="invite-url">${invUrl}</div>
-        <button class="invite-btn" onclick="shareInvite()">📤 Enviar pelo WhatsApp</button>
-      </div>
-      ${cads.length?`<div class="rel-section"><h4>📋 Histórico de cadastros</h4>${cads.map(l=>`<div class="ni cad-u"><p>👤 ${l.nome} se cadastrou</p><div class="ni-time">🕐 ${fmt(l.dt)}</div></div>`).join("")}</div>`:`<div class="pe">Nenhum cadastro registrado.</div>`}`;
-
-  } else if(pTab==="users"){
-    body.innerHTML=users.length?users.map(u=>{const p=u.perms||DEFAULT_PERMS;return`<div class="user-card"><div class="user-top"><div><div class="user-name">👤 ${u.name}</div><div class="user-meta">Senha: ${u.pass} • ${fmt(u.dt)}</div></div><span class="ustatus ${u.blocked?"u-blocked":"u-ok"}">${u.blocked?"Bloqueado":"Ativo"}</span></div><div class="uacts"><button class="ua ${u.blocked?"ua-unblock":"ua-block"}" onclick="toggleBlock('${u.id}')">${u.blocked?"✅ Desbloquear":"🚫 Bloquear"}</button><button class="ua ua-del" onclick="delUser('${u.id}')">🗑️ Excluir</button></div><div class="ptitle">Permissões</div><div class="prow"><span class="prow-label">👁️ Ver estoque</span><label class="toggle"><input type="checkbox" ${p.verEstoque?"checked":""} onchange="togglePerm('${u.id}','verEstoque',this.checked)"><span class="tslider"></span></label></div><div class="prow"><span class="prow-label">📥 Movimentar</span><label class="toggle"><input type="checkbox" ${p.movimentar?"checked":""} onchange="togglePerm('${u.id}','movimentar',this.checked)"><span class="tslider"></span></label></div><div class="prow"><span class="prow-label">📋 Ver histórico</span><label class="toggle"><input type="checkbox" ${p.verHistorico?"checked":""} onchange="togglePerm('${u.id}','verHistorico',this.checked)"><span class="tslider"></span></label></div><div class="prow"><span class="prow-label">👤 Ver responsável</span><label class="toggle"><input type="checkbox" ${p.verResponsavel?"checked":""} onchange="togglePerm('${u.id}','verResponsavel',this.checked)"><span class="tslider"></span></label></div></div>`;}).join(""):`<div class="pe">Nenhum usuário cadastrado.</div>`;
-
   } else if(pTab==="rel"){
     renderRelatorio(body);
-
   } else if(pTab==="buy"){
     renderListaCompras(body);
-
   } else {
     const exp=meds.filter(m=>status(m)==="expired");
     const soon=meds.filter(m=>status(m)==="soon");
@@ -879,150 +762,3 @@ function renderPTab(){
   }
 }
 
-function renderRelatorio(body){
-  // Calcular meses disponíveis
-  const mesesSet=new Set(movs.map(m=>m.dt.slice(0,7)));
-  const meses=[...mesesSet].sort().reverse().slice(0,6);
-  if(!selMonth&&meses.length) selMonth=meses[0];
-
-  // Movimentações do mês selecionado
-  const movsDoMes=movs.filter(m=>selMonth&&m.dt.startsWith(selMonth));
-  
-  // Top medicamentos que mais saíram
-  const saidasMap={};
-  movsDoMes.filter(m=>m.tipo==="sai").forEach(m=>{
-    saidasMap[m.mid]=(saidasMap[m.mid]||0)+m.qtd;
-  });
-  const topSaidas=Object.entries(saidasMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const maxSaida=topSaidas[0]?.[1]||1;
-
-  // Top entradas
-  const entradasMap={};
-  movsDoMes.filter(m=>m.tipo==="ent").forEach(m=>{
-    entradasMap[m.mid]=(entradasMap[m.mid]||0)+m.qtd;
-  });
-  const topEntradas=Object.entries(entradasMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-
-  const fmtMes=m=>{if(!m)return"";const[y,mo]=m.split("-");const nomes=["","Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];return nomes[parseInt(mo)]+"/"+y.slice(2);};
-
-  body.innerHTML=`
-    <div class="month-sel">
-      ${meses.map(m=>`<button class="month-btn${m===selMonth?" active":""}" onclick="selMes('${m}')">${fmtMes(m)}</button>`).join("")}
-      ${!meses.length?`<div class="pe">Sem movimentações registradas.</div>`:""}
-    </div>
-    ${selMonth?`
-    <div class="rel-section">
-      <h4>📤 Mais saídas — ${fmtMes(selMonth)}</h4>
-      ${topSaidas.length?topSaidas.map(([mid,qtd])=>{const m=meds.find(x=>x.id===mid);return`<div class="rel-item"><span class="rel-name">${m?m.n:mid}</span><div class="rel-bar-wrap"><div class="rel-bar" style="width:${(qtd/maxSaida*100).toFixed(0)}%;background:var(--red)"></div></div><span class="rel-val out">${qtd}x</span></div>`;}).join(""):`<div class="pe">Nenhuma saída.</div>`}
-    </div>
-    <div class="rel-section">
-      <h4>📥 Entradas — ${fmtMes(selMonth)}</h4>
-      ${topEntradas.length?topEntradas.map(([mid,qtd])=>{const m=meds.find(x=>x.id===mid);return`<div class="rel-item"><span class="rel-name">${m?m.n:mid}</span><div class="rel-bar-wrap"><div class="rel-bar" style="width:${(qtd/(topEntradas[0][1]||1)*100).toFixed(0)}%"></div></div><span class="rel-val">${qtd}x</span></div>`;}).join(""):`<div class="pe">Nenhuma entrada.</div>`}
-    </div>
-    <div class="rel-section">
-      <h4>📊 Resumo — ${fmtMes(selMonth)}</h4>
-      <div class="rel-item"><span class="rel-name">Total de movimentações</span><span class="rel-val">${movsDoMes.length}</span></div>
-      <div class="rel-item"><span class="rel-name">Total de saídas (un.)</span><span class="rel-val out">${movsDoMes.filter(m=>m.tipo==="sai").reduce((a,m)=>a+m.qtd,0)}</span></div>
-      <div class="rel-item"><span class="rel-name">Total de entradas (un.)</span><span class="rel-val">${movsDoMes.filter(m=>m.tipo==="ent").reduce((a,m)=>a+m.qtd,0)}</span></div>
-      <div class="rel-item"><span class="rel-name">Usuários ativos</span><span class="rel-val">${new Set(movsDoMes.map(m=>m.resp)).size}</span></div>
-    </div>`:""}`;
-}
-
-window.selMes=m=>{selMonth=m;renderPTab();};
-
-function renderListaCompras(body){
-  const zerados=meds.filter(m=>m.q<=0);
-  const baixo=meds.filter(m=>m.min&&m.q>0&&m.q<=m.min);
-  const lista=[...zerados,...baixo];
-  
-  const texto=lista.map(m=>`• ${m.n}: ${m.q===0?"ZERADO":`${m.q} un. (mín: ${m.min})`}`).join("\n");
-
-  body.innerHTML=`
-    <div class="rel-section">
-      <h4>🛒 Lista de compras</h4>
-      ${lista.length?`
-        ${lista.map(m=>`<div class="buy-item"><span class="buy-name">💊 ${m.n}</span><span class="buy-qty">${m.q===0?"📭 ZERADO":`⬇️ ${m.q}un (mín:${m.min||0})`}</span></div>`).join("")}
-        <button onclick="copyLista()" style="width:100%;margin-top:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer">📋 Copiar lista</button>
-        <button onclick="shareLista()" style="width:100%;margin-top:6px;padding:10px;border-radius:8px;border:none;background:#25D366;color:#fff;font-size:14px;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>
-      `:`<div class="pe">✅ Estoque em dia!</div>`}
-    </div>`;
-  
-  window._listaTexto=`🛒 *Lista de Compras — Estoque*\n\n${texto}\n\n_Gerado em ${new Date().toLocaleDateString("pt-BR")}_`;
-}
-
-window.copyLista=()=>{
-  navigator.clipboard.writeText(window._listaTexto||"").then(()=>showToast("✅ Lista copiada!")).catch(()=>showToast("Copie manualmente"));
-};
-window.shareLista=()=>{
-  const txt=encodeURIComponent(window._listaTexto||"");
-  window.open("https://wa.me/?text="+txt,"_blank");
-};
-
-// ===== LINK CONVITE =====
-window.shareInvite=()=>{
-  const url=getInviteUrl();
-  const txt=encodeURIComponent(`💊 *Controle de Estoque*\n\nClique no link para criar sua conta e acessar o sistema:\n${url}`);
-  window.open("https://wa.me/?text="+txt,"_blank");
-};
-
-// ===== USUÁRIOS =====
-window.quickAddUser=async()=>{
-  const name=document.getElementById("qaName").value.trim();
-  const pass=document.getElementById("qaPass").value.trim();
-  const msg=document.getElementById("qaMsg");
-  msg.style.color="var(--red)";
-  if(!name)return msg.textContent="Informe o nome";
-  if(!pass||pass.length<4)return msg.textContent="Senha: mínimo 4 números";
-  if(pass===ADM)return msg.textContent="Essa senha não pode ser usada";
-  msg.style.color="var(--amber)";msg.textContent="⏳ Salvando...";
-  if(meds.length===0)await fetchFresh();
-  if(meds.length===0)meds=DEFAULTS;
-  if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){msg.style.color="var(--red)";return msg.textContent="Nome já cadastrado";}
-  if(users.find(x=>x.pass===pass)){msg.style.color="var(--red)";return msg.textContent="Senha já em uso";}
-  const novoUser={id:uid(),name,pass,blocked:false,perms:{...DEFAULT_PERMS},dt:new Date().toISOString()};
-  users.push(novoUser);
-  logs.push({id:uid(),tipo:"cadastro",nome:name,dt:new Date().toISOString()});
-  try{
-    await setDoc(REF,{meds,movs,users,logs});
-    saveCache();
-    document.getElementById("qaName").value="";document.getElementById("qaPass").value="";
-    msg.style.color="var(--green)";msg.textContent=`✅ ${name} cadastrado!`;
-    setTimeout(()=>{msg.textContent="";renderPTab();},2000);
-  }catch(e){users=users.filter(x=>x.id!==novoUser.id);msg.style.color="var(--red)";msg.textContent="❌ Erro: "+e.message;}
-};
-window.toggleBlock=async id=>{const u=users.find(x=>x.id===id);if(!u)return;u.blocked=!u.blocked;await save();showToast(u.blocked?`🚫 ${u.name} bloqueado`:`✅ ${u.name} desbloqueado`);renderPTab();};
-window.delUser=async id=>{const u=users.find(x=>x.id===id);if(!u)return;if(!confirm(`Excluir "${u.name}"?`))return;users=users.filter(x=>x.id!==id);await save();showToast("Usuário excluído");renderPTab();};
-window.togglePerm=async(uid,perm,val)=>{const u=users.find(x=>x.id===uid);if(!u)return;if(!u.perms)u.perms={...DEFAULT_PERMS};u.perms[perm]=val;await save();showToast("✅ Permissão atualizada");};
-
-// ===== QR =====
-window.openQR=()=>{
-  const url=window.location.href.split("?")[0];
-  document.getElementById("qrUrl").textContent=url;
-  document.getElementById("qrOv").classList.add("open");
-  const wrap=document.getElementById("qrWrap");wrap.innerHTML="";
-  const img=new Image();img.style.cssText="width:180px;height:180px;border-radius:8px";
-  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
-  wrap.appendChild(img);
-};
-window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
-window.qrOvClick=e=>{if(e.target===document.getElementById("qrOv"))closeQR();};
-window.copyLink=()=>{const url=document.getElementById("qrUrl").textContent;navigator.clipboard.writeText(url).then(()=>showToast("✅ Link copiado!")).catch(()=>showToast("Copie manualmente"));};
-
-// ===== OUTROS =====
-window.setF=(btn,f)=>{document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filter=f;render();};
-window.ovClick=(e,id)=>{if(e.target===document.getElementById(id))closeOv(id);};
-window.closeOv=id=>document.getElementById(id).classList.remove("open");
-const pushNotif=(title,body)=>{if("Notification"in window&&Notification.permission==="granted")new Notification(title,{body,icon:"icon-192.png",tag:"est-"+Date.now()});};
-
-// ===== VISIBILIDADE =====
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser){if(!unsub)startListener();else if(pendingSaves.length)flushPending();}});
-setInterval(()=>{if(curUser&&document.visibilityState==="visible"&&document.getElementById("spPill")?.className.includes("err"))startListener();},30000);
-
-// ===== INIT =====
-if(!isInviteLink){
-  const sess=sessLoad();
-  if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp();}
-}
-</script>
-</body>
-</html>
