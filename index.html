@@ -242,7 +242,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       </div>
       <button class="btn btn-green" id="btnEnt" onclick="doLogin()">Entrar</button>
     </div>
-<!-- cadastro removido -->
+
     <div class="msg" id="msgLogin"></div>
   </div>
 </div>
@@ -385,8 +385,6 @@ const findUser=pass=>{
   return USUARIOS.find(u=>u.pass===pass);
 };
 const SK="est_v7_sess";
-const INVITE_KEY="cadastro";
-const DEFAULT_PERMS={verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false};
 
 const DEFAULTS=[
   {id:"a01",n:"ALPRAZOLAM 0,25MG",q:1,v:"12/27",min:2},{id:"a02",n:"ARIPIPRAZOL 15MG",q:1,v:"08/26",min:1},
@@ -567,18 +565,9 @@ const save=async()=>{
   }catch(e){setSP("err","❌ Erro");showToast("❌ Erro ao salvar: "+e.message);}
 };
 
-// ===== LINK DE CONVITE =====
-const getInviteUrl=()=>{
-  const base=window.location.href.split("?")[0];
-  return base+"?"+INVITE_KEY+"=1";
-};
-
-const isInviteLink=false; // cadastro removido
 
 // ===== LOGIN =====
-// showLoginForm removido
 
-// link convite removido
 
 window.doLogin=async()=>{
   const pass=document.getElementById("inpSenha").value.trim();
@@ -595,7 +584,6 @@ window.doLogin=async()=>{
   startApp();
 };
 
-// doCadastroLink removido
 
 window.doLogout=()=>{
   sessionStorage.removeItem(SK);localStorage.removeItem(SK+"_b");
@@ -761,4 +749,20 @@ function renderPTab(){
     body.innerHTML=its.length?its.join(""):`<div class="pe">✅ Nenhum alerta!</div>`;
   }
 }
+
+// ===== VISIBILIDADE =====
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&curUser){
+    if(!unsub)startListener();
+    else if(pendingSaves.length)flushPending();
+  }
+});
+setInterval(()=>{
+  if(curUser&&document.visibilityState==="visible"&&document.getElementById("spPill")?.className.includes("err"))
+    startListener();
+},30000);
+
+// ===== RESTORE SESSION =====
+const _sess=sessLoad();
+if(_sess){curUser=_sess.u;isAdm=_sess.a;loadCache();startApp();}
 
