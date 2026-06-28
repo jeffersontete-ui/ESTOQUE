@@ -348,7 +348,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,doc,onSnapshot,setDoc,getDoc,enableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,onSnapshot,setDoc,enableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ===== CONFIG FIREBASE =====
 const FB={
@@ -408,20 +408,7 @@ const maskV=el=>{let v=el.value.replace(/\D/g,"");if(v.length>=2)v=v.slice(0,2)+
 const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true}:{...DEFAULT_PERMS,...(users.find(x=>x.name===curUser)?.perms||{})};
 
 // ===== FIREBASE =====
-async function fetchFresh(){
-  try{
-    const snap=await getDoc(REF);
-    if(snap.exists()){
-      const d=snap.data();
-      if(d.meds&&d.meds.length>0) meds=d.meds;
-      if(d.movs) movs=d.movs;
-      if(d.users) users=d.users;
-      if(d.logs) logs=d.logs;
-      saveCache();
-    }
-    return true;
-  }catch(e){return false;}
-}
+
 
 function startListener(){
   if(unsub){try{unsub()}catch(e){}unsub=null;}
