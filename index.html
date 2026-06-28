@@ -466,7 +466,13 @@ function startListener(){
     render();
   },e=>{
     setSP("err","❌ Offline");
-    setTimeout(()=>{if(curUser)startListener();},5000);
+    // Tentar reconectar com backoff
+    setTimeout(()=>{
+      if(curUser){
+        enableNetwork(db).catch(()=>{});
+        setTimeout(()=>{if(curUser)startListener();},2000);
+      }
+    },3000);
   });
 }
 
@@ -781,7 +787,13 @@ window.closeOv=id=>document.getElementById(id).classList.remove("open");
 const pushNotif=(title,body)=>{if("Notification"in window&&Notification.permission==="granted")new Notification(title,{body,tag:"est-"+Date.now()});};
 
 // ===== VISIBILIDADE =====
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser){fetchFresh().then(()=>render());if(!unsub)startListener();}});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&curUser){
+    enableNetwork(db).catch(()=>{});
+    if(!unsub){startListener();}
+    else{fetchFresh().then(()=>{render();setSP("ok","✅ Ao vivo");});}
+  }
+});
 setInterval(()=>{if(curUser&&document.visibilityState==="visible"&&document.getElementById("spPill").className.includes("err"))startListener();},30000);
 
 // ===== INICIALIZAÇÃO =====
