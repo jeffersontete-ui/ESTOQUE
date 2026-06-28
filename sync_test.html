@@ -5,135 +5,107 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Teste Sync</title>
 <style>
-body{font-family:sans-serif;padding:20px;background:#f0f0f0}
-.box{background:#fff;border-radius:12px;padding:20px;margin:10px 0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-h2{color:#1a9e6b;text-align:center}
-.status{padding:12px;border-radius:8px;text-align:center;font-weight:bold;font-size:16px;margin:10px 0}
+body{font-family:sans-serif;padding:20px;background:#f0f0f0;max-width:500px;margin:0 auto}
+h2{color:#1a9e6b;text-align:center;margin-bottom:20px}
+.box{background:#fff;border-radius:12px;padding:20px;margin:10px 0}
+.status{padding:14px;border-radius:8px;text-align:center;font-weight:bold;font-size:16px;margin:8px 0}
 .verde{background:#d1fae5;color:#065f46}
 .vermelho{background:#fee2e2;color:#991b1b}
 .amarelo{background:#fef3c7;color:#92400e}
-button{width:100%;padding:16px;border-radius:8px;border:none;font-size:16px;font-weight:bold;cursor:pointer;margin:6px 0}
-.btn-verde{background:#1a9e6b;color:#fff}
-.btn-laranja{background:#d97706;color:#fff}
-.log div{padding:6px 4px;border-bottom:1px solid #eee;font-size:13px}
+button{width:100%;padding:16px;border-radius:8px;border:none;font-size:16px;font-weight:bold;cursor:pointer;margin:4px 0;color:#fff}
+.b1{background:#1a9e6b}.b2{background:#185fa5}.b3{background:#d97706}
+#contador{font-size:56px;font-weight:bold;text-align:center;color:#1a9e6b;padding:16px}
+.log div{padding:5px 4px;border-bottom:1px solid #eee;font-size:12px;font-family:monospace}
 .ok{color:#065f46}.err{color:#991b1b}.info{color:#1e40af}
 </style>
 </head>
 <body>
-<h2>🔥 Diagnóstico de Conexão</h2>
+<h2>🔥 Teste Sync Direto</h2>
 
 <div class="box">
-  <div id="st1" class="status amarelo">1. Verificando internet...</div>
-  <div id="st2" class="status amarelo">2. Verificando Firebase...</div>
-  <div id="st3" class="status amarelo">3. Verificando sincronização...</div>
+  <div id="stConn" class="status amarelo">Conectando...</div>
+  <div id="stSave" class="status amarelo">Aguardando...</div>
 </div>
 
 <div class="box">
-  <button class="btn-verde" onclick="testarTudo()">🔄 TESTAR CONEXÃO</button>
-  <button class="btn-laranja" onclick="forcarConexao()">⚡ FORÇAR RECONEXÃO</button>
+  <div id="contador">0</div>
+  <p style="text-align:center;color:#666;margin-bottom:12px">Contador compartilhado em tempo real</p>
+  <button class="b1" onclick="incrementar()">👆 INCREMENTAR</button>
+  <button class="b2" onclick="decrementar()">👇 DECREMENTAR</button>
+  <button class="b3" onclick="resetar()">🔄 RESETAR</button>
 </div>
 
 <div class="box">
-  <b>Log detalhado:</b>
-  <div id="log"></div>
+  <b>Log:</b>
+  <div id="log" style="max-height:250px;overflow-y:auto;margin-top:8px"></div>
 </div>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,doc,onSnapshot,setDoc,getDoc,enableNetwork,disableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,onSnapshot,setDoc,enableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const app=initializeApp({
+const db=getFirestore(initializeApp({
   apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
   authDomain:"estoque-remedios-7b785.firebaseapp.com",
   projectId:"estoque-remedios-7b785",
   storageBucket:"estoque-remedios-7b785.firebasestorage.app",
   messagingSenderId:"1005921072336",
   appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+}));
+
+const REF=doc(db,"teste","contador2");
+const DEV=navigator.userAgent.includes("Mobile")?"📱 CELULAR":"💻 PC";
+let N=0;
+
+const log=(m,t="info")=>{
+  const el=document.getElementById("log");
+  const h=new Date().toLocaleTimeString("pt-BR");
+  el.innerHTML=`<div class="${t}">[${h}][${DEV}] ${m}</div>`+el.innerHTML;
+};
+const st=(id,m,c)=>{const el=document.getElementById(id);el.textContent=m;el.className="status "+c;};
+
+// Listener em tempo real
+enableNetwork(db).catch(()=>{});
+onSnapshot(REF,snap=>{
+  if(snap.exists()){
+    const d=snap.data();
+    N=d.n||0;
+    document.getElementById("contador").textContent=N;
+    const de=d.de||"?";
+    st("stConn","✅ Ao vivo — último: "+de,"verde");
+    if(d.de!==DEV) log("✅ RECEBIDO de "+de+": n="+N,"ok");
+    else log("↩️ Eco próprio: n="+N,"info");
+  } else {
+    N=0;
+    document.getElementById("contador").textContent="0";
+    st("stConn","✅ Conectado (vazio)","verde");
+  }
+},e=>{
+  st("stConn","❌ Erro listener: "+e.message,"vermelho");
+  log("❌ Listener: "+e.message,"err");
+  setTimeout(()=>location.reload(),5000);
 });
 
-const db=getFirestore(app);
-const REF=doc(db,"teste","conn");
-
-const log=(msg,tipo="info")=>{
-  const el=document.getElementById("log");
-  const t=new Date().toLocaleTimeString("pt-BR");
-  el.innerHTML=`<div class="${tipo}">[${t}] ${msg}</div>`+el.innerHTML;
-};
-const setSt=(id,msg,cor)=>{
-  const el=document.getElementById(id);
-  el.textContent=msg;el.className="status "+cor;
-};
-
-// Teste 1: Internet
-const testar1=()=>{
-  const ok=navigator.onLine;
-  setSt("st1",ok?"✅ Internet: CONECTADO":"❌ Internet: SEM CONEXÃO",ok?"verde":"vermelho");
-  log("Internet: "+(ok?"online":"offline"),ok?"ok":"err");
-  return ok;
+// Salvar sem await
+const salvar=(novoN)=>{
+  st("stSave","⏳ Salvando n="+novoN+"...","amarelo");
+  log("📤 Enviando n="+novoN,"info");
+  setDoc(REF,{n:novoN,de:DEV,ts:Date.now()})
+    .then(()=>{
+      st("stSave","✅ Salvo com sucesso! n="+novoN,"verde");
+      log("✅ setDoc OK: n="+novoN,"ok");
+    })
+    .catch(e=>{
+      st("stSave","❌ Erro setDoc: "+e.message,"vermelho");
+      log("❌ setDoc ERRO: "+e.message,"err");
+    });
 };
 
-// Teste 2: Firebase getDoc
-const testar2=async()=>{
-  setSt("st2","⏳ Testando Firebase...","amarelo");
-  try{
-    const timeout=new Promise((_,r)=>setTimeout(()=>r(new Error("timeout 10s")),10000));
-    const snap=await Promise.race([getDoc(REF),timeout]);
-    setSt("st2","✅ Firebase: CONECTADO","verde");
-    log("Firebase getDoc: OK","ok");
-    return true;
-  }catch(e){
-    setSt("st2","❌ Firebase: "+e.message,"vermelho");
-    log("Firebase getDoc ERRO: "+e.message,"err");
-    return false;
-  }
-};
+window.incrementar=()=>salvar(N+1);
+window.decrementar=()=>salvar(Math.max(0,N-1));
+window.resetar=()=>salvar(0);
 
-// Teste 3: onSnapshot
-const testar3=()=>{
-  setSt("st3","⏳ Testando tempo real...","amarelo");
-  const unsub=onSnapshot(REF,snap=>{
-    setSt("st3","✅ onSnapshot: FUNCIONANDO","verde");
-    log("onSnapshot recebeu dados","ok");
-    unsub();
-  },e=>{
-    setSt("st3","❌ onSnapshot: "+e.message,"vermelho");
-    log("onSnapshot ERRO: "+e.message,"err");
-  });
-  setTimeout(()=>{
-    if(document.getElementById("st3").className.includes("amarelo")){
-      setSt("st3","⚠️ onSnapshot: sem resposta em 8s","vermelho");
-      log("onSnapshot: timeout","err");
-    }
-  },8000);
-};
-
-window.testarTudo=async()=>{
-  log("=== INICIANDO TESTES ===","info");
-  const internet=testar1();
-  if(internet){
-    await testar2();
-    testar3();
-  }
-};
-
-window.forcarConexao=async()=>{
-  log("Forçando reconexão...","info");
-  setSt("st2","⏳ Forçando...","amarelo");
-  try{
-    await disableNetwork(db);
-    log("Rede desabilitada","info");
-    await new Promise(r=>setTimeout(r,1000));
-    await enableNetwork(db);
-    log("Rede reabilitada","info");
-    await testarTudo();
-  }catch(e){
-    log("Erro ao forçar: "+e.message,"err");
-  }
-};
-
-// Rodar automaticamente
-log("Dispositivo: "+(navigator.userAgent.includes("Mobile")?"📱 CELULAR":"💻 PC"),"info");
-testarTudo();
+log("Iniciando "+DEV,"info");
 </script>
 </body>
 </html>
