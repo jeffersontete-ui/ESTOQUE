@@ -432,14 +432,6 @@ const myPerms=()=>{
 };
 
 // ===== OFFLINE =====
-const setOnline=on=>{
-  isOnline=on;
-  document.getElementById("offlineBar").className="offline-bar"+(on?"":" show");
-  if(on){setSP("ok","✅ Ao vivo");enableNetwork(db).catch(()=>{});if(curUser)flushPending();}
-  else setSP("off","📶 Offline");
-};
-window.addEventListener("online",()=>setOnline(true));
-window.addEventListener("offline",()=>setOnline(false));
 
 // Fila de salvamentos pendentes (offline)
 const flushPending=async()=>{
@@ -462,6 +454,16 @@ const flushPending=async()=>{
     showToast("✅ Dados sincronizados!");
   }catch(e){}
 };
+
+const setOnline=on=>{
+  isOnline=on;
+  document.getElementById("offlineBar").className="offline-bar"+(on?"":" show");
+  if(on){setSP("ok","✅ Ao vivo");enableNetwork(db).catch(()=>{});if(curUser)flushPending();}
+  else setSP("off","📶 Offline");
+};
+window.addEventListener("online",()=>setOnline(true));
+window.addEventListener("offline",()=>setOnline(false));
+
 
 // ===== FIREBASE =====
 const fetchFresh=async()=>{
