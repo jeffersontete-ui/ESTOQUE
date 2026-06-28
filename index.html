@@ -2,50 +2,62 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Estoque">
 <meta name="theme-color" content="#1a9e6b">
-<meta name="description" content="Controle de estoque de medicamentos">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="preconnect" href="https://www.gstatic.com">
-<link rel="preconnect" href="https://firestore.googleapis.com">
 <title>Estoque</title>
 <style>
 :root{--green:#1a9e6b;--green-d:#0f6e4a;--green-bg:#e6f7f1;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--blue:#185fa5;--blue-bg:#e6f1fb;--purple:#7c3aed;--purple-bg:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--r:14px;--rs:8px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--g900)}
-.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f6e4a,#1a9e6b);z-index:100}
+
+/* ===== TELAS ===== */
+.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f6e4a,#1a9e6b)}
 .screen.active{display:flex}
 .box{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,.2)}
 .logo{text-align:center;font-size:52px;margin-bottom:10px}
 .box h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:4px}
 .box p{text-align:center;font-size:13px;color:var(--g500);margin-bottom:20px}
+.tabs{display:grid;gap:6px;margin-bottom:20px;background:var(--g100);border-radius:12px;padding:4px}
+.tabs-2{grid-template-columns:1fr 1fr}
+.tabs-3{grid-template-columns:1fr 1fr 1fr}
+.tab{height:36px;border-radius:8px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer}
+.tab.active{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:11px;font-weight:700;color:var(--g700);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .field input{width:100%;height:48px;border-radius:var(--rs);border:1.5px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
 .field input:focus{border-color:var(--green);background:#fff}
 .field input.center{text-align:center;letter-spacing:4px;font-size:20px}
 .btn{width:100%;height:50px;border-radius:var(--r);border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
-.btn-green{background:var(--green);color:#fff}.btn-green:active{background:var(--green-d)}
-.btn-amber{background:var(--amber);color:#fff}.btn-amber:active{opacity:.85}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:active{background:var(--green-d)}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-amber:active{opacity:.85}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .msg{font-size:13px;text-align:center;margin-top:10px;min-height:18px;font-weight:500}
-.msg-err{color:var(--red)}.msg-ok{color:var(--green)}.msg-loading{color:var(--amber)}
+.msg-err{color:var(--red)}
+.msg-ok{color:var(--green)}
+.msg-loading{color:var(--amber)}
 .success-box{display:none;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:8px 0}
 .success-box .ico{font-size:48px}
 .success-box h3{font-size:18px;font-weight:700;color:var(--green)}
+.success-box p{font-size:13px;color:var(--g500)}
+.divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:var(--g400);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--g200)}
 
-/* HEADER */
+/* ===== HEADER ===== */
 .hdr{background:#fff;padding:14px 20px 12px;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .hdr-title{display:flex;align-items:center;gap:8px}
 .hdr-title h1{font-size:19px;font-weight:700}
-.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.badge-adm{background:var(--purple);color:#fff}.badge-user{background:var(--blue);color:#fff}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.badge-adm{background:var(--purple);color:#fff}
+.badge-user{background:var(--blue);color:#fff}
 .sp{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--g100);color:var(--g500)}
-.sp.ok{background:var(--green-bg);color:var(--green)}.sp.err{background:var(--red-bg);color:var(--red)}.sp.sync{background:var(--amber-bg);color:var(--amber)}.sp.off{background:var(--amber-bg);color:var(--amber)}
+.sp.ok{background:var(--green-bg);color:var(--green)}
+.sp.err{background:var(--red-bg);color:var(--red)}
+.sp.sync{background:var(--amber-bg);color:var(--amber)}
 .hdr-r{display:flex;align-items:center;gap:6px}
 .icon-btn{width:38px;height:38px;border-radius:50%;background:var(--g100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;position:relative;flex-shrink:0}
 .ndot{width:10px;height:10px;background:var(--red);border-radius:50%;position:absolute;top:4px;right:4px;border:2px solid #fff;display:none}
@@ -54,7 +66,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .search-wrap input::placeholder{color:var(--g400)}
 .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px}
 
-/* STATS */
+/* ===== APP ===== */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
 .stat{background:#fff;border-radius:var(--rs);padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)}
 .stat-n{font-size:21px;font-weight:700;line-height:1}
@@ -64,8 +76,6 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .filters::-webkit-scrollbar{display:none}
 .fb{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1px solid var(--g200);background:#fff;font-size:13px;color:var(--g500);cursor:pointer;font-weight:500;white-space:nowrap}
 .fb.active{background:var(--green);color:#fff;border-color:var(--green)}
-
-/* CARDS */
 .list{padding:0 16px 100px;display:flex;flex-direction:column;gap:8px}
 .card{background:#fff;border-radius:var(--r);padding:13px 14px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid transparent;display:flex;align-items:flex-start;gap:11px}
 .card.ok{border-left-color:var(--green)}.card.soon{border-left-color:var(--amber)}.card.expired,.card.zero{border-left-color:var(--red)}
@@ -80,16 +90,16 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .clm{font-size:11px;color:var(--g400);margin-top:4px}
 .cacts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
 .abtn{padding:6px 11px;border-radius:6px;font-size:12px;border:1px solid var(--g200);background:var(--g50);color:var(--g500);cursor:pointer;font-weight:500}
-.abtn:active{background:var(--g200)}.adel{color:var(--red);border-color:#fecaca;background:var(--red-bg)}.ahist{color:var(--purple);border-color:#ddd6fe;background:var(--purple-bg)}
+.abtn:active{background:var(--g200)}
+.adel{color:var(--red);border-color:#fecaca;background:var(--red-bg)}
+.ahist{color:var(--purple);border-color:#ddd6fe;background:var(--purple-bg)}
 .cright{flex-shrink:0;padding-top:2px}
 .qty{font-size:15px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--g100);color:var(--g700)}
 .qty.qz{background:var(--red-bg);color:var(--red)}
 .fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--green);border:none;box-shadow:0 4px 16px rgba(26,158,107,.45);color:#fff;font-size:28px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center}
 .fab:active{transform:scale(.94)}
-.offline-bar{background:var(--amber);color:#fff;text-align:center;padding:6px;font-size:12px;font-weight:700;display:none}
-.offline-bar.show{display:block}
 
-/* MODAIS */
+/* ===== MODAIS ===== */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end}
 .ov.open{display:flex}
 .modal{background:#fff;border-radius:22px 22px 0 0;padding:22px 20px 40px;width:100%;max-height:92vh;overflow-y:auto}
@@ -97,11 +107,13 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .modal h2{font-size:18px;font-weight:700;margin-bottom:18px}
 .mfield{margin-bottom:14px}
 .mfield label{display:block;font-size:13px;font-weight:600;color:var(--g700);margin-bottom:5px}
-.mfield input,.mfield select{width:100%;height:48px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
+.mfield input{width:100%;height:48px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
 .mfield input:focus{border-color:var(--green);background:#fff}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .mbtn{width:100%;height:52px;border-radius:var(--r);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-top:6px}
-.mbtn-green{background:var(--green)}.mbtn-green:active{background:var(--green-d)}.mbtn-red{background:var(--red)}.mbtn-amber{background:var(--amber)}
+.mbtn-green{background:var(--green)}.mbtn-green:active{background:var(--green-d)}
+.mbtn-red{background:var(--red)}
+.mbtn-amber{background:var(--amber)}
 .mcan{width:100%;height:44px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:16px;cursor:pointer;margin-top:10px}
 .back-home{width:100%;height:44px;border-radius:var(--r);background:var(--g100);border:none;color:var(--g700);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
 .mt2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
@@ -112,19 +124,18 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .confirm-ok{background:var(--green-bg);border:1px solid #6ee7b7;border-radius:var(--rs);padding:12px;text-align:center;margin-bottom:14px;display:none}
 .confirm-ok p{font-size:14px;font-weight:700;color:var(--green-d)}
 .confirm-ok span{font-size:12px;color:var(--g500)}
-.confirm-red{background:var(--red-bg);border:1px solid #fca5a5}
-.confirm-red p{color:var(--red)}
 
-/* HISTÓRICO */
+/* ===== HISTÓRICO ===== */
 .hist-list{display:flex;flex-direction:column;gap:8px}
 .hi{background:var(--g50);border-radius:var(--rs);padding:11px 14px}
 .hi.ent{border-left:3px solid var(--green)}.hi.sai{border-left:3px solid var(--red)}
 .hi-top{display:flex;align-items:center;justify-content:space-between}
-.hi-tipo{font-size:13px;font-weight:700}.hi-tipo.ent{color:var(--green)}.hi-tipo.sai{color:var(--red)}
+.hi-tipo{font-size:13px;font-weight:700}
+.hi-tipo.ent{color:var(--green)}.hi-tipo.sai{color:var(--red)}
 .hi-qtd{font-size:15px;font-weight:700}
 .hi-info{font-size:12px;color:var(--g500);margin-top:3px}
 
-/* PAINEL */
+/* ===== PAINEL ADM ===== */
 .panel{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100%;background:#fff;z-index:400;transition:right .25s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
 .panel.open{right:0}
 .ph{padding:18px 20px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between}
@@ -132,11 +143,9 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .ph-x{background:none;border:none;font-size:24px;color:var(--g400);cursor:pointer}
 .ptabs{display:flex;border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none}
 .ptabs::-webkit-scrollbar{display:none}
-.ptab{flex-shrink:0;height:44px;border:none;background:none;font-size:11px;font-weight:700;color:var(--g400);cursor:pointer;border-bottom:2px solid transparent;padding:0 8px;white-space:nowrap}
+.ptab{flex-shrink:0;height:44px;border:none;background:none;font-size:11px;font-weight:700;color:var(--g400);cursor:pointer;border-bottom:2px solid transparent;padding:0 10px;white-space:nowrap}
 .ptab.active{color:var(--green);border-bottom-color:var(--green)}
 .pbody{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
-
-/* NOTIF ITEMS */
 .ni{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
 .ni.mov-e{border-left:3px solid var(--green)}.ni.mov-s{border-left:3px solid var(--red)}
 .ni.cad-u{border-left:3px solid var(--purple);background:var(--purple-bg)}
@@ -145,7 +154,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .ni-time{font-size:10px;color:var(--g400);margin-top:4px}
 .pe{text-align:center;color:var(--g400);padding:32px 20px;font-size:14px}
 
-/* USUÁRIOS */
+/* ===== USUÁRIOS ===== */
 .user-card{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
 .user-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .user-name{font-size:15px;font-weight:700}
@@ -154,7 +163,9 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .u-ok{background:var(--green-bg);color:var(--green)}.u-blocked{background:var(--red-bg);color:var(--red)}
 .uacts{display:flex;gap:6px;margin-bottom:10px}
 .ua{flex:1;height:34px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer}
-.ua-block{background:var(--amber-bg);color:var(--amber)}.ua-unblock{background:var(--green-bg);color:var(--green)}.ua-del{background:var(--red-bg);color:var(--red)}
+.ua-block{background:var(--amber-bg);color:var(--amber)}
+.ua-unblock{background:var(--green-bg);color:var(--green)}
+.ua-del{background:var(--red-bg);color:var(--red)}
 .ptitle{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--g200)}
 .prow:last-child{border-bottom:none}
@@ -166,7 +177,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .tslider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
 .toggle input:checked+.tslider:before{transform:translateX(18px)}
 
-/* QUICK ADD */
+/* ===== CADASTRO RÁPIDO ADM ===== */
 .quick-add{background:var(--green-bg);border-radius:var(--rs);padding:14px}
 .quick-add h4{font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px}
 .quick-add input{width:100%;height:42px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 12px;font-size:15px;background:#fff;outline:none;margin-bottom:8px}
@@ -174,32 +185,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .quick-add-btn{width:100%;height:42px;border-radius:var(--rs);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
 .quick-add-msg{font-size:12px;text-align:center;margin-top:6px;min-height:16px}
 
-/* LINK CADASTRO */
-.invite-box{background:var(--blue-bg);border-radius:var(--rs);padding:14px;margin-top:10px}
-.invite-box h4{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:8px}
-.invite-url{font-size:11px;color:var(--g700);background:#fff;padding:8px 10px;border-radius:6px;word-break:break-all;margin-bottom:8px;border:1px solid var(--g200)}
-.invite-btn{width:100%;height:38px;border-radius:6px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer}
-
-/* RELATÓRIOS */
-.rel-section{background:#fff;border-radius:var(--rs);padding:14px;border:1px solid var(--g200)}
-.rel-section h4{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--g700)}
-.rel-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--g100)}
-.rel-item:last-child{border-bottom:none}
-.rel-name{font-size:13px;color:var(--g700);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px}
-.rel-bar-wrap{width:80px;background:var(--g100);border-radius:4px;height:8px;margin-right:8px;flex-shrink:0}
-.rel-bar{height:8px;border-radius:4px;background:var(--green)}
-.rel-val{font-size:12px;font-weight:700;color:var(--green);flex-shrink:0}
-.rel-val.out{color:var(--red)}
-.month-sel{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
-.month-btn{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--g200);background:#fff;font-size:12px;cursor:pointer;white-space:nowrap}
-.month-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
-
-/* LISTA DE COMPRAS */
-.buy-item{display:flex;align-items:center;justify-content:space-between;background:var(--red-bg);border-radius:6px;padding:10px 12px}
-.buy-name{font-size:13px;font-weight:600;color:var(--red)}
-.buy-qty{font-size:12px;color:var(--g500)}
-
-/* QR */
+/* ===== QR ===== */
 .qr-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
 .qr-ov.open{display:flex}
 .qr-box{background:#fff;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center}
@@ -210,7 +196,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .qr-copy{width:100%;height:44px;border-radius:var(--r);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
 .qr-close-btn{width:100%;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:15px;cursor:pointer}
 
-/* TOAST + SKELETON */
+/* ===== TOAST + SKELETON ===== */
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .sk{padding:0 16px;display:flex;flex-direction:column;gap:8px}
@@ -224,15 +210,14 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 </head>
 <body>
 
-<!-- OFFLINE BAR -->
-<div class="offline-bar" id="offlineBar">📶 Sem internet — trabalhando offline. Dados serão sincronizados quando voltar.</div>
-
-<!-- LOGIN -->
+<!-- ===== TELA LOGIN ===== -->
 <div class="screen active" id="scrLogin">
   <div class="box">
     <div class="logo">💊</div>
     <h2>Estoque</h2>
     <p>Controle de medicamentos</p>
+    <p style="font-size:12px;color:var(--g400);margin-top:-12px">Para cadastrar usuários, contate o ADM</p>
+    <!-- Abas removidas - apenas login direto -->
     <!-- ENTRAR -->
     <div id="formEnt">
       <div class="field">
@@ -242,12 +227,13 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       </div>
       <button class="btn btn-green" id="btnEnt" onclick="doLogin()">Entrar</button>
     </div>
-
+    <!-- Formulário cadastro removido - apenas ADM cadastra pelo painel -->
+    <div id="formCad" style="display:none"></div>
     <div class="msg" id="msgLogin"></div>
   </div>
 </div>
 
-<!-- APP -->
+<!-- ===== APP PRINCIPAL ===== -->
 <div id="appMain" style="display:none">
   <div class="hdr">
     <div class="hdr-top">
@@ -259,7 +245,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <div class="hdr-r">
         <span class="sp sync" id="spPill">⏳</span>
         <button class="icon-btn" id="btnPanel" onclick="openPanel()" style="display:none">🔔<span class="ndot" id="ndot"></span></button>
-        <button class="icon-btn" onclick="openQR()">🔗</button>
+        <button class="icon-btn" onclick="openQR()" id="btnQR">🔗</button>
         <button class="icon-btn" onclick="doLogout()">🚪</button>
       </div>
     </div>
@@ -299,7 +285,6 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
       <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
     </div>
-    <div class="mfield"><label>Qtd mínima (alerta)</label><input type="number" id="mMin" placeholder="0" min="0" inputmode="numeric"></div>
     <div class="confirm-ok" id="medConfirm"><p id="medConfirmTxt"></p></div>
     <button class="mbtn mbtn-green" onclick="saveMed()">Salvar</button>
     <button class="mcan" onclick="closeOv('ovMed')">Cancelar</button>
@@ -318,9 +303,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <button class="mtt sai" id="btnSai" onclick="selTipo('sai')">📤 Saída</button>
     </div>
     <div class="mfield"><label>Quantidade</label><input type="number" id="movQtd" placeholder="0" min="1" inputmode="numeric"></div>
-    <div class="confirm-ok" id="movConfirm">
-      <p id="movConfirmTxt"></p><span id="movConfirmSub"></span>
-    </div>
+    <div class="confirm-ok" id="movConfirm"><p id="movConfirmTxt"></p><span id="movConfirmSub"></span></div>
     <button class="mbtn mbtn-green" id="btnConfMov" onclick="saveMov()">✅ Confirmar entrada</button>
     <button class="mcan" onclick="closeOv('ovMov')">Cancelar</button>
     <button class="back-home" onclick="closeOv('ovMov');scrollToTop()">🏠 Tela inicial</button>
@@ -341,19 +324,19 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 <div class="panel" id="admPanel">
   <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-x" onclick="closePanel()">✕</button></div>
   <div class="ptabs">
-    <button class="ptab active" id="ptMov"   onclick="setPTab('mov')">🔔 Movim.</button>
-    <button class="ptab"        id="ptRel"   onclick="setPTab('rel')">📊 Relatório</button>
-    <button class="ptab"        id="ptBuy"   onclick="setPTab('buy')">🛒 Compras</button>
-    <button class="ptab"        id="ptAlert" onclick="setPTab('alert')">⚠️ Alertas</button>
+    <button class="ptab active" id="ptMov" onclick="setPTab('mov')">🔔 Movim.</button>
+    <button class="ptab" id="ptCad" onclick="setPTab('cad')">👤 Cadastros</button>
+    <button class="ptab" id="ptUsers" onclick="setPTab('users')">👥 Usuários</button>
+    <button class="ptab" id="ptAlert" onclick="setPTab('alert')">⚠️ Alertas</button>
   </div>
   <div class="pbody" id="pBody"></div>
 </div>
 
-<!-- QR -->
+<!-- QR CODE -->
 <div class="qr-ov" id="qrOv" onclick="qrOvClick(event)">
   <div class="qr-box">
     <h3>📱 Link do Sistema</h3>
-    <p>Escaneie ou compartilhe</p>
+    <p>Escaneie ou compartilhe para acessar</p>
     <div class="qr-wrap" id="qrWrap"></div>
     <div class="qr-url" id="qrUrl"></div>
     <button class="qr-copy" onclick="copyLink()">📋 Copiar link</button>
@@ -367,120 +350,78 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getFirestore,doc,onSnapshot,setDoc,getDoc,enableNetwork}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const FB={apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",authDomain:"estoque-remedios-7b785.firebaseapp.com",projectId:"estoque-remedios-7b785",storageBucket:"estoque-remedios-7b785.firebasestorage.app",messagingSenderId:"1005921072336",appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"};
+// ===== CONFIG FIREBASE =====
+const FB={
+  apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
+  authDomain:"estoque-remedios-7b785.firebaseapp.com",
+  projectId:"estoque-remedios-7b785",
+  storageBucket:"estoque-remedios-7b785.firebasestorage.app",
+  messagingSenderId:"1005921072336",
+  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+};
 const db=getFirestore(initializeApp(FB));
 const REF=doc(db,"estoque","dados");
-const ADM="2407"; // mantido para compatibilidade
-const CK="est_v7_cache";
-// ===== USUÁRIOS FIXOS =====
-// 3 usuários hardcoded - sem cadastro dinâmico
-const USUARIOS=[
-  {id:"u001",name:"Jefferson",pass:"2407",isAdm:true},
-  {id:"u002",name:"D.Humanae",pass:"1991",isAdm:false,
-   perms:{verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false,somenteEntrada:false,somenteSaida:true}},
-  {id:"u003",name:"ADM",pass:"9876",isAdm:true}
-];
-// Função para encontrar usuário pela senha
-const findUser=pass=>{
-  return USUARIOS.find(u=>u.pass===pass);
-};
-const SK="est_v7_sess";
+const ADM="2407";
+const CK="est_cache_v1";
+const SK="est_sess_v1";
+const DEFAULT_PERMS={verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false};
+
+// ===== ESTADO =====
+let meds=[],movs=[],users=[],logs=[];
+let curUser=null,isAdm=false;
+let filter="all",editId=null,movId=null,movTipo="ent";
+let pTab="mov",unsub=null;
+let firstSnap=true,prevMovLen=0,prevLogsLen=0;
 
 const DEFAULTS=[
-  {id:"a01",n:"ALPRAZOLAM 0,25MG",q:1,v:"12/27",min:2},{id:"a02",n:"ARIPIPRAZOL 15MG",q:1,v:"08/26",min:1},
-  {id:"a03",n:"BACTRIM 400MG",q:3,v:"07/27",min:2},{id:"a04",n:"BETOGENTA CREME",q:4,v:"05/27",min:1},
-  {id:"a05",n:"BETOGENTA POMADA",q:2,v:"09/27",min:1},{id:"a06",n:"CEFALEXINA SUSP",q:2,v:"08/27",min:1},
-  {id:"a07",n:"CEFATRIOXONA 500MG",q:1,v:"06/27",min:1},{id:"a08",n:"CLINDAMICINA",q:2,v:"12/26",min:1},
-  {id:"a09",n:"CLONZEPAM GOTAS",q:1,v:"11/27",min:1},{id:"a10",n:"CODEINA 30MG",q:1,v:"12/27",min:1},
-  {id:"a11",n:"DESVE 100MG 28COMP",q:1,v:"10/27",min:1},{id:"a12",n:"DEXAVISON",q:2,v:"09/27",min:1},
-  {id:"a13",n:"ESCITOPRAM GOTAS",q:1,v:"07/27",min:1},{id:"a14",n:"ESCITOPRAM GOTAS",q:2,v:"11/27",min:1},
-  {id:"a15",n:"FENITOINA 100MG",q:4,v:"10/27",min:2},{id:"a16",n:"LISDEXA 70MG",q:1,v:"06/27",min:1},
-  {id:"a17",n:"METILFENIDATO 10MG",q:8,v:"02/28",min:3},{id:"a18",n:"METRONIDAZOL 250",q:4,v:"09/27",min:2},
-  {id:"a19",n:"NEULEPTIL 10MG",q:1,v:"05/28",min:1},{id:"a20",n:"NITROFUROTEINA",q:2,v:"04/28",min:1},
-  {id:"a21",n:"OTOSYLASE",q:1,v:"07/27",min:1},{id:"a22",n:"PARACE+CODEINA 24C",q:1,v:"03/28",min:1},
-  {id:"a23",n:"PREGABALINA 150MG",q:1,v:"07/27",min:1},{id:"a24",n:"PREGABALINA 50MG",q:2,v:"10/28",min:1},
-  {id:"a25",n:"QUADRIDERM CREME",q:6,v:"12/27",min:2},{id:"a26",n:"SERTRALINA 50MG",q:1,v:"08/27",min:1},
-  {id:"a27",n:"SIBUTRAMINA 10MG",q:2,v:"12/27",min:1},{id:"a28",n:"SIBUTRAMINA 15MG",q:3,v:"03/28",min:1},
-  {id:"a29",n:"TRAM+CODEINA",q:2,v:"03/28",min:1},{id:"a30",n:"VELIJA 30MG 30 COMP",q:1,v:"05/27",min:1},
-  {id:"a31",n:"VENLAFAXINA 75MG",q:3,v:"12/27",min:2},{id:"a32",n:"VENLAXIN 150MG",q:1,v:"10/26",min:1},
-  {id:"a33",n:"VENLAXIN 75MG",q:1,v:"05/27",min:1},{id:"a34",n:"ZOLPIDEM 10MG 30 C",q:9,v:"06/27",min:3}
+  {id:"a01",n:"ALPRAZOLAM 0,25MG",q:1,v:"12/27"},{id:"a02",n:"ARIPIPRAZOL 15MG",q:1,v:"08/26"},
+  {id:"a03",n:"BACTRIM 400MG",q:3,v:"07/27"},{id:"a04",n:"BETOGENTA CREME",q:4,v:"05/27"},
+  {id:"a05",n:"BETOGENTA POMADA",q:2,v:"09/27"},{id:"a06",n:"CEFALEXINA SUSP",q:2,v:"08/27"},
+  {id:"a07",n:"CEFATRIOXONA 500MG",q:1,v:"06/27"},{id:"a08",n:"CLINDAMICINA",q:2,v:"12/26"},
+  {id:"a09",n:"CLONZEPAM GOTAS",q:1,v:"11/27"},{id:"a10",n:"CODEINA 30MG",q:1,v:"12/27"},
+  {id:"a11",n:"DESVE 100MG 28COMP",q:1,v:"10/27"},{id:"a12",n:"DEXAVISON",q:2,v:"09/27"},
+  {id:"a13",n:"ESCITOPRAM GOTAS",q:1,v:"07/27"},{id:"a14",n:"ESCITOPRAM GOTAS",q:2,v:"11/27"},
+  {id:"a15",n:"FENITOINA 100MG",q:4,v:"10/27"},{id:"a16",n:"LISDEXA 70MG",q:1,v:"06/27"},
+  {id:"a17",n:"METILFENIDATO 10MG",q:8,v:"02/28"},{id:"a18",n:"METRONIDAZOL 250",q:4,v:"09/27"},
+  {id:"a19",n:"NEULEPTIL 10MG",q:1,v:"05/28"},{id:"a20",n:"NITROFUROTEINA",q:2,v:"04/28"},
+  {id:"a21",n:"OTOSYLASE",q:1,v:"07/27"},{id:"a22",n:"PARACE+CODEINA 24C",q:1,v:"03/28"},
+  {id:"a23",n:"PREGABALINA 150MG",q:1,v:"07/27"},{id:"a24",n:"PREGABALINA 50MG",q:2,v:"10/28"},
+  {id:"a25",n:"QUADRIDERM CREME",q:6,v:"12/27"},{id:"a26",n:"SERTRALINA 50MG",q:1,v:"08/27"},
+  {id:"a27",n:"SIBUTRAMINA 10MG",q:2,v:"12/27"},{id:"a28",n:"SIBUTRAMINA 15MG",q:3,v:"03/28"},
+  {id:"a29",n:"TRAM+CODEINA",q:2,v:"03/28"},{id:"a30",n:"VELIJA 30MG 30 COMP",q:1,v:"05/27"},
+  {id:"a31",n:"VENLAFAXINA 75MG",q:3,v:"12/27"},{id:"a32",n:"VENLAXIN 150MG",q:1,v:"10/26"},
+  {id:"a33",n:"VENLAXIN 75MG",q:1,v:"05/27"},{id:"a34",n:"ZOLPIDEM 10MG 30 C",q:9,v:"06/27"}
 ];
 
-let meds=[],movs=[],users=[],logs=[];
-let syncPending=false; // usuário cadastrado offline aguardando sync
-let curUser=null,isAdm=false,filter="all",editId=null,movId=null,movTipo="ent";
-let pTab="mov",unsub=null,firstSnap=true,prevMovLen=0,prevLogsLen=0;
-let isOnline=navigator.onLine,pendingSaves=[];
-let selMonth=null; // para relatório
-
-// ===== UTILS =====
+// ===== UTILITÁRIOS =====
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const setSP=(s,t)=>{const p=document.getElementById("spPill");if(p){p.className="sp "+s;p.textContent=t}};
-const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify({meds,movs,logs,ts:Date.now()}))}catch(e){}};
-const loadCache=()=>{try{const c=localStorage.getItem(CK);if(c){const d=JSON.parse(c);if(d.meds?.length){meds=d.meds;movs=d.movs||[];logs=d.logs||[];return true;}}}catch(e){}return false};
+const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify({meds,movs,users,logs}))}catch(e){}};
+const loadCache=()=>{try{const c=localStorage.getItem(CK);if(c){const d=JSON.parse(c);if(d.meds?.length){meds=d.meds;movs=d.movs||[];users=d.users||[];logs=d.logs||[];return true}}}catch(e){}return false};
 const sessSave=d=>{try{sessionStorage.setItem(SK,JSON.stringify(d));localStorage.setItem(SK+"_b",JSON.stringify(d))}catch(e){}};
 const sessLoad=()=>{try{const s=sessionStorage.getItem(SK)||localStorage.getItem(SK+"_b");if(s)return JSON.parse(s)}catch(e){}return null};
 const showToast=msg=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
 const scrollToTop=()=>window.scrollTo({top:0,behavior:"smooth"});
-const setMsg=(txt,cls="msg-err")=>{const m=document.getElementById("msgLogin");if(m){m.textContent=txt;m.className="msg "+cls}};
+const setMsg=(txt,cls="msg-err")=>{const m=document.getElementById("msgLogin");m.textContent=txt;m.className="msg "+cls};
 const fmt=iso=>{const d=new Date(iso);return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
 const maskV=el=>{let v=el.value.replace(/\D/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
-const myPerms=()=>{
-  if(isAdm)return{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true,somenteSaida:false};
-  const u=USUARIOS.find(x=>x.name===curUser);
-  return u?.perms||{verEstoque:true,movimentar:false,verHistorico:false,verResponsavel:false,somenteSaida:false};
-};
+const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true}:{...DEFAULT_PERMS,...(users.find(x=>x.name===curUser)?.perms||{})};
 
-// ===== OFFLINE =====
-
-// Fila de salvamentos pendentes (offline)
-const flushPending=async()=>{
-  if(!pendingSaves.length)return;
+// ===== FIREBASE =====
+async function fetchFresh(){
   try{
-    // Merge com Firebase antes de salvar
     const snap=await getDoc(REF);
     if(snap.exists()){
       const d=snap.data();
-      if(d.meds?.length>0) meds=d.meds;
-      if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
-      if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
-      // Mesclar users preservando ambos
-      const fb=d.users||[];
-      users.forEach(u=>{if(!fb.find(x=>x.id===u.id))fb.push(u);});
-      users=fb;
-    }
-    await setDoc(REF,{meds,movs,users,logs});
-    saveCache();pendingSaves=[];
-    showToast("✅ Dados sincronizados!");
-  }catch(e){}
-};
-
-const setOnline=on=>{
-  isOnline=on;
-  document.getElementById("offlineBar").className="offline-bar"+(on?"":" show");
-  if(on){setSP("ok","✅ Ao vivo");enableNetwork(db).catch(()=>{});if(curUser)flushPending();}
-  else setSP("off","📶 Offline");
-};
-window.addEventListener("online",()=>setOnline(true));
-window.addEventListener("offline",()=>setOnline(false));
-
-
-// ===== FIREBASE =====
-const fetchFresh=async()=>{
-  try{
-    const timeoutP=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
-    const snap=await Promise.race([getDoc(REF),timeoutP]);
-    if(snap.exists()){
-      const d=snap.data();
-      // users são fixos - não busca do Firebase
-      if(d.meds?.length>0) meds=d.meds;
-      if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
-      if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
+      if(d.meds&&d.meds.length>0) meds=d.meds;
+      if(d.movs) movs=d.movs;
+      if(d.users) users=d.users;
+      if(d.logs) logs=d.logs;
       saveCache();
     }
     return true;
   }catch(e){return false;}
-};
+}
 
 function startListener(){
   if(unsub){try{unsub()}catch(e){}unsub=null;}
@@ -489,43 +430,21 @@ function startListener(){
   unsub=onSnapshot(REF,snap=>{
     if(snap.exists()){
       const d=snap.data();
-      // users são fixos - só atualiza meds, movs, logs
-      if(d.meds?.length>0) meds=d.meds;
-      if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
-      if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
-    } else {
+      // Só atualiza arrays se tiverem dados (nunca sobrescreve com vazio)
+      if(d.meds&&d.meds.length>0) meds=d.meds;
+      if(d.movs) movs=d.movs;
+      if(d.users) users=d.users;
+      if(d.logs) logs=d.logs;
+    }
+    else{
       // Documento não existe: inicializa com medicamentos padrão
-      meds=DEFAULTS;movs=[];logs=[];
-      setDoc(REF,{meds,movs,logs});
+      meds=DEFAULTS;movs=[];users=[];logs=[];
+      setDoc(REF,{meds,movs,users,logs});
     }
     saveCache();
     document.getElementById("skeleton").style.display="none";
     document.getElementById("list").style.display="flex";
     setSP("ok","✅ Ao vivo");
-    // Se há dados pendentes de sync (cadastro offline), salvar agora
-    if(syncPending&&curUser){
-      syncPending=false;
-      const snap2=snap.data();
-      const usersAtual=snap2.users||[];
-      const jaExiste=usersAtual.find(x=>x.name===curUser);
-      if(!jaExiste){
-        const meLocal=users.find(x=>x.name===curUser);
-        if(meLocal){
-          usersAtual.push(meLocal);
-          const logsAtual=snap2.logs||[];
-          logsAtual.push({id:uid(),tipo:"cadastro",nome:curUser,dt:new Date().toISOString()});
-          setDoc(REF,{
-            meds:snap2.meds?.length>0?snap2.meds:meds,
-            movs:snap2.movs||[],
-            users:usersAtual,
-            logs:logsAtual
-          }).then(()=>{
-            saveCache();
-            showToast("✅ Conta sincronizada!");
-          }).catch(()=>{syncPending=true;});
-        }
-      }
-    }
     if(isAdm&&!firstSnap){
       if(movs.length>prevMovLen){
         movs.slice(prevMovLen).forEach(mv=>{
@@ -551,25 +470,25 @@ function startListener(){
   });
 }
 
-const save=async()=>{
+async function save(){
   setSP("sync","⏳");
-  if(!isOnline){
-    pendingSaves.push(Date.now());
-    saveCache();
-    setSP("off","📶 Offline");
-    showToast("⚠️ Salvo localmente. Sincronizará quando voltar online.");
-    return;
-  }
   try{
-    // users são fixos no código - só salva meds, movs, logs
-    await setDoc(REF,{meds,movs,logs});
-    saveCache();setSP("ok","✅ Ao vivo");
-  }catch(e){setSP("err","❌ Erro");showToast("❌ Erro ao salvar: "+e.message);}
-};
-
+    await setDoc(REF,{meds,movs,users,logs});
+    saveCache();
+    setSP("ok","✅ Ao vivo");
+  }
+  catch(e){setSP("err","❌ Erro");showToast("❌ Erro ao salvar: "+e.message);}
+}
 
 // ===== LOGIN =====
+// switchTab removido - cadastro só pelo ADM
 
+// Usuários fixos do sistema
+const USUARIOS=[
+  {name:"Jefferson",pass:"2407",isAdm:true},
+  {name:"D.Humanae",pass:"1991",isAdm:false,somenteSaida:true},
+  {name:"ADM",pass:"9876",isAdm:true}
+];
 
 window.doLogin=async()=>{
   const pass=document.getElementById("inpSenha").value.trim();
@@ -577,15 +496,21 @@ window.doLogin=async()=>{
   if(!pass)return setMsg("Digite sua senha");
   const btn=document.getElementById("btnEnt");
   btn.disabled=true;
-  const u=findUser(pass);
+  // Verificar nos usuários fixos
+  const u=USUARIOS.find(x=>x.pass===pass);
   btn.disabled=false;
-  if(!u){setMsg("❌ Senha incorreta");document.getElementById("inpSenha").value="";return;}
+  if(!u){
+    setMsg("❌ Senha incorreta");
+    document.getElementById("inpSenha").value="";
+    return;
+  }
   curUser=u.name;
   isAdm=u.isAdm;
   sessSave({u:u.name,a:u.isAdm});
   startApp();
 };
 
+// doCadastro removido - cadastro só pelo ADM
 
 window.doLogout=()=>{
   sessionStorage.removeItem(SK);localStorage.removeItem(SK+"_b");
@@ -593,9 +518,7 @@ window.doLogout=()=>{
   document.getElementById("appMain").style.display="none";
   document.getElementById("scrLogin").className="screen active";
   document.getElementById("inpSenha").value="";
-  // Limpar URL de convite
-  history.replaceState(null,"",window.location.pathname);
-  showLoginForm();setMsg("");
+  setMsg("");
 };
 
 function startApp(){
@@ -607,8 +530,6 @@ function startApp(){
   const cached=loadCache();
   if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
   startListener();
-  // Pedir permissão de notificação push
-  if(isAdm&&"Notification"in window&&Notification.permission==="default")Notification.requestPermission();
 }
 
 // ===== RENDER =====
@@ -620,7 +541,7 @@ window.render=()=>{
   if(filter!=="all")data=data.filter(m=>status(m)===filter);
   const exp=meds.filter(m=>status(m)==="expired").length;
   const soon=meds.filter(m=>status(m)==="soon").length;
-  const zero=meds.filter(m=>m.q<=0).length;
+  const zero=meds.filter(m=>status(m)==="zero").length;
   document.getElementById("stats").innerHTML=`<div class="stat"><div class="stat-n sn">${meds.length}</div><div class="stat-l">Cadastrados</div></div><div class="stat"><div class="stat-n sw">${soon}</div><div class="stat-l">Vence em breve</div></div><div class="stat"><div class="stat-n sd">${exp+zero}</div><div class="stat-l">Atenção</div></div>`;
   const ord={expired:0,zero:1,soon:2,ok:3};
   data.sort((a,b)=>ord[status(a)]-ord[status(b)]||a.n.localeCompare(b.n));
@@ -629,17 +550,17 @@ window.render=()=>{
     const s=status(m),lb=subLbl(m),ic=ico(s),qz=m.q<=0,vc=vC(s);
     const lm=[...movs].reverse().find(x=>x.mid===m.id);
     const sp=isAdm||p.verResponsavel;
-    const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${fmt(lm.dt)}</div>`):"";
+    const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
     const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
     const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
     return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${m.n}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
   }).join("");
 };
 
-// ===== STATUS =====
+// ===== HELPERS STATUS =====
 const parseV=v=>{const p=v.split("/");if(p.length!==2)return null;const m=parseInt(p[0]),y=parseInt(p[1]);if(isNaN(m)||isNaN(y))return null;return new Date(2000+y,m-1,1);};
 const status=m=>{if(m.q<=0)return"zero";const d=parseV(m.v);if(!d)return"ok";const diff=(d-new Date())/86400000;if(diff<0)return"expired";if(diff<=90)return"soon";return"ok";};
-const subLbl=m=>{const s=status(m);if(s==="zero")return{t:"Sem estoque",c:"tze"};const d=parseV(m.v);if(!d)return{t:"Inválida",c:"tze"};const days=Math.floor((d-new Date())/86400000);if(s==="expired")return{t:"VENCIDO",c:"tex"};if(s==="soon")return days<=30?{t:`Vence em ${days} dias!`,c:"tso"}:{t:"Vence em breve",c:"tso"};return{t:"Válido",c:"tok"};};
+const subLbl=m=>{const s=status(m);if(s==="zero")return{t:"Sem estoque",c:"tze"};const d=parseV(m.v);if(!d)return{t:"Inválida",c:"tze"};const days=Math.floor((d-new Date())/86400000);if(s==="expired")return{t:"VENCIDO",c:"tex"};if(s==="soon"){if(days<=30)return{t:`Vence em ${days} dias!`,c:"tso"};return{t:"Vence em breve",c:"tso"};}return{t:"Válido",c:"tok"};};
 const vC=s=>({expired:"vex",soon:"vso",zero:"vze",ok:"vok"}[s]);
 const ico=s=>({expired:{e:"⚠️",c:"ico-exp"},soon:{e:"🕐",c:"ico-soon"},zero:{e:"📭",c:"ico-zero"},ok:{e:"💊",c:"ico-ok"}}[s]);
 
@@ -647,13 +568,13 @@ const ico=s=>({expired:{e:"⚠️",c:"ico-exp"},soon:{e:"🕐",c:"ico-soon"},zer
 window.openMovModal=id=>{
   movId=id;
   const m=meds.find(x=>x.id===id);
-  const p=myPerms();
+  const uAtual=USUARIOS.find(x=>x.name===curUser);
   document.getElementById("movNome").textContent="💊 "+m.n;
   document.getElementById("movEst").textContent="Estoque atual: "+m.q+" un.";
   document.getElementById("movQtd").value="";
   document.getElementById("movConfirm").style.display="none";
   // D.Humanae só pode dar saída
-  if(p.somenteSaida){
+  if(uAtual&&uAtual.somenteSaida){
     document.getElementById("btnEnt2").style.display="none";
     selTipo("sai");
   } else {
@@ -669,9 +590,7 @@ window.selTipo=t=>{
   document.getElementById("btnSai").className="mtt sai"+(t==="sai"?" sel":"");
   document.getElementById("btnConfMov").textContent=t==="ent"?"✅ Confirmar entrada":"✅ Confirmar saída";
   document.getElementById("btnConfMov").className="mbtn "+(t==="sai"?"mbtn-red":"mbtn-green");
-  const box=document.getElementById("movConfirm");
-  box.className="confirm-ok"+(t==="sai"?" confirm-red":"");
-  box.style.display="none";
+  document.getElementById("movConfirm").style.display="none";
 };
 window.saveMov=async()=>{
   const qtd=parseInt(document.getElementById("movQtd").value);
@@ -683,12 +602,11 @@ window.saveMov=async()=>{
   m.q=novaQ;
   movs.push({id:uid(),mid:movId,tipo:movTipo,qtd,resp:curUser,dt:new Date().toISOString()});
   const box=document.getElementById("movConfirm");
-  document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?`✅ Entrada de ${qtd} un.!`:`✅ Saída de ${qtd} un.!`;
+  document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?`✅ Entrada de ${qtd} un. confirmada!`:`✅ Saída de ${qtd} un. confirmada!`;
   document.getElementById("movConfirmSub").textContent=`Novo estoque: ${novaQ} un.`;
   box.style.display="block";
   await save();
   showToast(movTipo==="ent"?"📥 Entrada registrada!":"📤 Saída registrada!");
-  if(m.min&&novaQ<=m.min)showToast(`⚠️ ${m.n}: estoque abaixo do mínimo!`);
   setTimeout(()=>{closeOv("ovMov");scrollToTop();},1500);
 };
 
@@ -706,64 +624,169 @@ window.openHist=id=>{
 };
 
 // ===== MEDICAMENTOS (ADM) =====
-window.openMedModal=()=>{if(!isAdm)return;editId=null;document.getElementById("medModalTitle").textContent="Novo medicamento";document.getElementById("mNome").value="";document.getElementById("mQtd").value="";document.getElementById("mVenc").value="";document.getElementById("mMin").value="";document.getElementById("medConfirm").style.display="none";document.getElementById("ovMed").classList.add("open");setTimeout(()=>document.getElementById("mNome").focus(),300);};
-window.openEditMed=id=>{if(!isAdm)return;const m=meds.find(x=>x.id===id);if(!m)return;editId=id;document.getElementById("medModalTitle").textContent="Editar medicamento";document.getElementById("mNome").value=m.n;document.getElementById("mQtd").value=m.q;document.getElementById("mVenc").value=m.v;document.getElementById("mMin").value=m.min||0;document.getElementById("medConfirm").style.display="none";document.getElementById("ovMed").classList.add("open");};
+window.openMedModal=()=>{
+  if(!isAdm)return;
+  editId=null;
+  document.getElementById("medModalTitle").textContent="Novo medicamento";
+  document.getElementById("mNome").value="";document.getElementById("mQtd").value="";document.getElementById("mVenc").value="";
+  document.getElementById("medConfirm").style.display="none";
+  document.getElementById("ovMed").classList.add("open");
+  setTimeout(()=>document.getElementById("mNome").focus(),300);
+};
+window.openEditMed=id=>{
+  if(!isAdm)return;
+  const m=meds.find(x=>x.id===id);if(!m)return;
+  editId=id;
+  document.getElementById("medModalTitle").textContent="Editar medicamento";
+  document.getElementById("mNome").value=m.n;document.getElementById("mQtd").value=m.q;document.getElementById("mVenc").value=m.v;
+  document.getElementById("medConfirm").style.display="none";
+  document.getElementById("ovMed").classList.add("open");
+};
 window.saveMed=async()=>{
   const n=document.getElementById("mNome").value.trim().toUpperCase();
   const q=parseInt(document.getElementById("mQtd").value);
   const v=document.getElementById("mVenc").value.trim();
-  const min=parseInt(document.getElementById("mMin").value)||0;
-  if(!n)return showToast("Informe o nome");if(isNaN(q)||q<0)return showToast("Quantidade inválida");if(!/^\d{2}\/\d{2}$/.test(v))return showToast("Validade: MM/AA");
+  if(!n)return showToast("Informe o nome");
+  if(isNaN(q)||q<0)return showToast("Quantidade inválida");
+  if(!/^\d{2}\/\d{2}$/.test(v))return showToast("Validade: MM/AA");
   const isEdit=!!editId;
-  if(isEdit){const m=meds.find(x=>x.id===editId);if(m){m.n=n;m.q=q;m.v=v;m.min=min;}}
-  else meds.push({id:uid(),n,q,v,min});
-  document.getElementById("medConfirmTxt").textContent=isEdit?"✅ Atualizado!":"✅ Cadastrado!";
+  if(isEdit){const m=meds.find(x=>x.id===editId);if(m){m.n=n;m.q=q;m.v=v;}}
+  else meds.push({id:uid(),n,q,v});
+  document.getElementById("medConfirmTxt").textContent=isEdit?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!";
   document.getElementById("medConfirm").style.display="block";
-  await save();setTimeout(()=>{closeOv("ovMed");editId=null;scrollToTop();},1500);
+  await save();
+  setTimeout(()=>{closeOv("ovMed");editId=null;scrollToTop();},1500);
 };
-window.delMed=async id=>{if(!isAdm)return;const m=meds.find(x=>x.id===id);if(!m)return;if(!confirm(`Excluir "${m.n}"?`))return;meds=meds.filter(x=>x.id!==id);movs=movs.filter(x=>x.mid!==id);await save();showToast("✅ Excluído");};
+window.delMed=async id=>{
+  if(!isAdm)return;
+  const m=meds.find(x=>x.id===id);if(!m)return;
+  if(!confirm(`Excluir "${m.n}"?`))return;
+  meds=meds.filter(x=>x.id!==id);movs=movs.filter(x=>x.mid!==id);
+  await save();showToast("✅ Excluído");
+};
 
 // ===== PAINEL ADM =====
-window.openPanel=()=>{document.getElementById("admPanel").classList.add("open");document.getElementById("ndot").style.display="none";renderPTab();};
+window.openPanel=()=>{
+  document.getElementById("admPanel").classList.add("open");
+  document.getElementById("ndot").style.display="none";
+  renderPTab();
+  if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
+};
 window.closePanel=()=>document.getElementById("admPanel").classList.remove("open");
-window.setPTab=t=>{pTab=t;["mov","rel","buy","alert"].forEach(x=>{const el=document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1));if(el)el.className="ptab"+(t===x?" active":"");});renderPTab();};
+window.setPTab=t=>{
+  pTab=t;
+  ["mov","cad","users","alert"].forEach(x=>{
+    const el=document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1));
+    if(el)el.className="ptab"+(t===x?" active":"");
+  });
+  renderPTab();
+};
 
 function renderPTab(){
   const body=document.getElementById("pBody");
   if(pTab==="mov"){
-    const all=[...movs].reverse().slice(0,100);
-    body.innerHTML=all.length?all.map(h=>{const m=meds.find(x=>x.id===h.mid);return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;}).join(""):`<div class="pe">Nenhuma movimentação.</div>`;
-  } else if(pTab==="rel"){
-    renderRelatorio(body);
-  } else if(pTab==="buy"){
-    renderListaCompras(body);
+    const all=[...movs].reverse().slice(0,80);
+    body.innerHTML=all.length?all.map(h=>{
+      const m=meds.find(x=>x.id===h.mid);
+      return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;
+    }).join(""):"<div class=\"pe\">Nenhuma movimentação ainda.</div>";
+  } else if(pTab==="cad"){
+    const cads=[...logs].filter(l=>l.tipo==="cadastro").reverse();
+    body.innerHTML=`
+      <div class="quick-add">
+        <h4>➕ Cadastrar usuário (ADM)</h4>
+        <input type="text" id="qaName" placeholder="Nome do usuário" autocomplete="off">
+        <input type="password" id="qaPass" placeholder="Senha (números)" inputmode="numeric">
+        <button class="quick-add-btn" onclick="quickAddUser()">Cadastrar</button>
+        <div class="quick-add-msg" id="qaMsg"></div>
+      </div>
+      ${cads.length?cads.map(l=>`<div class="ni cad-u"><p>👤 ${l.nome} se cadastrou</p><div class="ni-time">🕐 ${fmt(l.dt)}</div></div>`).join(""):"<div class=\"pe\">Nenhum cadastro registrado.</div>"}`;
+  } else if(pTab==="users"){
+    body.innerHTML=users.length?users.map(u=>{
+      const p=u.perms||DEFAULT_PERMS;
+      return`<div class="user-card">
+        <div class="user-top"><div><div class="user-name">👤 ${u.name}</div><div class="user-meta">Senha: ${u.pass} • ${fmt(u.dt)}</div></div><span class="ustatus ${u.blocked?"u-blocked":"u-ok"}">${u.blocked?"Bloqueado":"Ativo"}</span></div>
+        <div class="uacts">
+          <button class="ua ${u.blocked?"ua-unblock":"ua-block"}" onclick="toggleBlock('${u.id}')">${u.blocked?"✅ Desbloquear":"🚫 Bloquear"}</button>
+          <button class="ua ua-del" onclick="delUser('${u.id}')">🗑️ Excluir</button>
+        </div>
+        <div class="ptitle">Permissões</div>
+        <div class="prow"><span class="prow-label">👁️ Ver estoque</span><label class="toggle"><input type="checkbox" ${p.verEstoque?"checked":""} onchange="togglePerm('${u.id}','verEstoque',this.checked)"><span class="tslider"></span></label></div>
+        <div class="prow"><span class="prow-label">📥 Movimentar</span><label class="toggle"><input type="checkbox" ${p.movimentar?"checked":""} onchange="togglePerm('${u.id}','movimentar',this.checked)"><span class="tslider"></span></label></div>
+        <div class="prow"><span class="prow-label">📋 Ver histórico</span><label class="toggle"><input type="checkbox" ${p.verHistorico?"checked":""} onchange="togglePerm('${u.id}','verHistorico',this.checked)"><span class="tslider"></span></label></div>
+        <div class="prow"><span class="prow-label">👤 Ver responsável</span><label class="toggle"><input type="checkbox" ${p.verResponsavel?"checked":""} onchange="togglePerm('${u.id}','verResponsavel',this.checked)"><span class="tslider"></span></label></div>
+      </div>`;
+    }).join(""):"<div class=\"pe\">Nenhum usuário cadastrado.</div>";
   } else {
     const exp=meds.filter(m=>status(m)==="expired");
     const soon=meds.filter(m=>status(m)==="soon");
-    const zero=meds.filter(m=>m.q<=0);
-    const baixo=meds.filter(m=>m.min&&m.q>0&&m.q<=m.min);
+    const zero=meds.filter(m=>status(m)==="zero");
     const its=[
       ...exp.map(m=>`<div class="ni alerta"><p>⚠️ VENCIDO — ${m.n}</p><span>Validade: ${m.v}</span></div>`),
       ...soon.map(m=>{const d=parseV(m.v);const days=Math.floor((d-new Date())/86400000);return`<div class="ni alerta-w"><p>🕐 Vence em ${days} dias — ${m.n}</p><span>Validade: ${m.v}</span></div>`;}),
-      ...zero.map(m=>`<div class="ni alerta"><p>📭 Sem estoque — ${m.n}</p></div>`),
-      ...baixo.map(m=>`<div class="ni alerta-w"><p>⬇️ Estoque baixo — ${m.n}</p><span>${m.q} un. (mín: ${m.min})</span></div>`)
+      ...zero.map(m=>`<div class="ni alerta"><p>📭 Sem estoque — ${m.n}</p></div>`)
     ];
-    body.innerHTML=its.length?its.join(""):`<div class="pe">✅ Nenhum alerta!</div>`;
+    body.innerHTML=its.length?its.join(""):"<div class=\"pe\">✅ Nenhum alerta!</div>";
   }
 }
 
-// ===== VISIBILIDADE =====
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"&&curUser){
-    if(!unsub)startListener();
-    else if(pendingSaves.length)flushPending();
-  }
-});
-setInterval(()=>{
-  if(curUser&&document.visibilityState==="visible"&&document.getElementById("spPill")?.className.includes("err"))
-    startListener();
-},30000);
+// Cadastro rápido pelo ADM no painel
 
-// ===== RESTORE SESSION =====
-const _sess=sessLoad();
-if(_sess){curUser=_sess.u;isAdm=_sess.a;loadCache();startApp();}
+window.toggleBlock=async id=>{
+  const u=users.find(x=>x.id===id);if(!u)return;
+  u.blocked=!u.blocked;await save();
+  showToast(u.blocked?`🚫 ${u.name} bloqueado`:`✅ ${u.name} desbloqueado`);
+  renderPTab();
+};
+window.delUser=async id=>{
+  const u=users.find(x=>x.id===id);if(!u)return;
+  if(!confirm(`Excluir "${u.name}"?`))return;
+  users=users.filter(x=>x.id!==id);await save();showToast("Usuário excluído");renderPTab();
+};
+window.togglePerm=async(uid,perm,val)=>{
+  const u=users.find(x=>x.id===uid);if(!u)return;
+  if(!u.perms)u.perms={...DEFAULT_PERMS};
+  u.perms[perm]=val;await save();showToast("✅ Permissão atualizada");
+};
+
+// ===== QR CODE =====
+window.openQR=()=>{
+  const url=window.location.href.split("?")[0];
+  document.getElementById("qrUrl").textContent=url;
+  document.getElementById("qrOv").classList.add("open");
+  const wrap=document.getElementById("qrWrap");
+  wrap.innerHTML="";
+  const img=new Image();
+  img.style.cssText="width:180px;height:180px;border-radius:8px";
+  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+  wrap.appendChild(img);
+};
+window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
+window.qrOvClick=e=>{if(e.target===document.getElementById("qrOv"))closeQR();};
+window.copyLink=()=>{
+  const url=document.getElementById("qrUrl").textContent;
+  navigator.clipboard.writeText(url).then(()=>showToast("✅ Link copiado!")).catch(()=>{
+    const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);showToast("✅ Link copiado!");
+  });
+};
+
+// ===== FILTROS =====
+window.setF=(btn,f)=>{document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filter=f;render();};
+
+// ===== MODAIS =====
+window.ovClick=(e,id)=>{if(e.target===document.getElementById(id))closeOv(id);};
+window.closeOv=id=>document.getElementById(id).classList.remove("open");
+
+// ===== NOTIFICAÇÕES =====
+const pushNotif=(title,body)=>{if("Notification"in window&&Notification.permission==="granted")new Notification(title,{body,tag:"est-"+Date.now()});};
+
+// ===== VISIBILIDADE =====
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser){fetchFresh().then(()=>render());if(!unsub)startListener();}});
+setInterval(()=>{if(curUser&&document.visibilityState==="visible"&&document.getElementById("spPill").className.includes("err"))startListener();},30000);
+
+// ===== INICIALIZAÇÃO =====
+const sess=sessLoad();
+if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp();}
+</script>
+</body>
+</html>
