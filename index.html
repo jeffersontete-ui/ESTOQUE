@@ -421,6 +421,7 @@ const DEFAULTS=[
 ];
 
 let meds=[],movs=[],users=[],logs=[];
+let syncPending=false; // usuário cadastrado offline aguardando sync
 let curUser=null,isAdm=false,filter="all",editId=null,movId=null,movTipo="ent";
 let pTab="mov",unsub=null,firstSnap=true,prevMovLen=0,prevLogsLen=0;
 let isOnline=navigator.onLine,pendingSaves=[];
@@ -514,6 +515,30 @@ function startListener(){
     document.getElementById("skeleton").style.display="none";
     document.getElementById("list").style.display="flex";
     setSP("ok","✅ Ao vivo");
+    // Se há dados pendentes de sync (cadastro offline), salvar agora
+    if(syncPending&&curUser){
+      syncPending=false;
+      const snap2=snap.data();
+      const usersAtual=snap2.users||[];
+      const jaExiste=usersAtual.find(x=>x.name===curUser);
+      if(!jaExiste){
+        const meLocal=users.find(x=>x.name===curUser);
+        if(meLocal){
+          usersAtual.push(meLocal);
+          const logsAtual=snap2.logs||[];
+          logsAtual.push({id:uid(),tipo:"cadastro",nome:curUser,dt:new Date().toISOString()});
+          setDoc(REF,{
+            meds:snap2.meds?.length>0?snap2.meds:meds,
+            movs:snap2.movs||[],
+            users:usersAtual,
+            logs:logsAtual
+          }).then(()=>{
+            saveCache();
+            showToast("✅ Conta sincronizada!");
+          }).catch(()=>{syncPending=true;});
+        }
+      }
+    }
     if(isAdm&&!firstSnap){
       if(movs.length>prevMovLen){
         movs.slice(prevMovLen).forEach(mv=>{
@@ -641,36 +666,35 @@ window.doCadastroLink=async()=>{
     curUser=name;isAdm=false;
     sessSave({u:name,a:false});
     startApp();
-    // Salvar no Firebase em background — com merge correto
+    // Marcar para sincronizar quando Firebase conectar
+    syncPending=true;
+    // Tentar salvar imediatamente em background
+    enableNetwork(db).catch(()=>{});
     setTimeout(async()=>{
       try{
-        enableNetwork(db).catch(()=>{});
-        await new Promise(r=>setTimeout(r,2000));
-        // Buscar dados ATUAIS do Firebase primeiro
         const snap=await getDoc(REF);
-        if(snap.exists()){
-          const d=snap.data();
-          // Usar meds/movs do Firebase (não sobrescrever)
-          if(d.meds?.length>0) meds=d.meds;
-          if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
-          if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
-          // Mesclar users: adicionar o novo se não existir
-          const usersFirebase=d.users||[];
-          const novoUserExiste=usersFirebase.find(x=>x.name.toLowerCase()===name.toLowerCase());
-          if(!novoUserExiste){
-            usersFirebase.push(novoUser);
-          }
-          users=usersFirebase;
+        const d=snap.exists()?snap.data():{meds:DEFAULTS,movs:[],users:[],logs:[]};
+        const ub=d.users||[];
+        if(!ub.find(x=>x.name.toLowerCase()===novoUser.name.toLowerCase())){
+          ub.push(novoUser);
         }
-        // Salvar com dados completos e corretos
-        await setDoc(REF,{meds,movs,users,logs});
+        const lb=d.logs||[];
+        lb.push({id:uid(),tipo:"cadastro",nome:novoUser.name,dt:new Date().toISOString()});
+        await setDoc(REF,{
+          meds:d.meds?.length>0?d.meds:DEFAULTS,
+          movs:d.movs||[],
+          users:ub,
+          logs:lb
+        });
+        users=ub;logs=lb;
+        if(d.meds?.length>0)meds=d.meds;
         saveCache();
+        syncPending=false;
         showToast("✅ Conta sincronizada!");
       }catch(e){
-        pendingSaves.push(Date.now());
-        showToast("⚠️ Sincronizará quando conectar.");
+        // Será sincronizado pelo onSnapshot quando conectar
       }
-    },1000);
+    },2000);
   },1500);
 };
 
