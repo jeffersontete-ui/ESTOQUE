@@ -454,6 +454,18 @@ window.addEventListener("offline",()=>setOnline(false));
 const flushPending=async()=>{
   if(!pendingSaves.length)return;
   try{
+    // Merge com Firebase antes de salvar
+    const snap=await getDoc(REF);
+    if(snap.exists()){
+      const d=snap.data();
+      if(d.meds?.length>0) meds=d.meds;
+      if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
+      if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
+      // Mesclar users preservando ambos
+      const fb=d.users||[];
+      users.forEach(u=>{if(!fb.find(x=>x.id===u.id))fb.push(u);});
+      users=fb;
+    }
     await setDoc(REF,{meds,movs,users,logs});
     saveCache();pendingSaves=[];
     showToast("✅ Dados sincronizados!");
@@ -629,18 +641,34 @@ window.doCadastroLink=async()=>{
     curUser=name;isAdm=false;
     sessSave({u:name,a:false});
     startApp();
-    // Tentar salvar no Firebase em background depois de entrar
+    // Salvar no Firebase em background — com merge correto
     setTimeout(async()=>{
       try{
         enableNetwork(db).catch(()=>{});
-        await new Promise(r=>setTimeout(r,3000));
+        await new Promise(r=>setTimeout(r,2000));
+        // Buscar dados ATUAIS do Firebase primeiro
+        const snap=await getDoc(REF);
+        if(snap.exists()){
+          const d=snap.data();
+          // Usar meds/movs do Firebase (não sobrescrever)
+          if(d.meds?.length>0) meds=d.meds;
+          if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
+          if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
+          // Mesclar users: adicionar o novo se não existir
+          const usersFirebase=d.users||[];
+          const novoUserExiste=usersFirebase.find(x=>x.name.toLowerCase()===name.toLowerCase());
+          if(!novoUserExiste){
+            usersFirebase.push(novoUser);
+          }
+          users=usersFirebase;
+        }
+        // Salvar com dados completos e corretos
         await setDoc(REF,{meds,movs,users,logs});
         saveCache();
-        showToast("✅ Conta sincronizada com servidor!");
+        showToast("✅ Conta sincronizada!");
       }catch(e){
-        // Será sincronizado pelo flushPending quando houver internet
         pendingSaves.push(Date.now());
-        showToast("⚠️ Sem internet. Sincronizando quando conectar.");
+        showToast("⚠️ Sincronizará quando conectar.");
       }
     },1000);
   },1500);
