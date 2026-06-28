@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teste Sync</title>
+<style>
+body{font-family:sans-serif;padding:20px;background:#f0f0f0}
+.box{background:#fff;border-radius:12px;padding:20px;margin:10px 0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+h2{color:#1a9e6b;text-align:center}
+.status{padding:12px;border-radius:8px;text-align:center;font-weight:bold;font-size:18px;margin:10px 0}
+.verde{background:#d1fae5;color:#065f46}
+.vermelho{background:#fee2e2;color:#991b1b}
+.amarelo{background:#fef3c7;color:#92400e}
+button{width:100%;padding:16px;border-radius:8px;border:none;font-size:18px;font-weight:bold;cursor:pointer;margin:6px 0}
+.btn-verde{background:#1a9e6b;color:#fff}
+.btn-azul{background:#185fa5;color:#fff}
+.log{font-size:13px;font-family:monospace;max-height:300px;overflow-y:auto}
+.log div{padding:4px;border-bottom:1px solid #eee}
+.log .ok{color:#065f46}.log .err{color:#991b1b}.log .info{color:#1e40af}
+#contador{font-size:48px;font-weight:bold;text-align:center;padding:20px;color:#1a9e6b}
+</style>
+</head>
+<body>
+<h2>🔥 Teste de Sincronização</h2>
+
+<div class="box">
+  <div id="statusConn" class="status amarelo">Conectando ao Firebase...</div>
+</div>
+
+<div class="box">
+  <div id="contador">0</div>
+  <p style="text-align:center;color:#666">Cliques sincronizados em tempo real</p>
+  <button class="btn-verde" onclick="clicar()">👆 CLIQUE AQUI</button>
+  <button class="btn-azul" onclick="resetar()">🔄 Resetar contador</button>
+</div>
+
+<div class="box">
+  <b>Log de eventos:</b>
+  <div class="log" id="log"></div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,onSnapshot,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
+  authDomain:"estoque-remedios-7b785.firebaseapp.com",
+  projectId:"estoque-remedios-7b785",
+  storageBucket:"estoque-remedios-7b785.firebasestorage.app",
+  messagingSenderId:"1005921072336",
+  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+});
+
+const db=getFirestore(app);
+const REF=doc(db,"teste","contador");
+const device=navigator.userAgent.includes("Mobile")?"📱 CELULAR":"💻 PC";
+
+const log=(msg,tipo="info")=>{
+  const el=document.getElementById("log");
+  const t=new Date().toLocaleTimeString("pt-BR");
+  el.innerHTML=`<div class="${tipo}">[${t}] ${msg}</div>`+el.innerHTML;
+};
+
+const setStatus=(msg,cor)=>{
+  const el=document.getElementById("statusConn");
+  el.textContent=msg;el.className="status "+cor;
+};
+
+// Escutar mudanças em tempo real
+onSnapshot(REF,snap=>{
+  if(snap.exists()){
+    const n=snap.data().n||0;
+    document.getElementById("contador").textContent=n;
+    const de=snap.data().de||"?";
+    if(de!==device){
+      log(`✅ RECEBIDO do ${de}: contador=${n}`,"ok");
+    }
+    setStatus("✅ Firebase conectado e sincronizando!","verde");
+  } else {
+    document.getElementById("contador").textContent="0";
+    setStatus("✅ Conectado (documento vazio)","verde");
+  }
+},e=>{
+  log("❌ ERRO: "+e.message,"err");
+  setStatus("❌ Erro: "+e.message,"vermelho");
+});
+
+window.clicar=async()=>{
+  try{
+    const snap=await getDoc(REF);
+    const atual=snap.exists()?snap.data().n||0:0;
+    await setDoc(REF,{n:atual+1,de:device,ts:Date.now()});
+    log(`📤 Enviado de ${device}: contador=${atual+1}`,"info");
+  }catch(e){
+    log("❌ Erro ao salvar: "+e.message,"err");
+  }
+};
+
+window.resetar=async()=>{
+  try{
+    await setDoc(REF,{n:0,de:device,ts:Date.now()});
+    log("🔄 Resetado","info");
+  }catch(e){
+    log("❌ Erro: "+e.message,"err");
+  }
+};
+
+log(`Iniciando ${device}...`,"info");
+</script>
+</body>
+</html>
