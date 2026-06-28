@@ -465,12 +465,20 @@ function startListener(){
 
 async function save(){
   setSP("sync","⏳");
-  try{
-    await setDoc(REF,{meds,movs,users,logs});
-    saveCache();
-    setSP("ok","✅ Ao vivo");
-  }
-  catch(e){setSP("err","❌ Erro");showToast("❌ Erro ao salvar: "+e.message);}
+  saveCache(); // Salva localmente primeiro
+  // setDoc sem await - dispara e onSnapshot confirma quando chegar
+  setDoc(REF,{meds,movs,users,logs})
+    .then(()=>setSP("ok","✅ Ao vivo"))
+    .catch(e=>{
+      setSP("err","❌ Erro");
+      showToast("❌ Erro: "+e.message);
+      // Tentar novamente após 3 segundos
+      setTimeout(()=>{
+        setDoc(REF,{meds,movs,users,logs})
+          .then(()=>setSP("ok","✅ Ao vivo"))
+          .catch(()=>{});
+      },3000);
+    });
 }
 
 // ===== LOGIN =====
@@ -598,9 +606,9 @@ window.saveMov=async()=>{
   document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?`✅ Entrada de ${qtd} un. confirmada!`:`✅ Saída de ${qtd} un. confirmada!`;
   document.getElementById("movConfirmSub").textContent=`Novo estoque: ${novaQ} un.`;
   box.style.display="block";
-  await save();
+  save(); // dispara sem await - não trava a UI
   showToast(movTipo==="ent"?"📥 Entrada registrada!":"📤 Saída registrada!");
-  setTimeout(()=>{closeOv("ovMov");scrollToTop();},1500);
+  setTimeout(()=>{closeOv("ovMov");scrollToTop();},1000);
 };
 
 // ===== HISTÓRICO =====
@@ -647,15 +655,15 @@ window.saveMed=async()=>{
   else meds.push({id:uid(),n,q,v});
   document.getElementById("medConfirmTxt").textContent=isEdit?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!";
   document.getElementById("medConfirm").style.display="block";
-  await save();
-  setTimeout(()=>{closeOv("ovMed");editId=null;scrollToTop();},1500);
+  save(); // sem await
+  setTimeout(()=>{closeOv("ovMed");editId=null;scrollToTop();},1000);
 };
 window.delMed=async id=>{
   if(!isAdm)return;
   const m=meds.find(x=>x.id===id);if(!m)return;
   if(!confirm(`Excluir "${m.n}"?`))return;
   meds=meds.filter(x=>x.id!==id);movs=movs.filter(x=>x.mid!==id);
-  await save();showToast("✅ Excluído");
+  save();showToast("✅ Excluído");
 };
 
 // ===== PAINEL ADM =====
