@@ -463,17 +463,22 @@ const flushPending=async()=>{
 // ===== FIREBASE =====
 const fetchFresh=async()=>{
   try{
-    const snap=await getDoc(REF);
+    // Timeout de 8 segundos para não travar
+    const timeoutPromise=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
+    const snap=await Promise.race([getDoc(REF),timeoutPromise]);
     if(snap.exists()){
       const d=snap.data();
       if(d.meds?.length>0) meds=d.meds;
-      if(d.movs) movs=d.movs;
-      if(d.users) users=d.users;
-      if(d.logs) logs=d.logs;
+      if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
+      if(d.users?.length>0) users=d.users;
+      if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
       saveCache();
     }
     return true;
-  }catch(e){return false;}
+  }catch(e){
+    console.warn('fetchFresh falhou:',e.message);
+    return false;
+  }
 };
 
 function startListener(){
@@ -483,11 +488,13 @@ function startListener(){
   unsub=onSnapshot(REF,snap=>{
     if(snap.exists()){
       const d=snap.data();
+      // Só atualiza se tiver dados reais — array vazio [] não substitui dados locais
       if(d.meds?.length>0) meds=d.meds;
-      if(d.movs) movs=d.movs;
-      if(d.users) users=d.users;
-      if(d.logs) logs=d.logs;
+      if(d.movs?.length>0) movs=d.movs; else if(d.movs) movs=d.movs;
+      if(d.users?.length>0) users=d.users;
+      if(d.logs?.length>0) logs=d.logs; else if(d.logs) logs=d.logs;
     } else {
+      // Documento não existe: inicializa
       meds=DEFAULTS;movs=[];users=[];logs=[];
       setDoc(REF,{meds,movs,users,logs});
     }
@@ -557,7 +564,11 @@ if(isInviteLink){
   document.getElementById("formEnt").style.display="none";
   document.getElementById("formCadLink").style.display="block";
   document.getElementById("loginSubtitle").textContent="Criar sua conta";
-  fetchFresh();
+  // Iniciar Firebase e buscar dados em background
+  enableNetwork(db).catch(()=>{});
+  fetchFresh().then(ok=>{
+    if(!ok) console.warn('fetchFresh no invite falhou');
+  });
 }
 
 window.doLogin=async()=>{
@@ -584,7 +595,12 @@ window.doCadastroLink=async()=>{
   if(pass===ADM)return setMsg("Essa senha não pode ser usada");
   const btn=document.getElementById("btnCadLink");
   btn.disabled=true;setMsg("⏳ Criando conta...","msg-loading");
-  await fetchFresh();
+  // Tenta buscar dados frescos (com timeout)
+  const ok=await fetchFresh();
+  if(!ok&&meds.length===0){
+    // Sem conexão e sem cache — avisa mas continua
+    setMsg("⚠️ Sem conexão. Tentando mesmo assim...","msg-loading");
+  }
   if(meds.length===0)meds=DEFAULTS;
   if(users.find(x=>x.name.toLowerCase()===name.toLowerCase())){btn.disabled=false;return setMsg("❌ Nome já cadastrado");}
   if(users.find(x=>x.pass===pass)){btn.disabled=false;return setMsg("❌ Senha já em uso");}
@@ -604,7 +620,12 @@ window.doCadastroLink=async()=>{
   }catch(e){
     users=users.filter(x=>x.id!==novoUser.id);
     logs=logs.filter(x=>x.nome!==name||x.tipo!=="cadastro");
-    btn.disabled=false;setMsg("❌ Erro: "+e.message);
+    btn.disabled=false;
+    if(e.message.includes('offline')||e.message.includes('timeout')){
+      setMsg("⚠️ Sem internet. Verifique a conexão e tente novamente.");
+    } else {
+      setMsg("❌ Erro: "+e.message);
+    }
   }
 };
 
