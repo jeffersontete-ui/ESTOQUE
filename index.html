@@ -407,7 +407,6 @@ let USUARIOS=[
   {name:"Marcelo",  pass:"1991",role:"adm"},
   {name:"D.Humanae",pass:"1234",role:"user"}
 ];
-
 const DEFAULTS=[
   {id:1,n:"ESCITALOPRAM 10MG",q:10,v:"12/27",min:5,cod:""},
   {id:2,n:"ESCITALOPRAM 20MG",q:8,v:"06/27",min:3,cod:""},
@@ -451,62 +450,43 @@ let filtro="all",editId=null,movId=null,movTipo="ent";
 let pTab="mov",unsub=null,unsubU=null,barcodeStream=null;
 let barcodeBuffer="",barcodeTimer=null;
 
-// ── CACHE ─────────────────────────────────────────────────────────
+// CACHE
 function lsg(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
 function lss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function saveCache(){lss("hum_c6",{meds,movs})}
 function loadCache(){
   for(const k of["hum_c6","hum_est_v5","hum_est_v4","hum_est_v3","est_cache_v2"]){
-    try{
-      const d=JSON.parse(localStorage.getItem(k));
-      if(d&&Array.isArray(d.meds)&&d.meds.length>0){
-        meds=d.meds;movs=d.movs||[];
-        lss("hum_c6",{meds,movs});
-        return true;
-      }
-    }catch(e){}
-  }
-  return false;
+    try{const d=JSON.parse(localStorage.getItem(k));if(d&&Array.isArray(d.meds)&&d.meds.length>0){meds=d.meds;movs=d.movs||[];lss("hum_c6",{meds,movs});return true}}catch(e){}
+  }return false;
 }
 function sessSave(d){["hum_s6","hum_sess_v5","hum_sess_v4"].forEach(k=>lss(k,d))}
 function sessLoad(){
   for(const k of["hum_s6","hum_sess_v5","hum_sess_v4","hum_sess_v3","est_sess_v2","est_sess_v1_b"]){
     try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.u)return d}catch(e){}
-  }
-  return null;
+  }return null;
 }
 
-// ── UTILITÁRIOS ───────────────────────────────────────────────────
+// UTILITÁRIOS
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const toArr=v=>{
-  if(!v)return[];
-  if(Array.isArray(v))return v.filter(x=>x!=null);
-  if(typeof v==="object")return Object.values(v).filter(x=>x!=null);
-  return[];
-};
+const toArr=v=>{if(!v)return[];if(Array.isArray(v))return v.filter(x=>x!=null);if(typeof v==="object")return Object.values(v).filter(x=>x!=null);return[]};
 const nomeMed=m=>m.n||m.name||m.medicamento||"—";
 const qtdMed=m=>m.q!=null?m.q:(m.qty!=null?m.qty:0);
 const valMed=m=>m.v||m.val||m.validade||"";
 const setSP=(s,t)=>{const p=document.getElementById("spPill");if(p){p.className="sp "+s;p.textContent=t}};
 const showToast=msg=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800)};
 const maskV=el=>{let v=el.value.replace(/[^0-9]/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
-const fmt=v=>{
-  if(!v)return"—";
-  const d=new Date(typeof v==="number"?v:v);
-  if(isNaN(d.getTime()))return"—";
-  return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-};
+const fmt=v=>{if(!v)return"—";const d=new Date(typeof v==="number"?v:v);if(isNaN(d.getTime()))return"—";return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
 window.ovClick=(e,id)=>{if(e.target.id===id)closeOv(id)};
 window.closeOv=id=>document.getElementById(id).classList.remove("open");
 window.maskV=maskV;
+window.scrollToTop=()=>window.scrollTo({top:0,behavior:"smooth"});
 
-// ── STATUS ────────────────────────────────────────────────────────
+// STATUS
 function status(m){
   if(!m)return"ok";
   const q=qtdMed(m);
   if(!q||q===0)return"zero";
-  const v=valMed(m);
-  const parts=(v||"").split("/").map(Number);
+  const parts=(valMed(m)||"").split("/").map(Number);
   const mo=parts[0],yr=parts[1];
   if(!mo||!yr)return"ok";
   const days=(new Date(2000+yr,mo-1,28)-new Date())/86400000;
@@ -516,22 +496,15 @@ function status(m){
   return"ok";
 }
 
-// ── FIREBASE SALVAR ───────────────────────────────────────────────
-function saveAll(){
-  setSP("sync","⏳");
-  saveCache();
-  set(REF,{meds,movs}).then(()=>setSP("ok","✅ Ao vivo")).catch(()=>setSP("err","❌ Erro"));
-}
+// FIREBASE SALVAR
+function saveAll(){setSP("sync","⏳");saveCache();set(REF,{meds,movs}).then(()=>setSP("ok","✅ Ao vivo")).catch(()=>setSP("err","❌ Erro"))}
 function saveUsers(){set(UREF,USUARIOS).catch(()=>{});lss("hum_u6",USUARIOS)}
 
-// ── FIREBASE LISTENERS ────────────────────────────────────────────
-function mostrarLista(){
-  document.getElementById("skeleton").style.display="none";
-  document.getElementById("list").style.display="flex";
-}
+// FIREBASE LISTENERS
+function mostrarLista(){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex"}
 
 function startListener(){
-  if(unsub)return; // ← NÃO recria se já existe
+  if(unsub)return; // NÃO recria se já existe
   setSP("sync","⏳");
   unsub=onValue(REF,snap=>{
     try{
@@ -542,75 +515,57 @@ function startListener(){
         else if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS));
         if(fv.length>0)movs=fv;
       }else{
-        if(meds.length===0){
-          meds=JSON.parse(JSON.stringify(DEFAULTS));
-          set(REF,{meds,movs});
-        }
+        if(meds.length===0){meds=JSON.parse(JSON.stringify(DEFAULTS));set(REF,{meds,movs})}
       }
-    }catch(e){
-      console.error("Firebase erro:",e);
-      if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS));
-    }
-    saveCache();
-    mostrarLista();
-    setSP("ok","✅ Ao vivo");
+    }catch(e){console.error(e);if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS))}
+    saveCache();mostrarLista();setSP("ok","✅ Ao vivo");
     if(isAdm)checkDot();
     render();
   },(err)=>{
-    console.warn("Firebase offline:",err);
-    setSP("err","❌ Offline");
-    unsub=null; // permite reconexão
+    console.warn("Firebase offline:",err);setSP("err","❌ Offline");
+    unsub=null;
     if(meds.length===0){loadCache();if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS))}
     mostrarLista();render();
     setTimeout(()=>{if(curUser&&!unsub)startListener()},5000);
   });
 }
-
 function startUsersL(){
-  if(unsubU)return; // ← NÃO recria se já existe
+  if(unsubU)return; // NÃO recria se já existe
   unsubU=onValue(UREF,snap=>{
-    try{
-      const d=snap.val();
-      if(d){const a=toArr(d);if(a.length>0){USUARIOS=a;lss("hum_u6",USUARIOS)}}
-    }catch(e){}
+    try{const d=snap.val();if(d){const a=toArr(d);if(a.length>0){USUARIOS=a;lss("hum_u6",USUARIOS)}}}catch(e){}
   },()=>{});
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────────
+// LOGIN
 window.doLogin=function(){
   const p=document.getElementById("inpSenha").value.trim();
-  const msg=document.getElementById("msgLogin");
-  msg.textContent="";
+  const msg=document.getElementById("msgLogin");msg.textContent="";
   if(!p){msg.textContent="Digite a senha";return}
   const cu=lsg("hum_u6")||lsg("hum_usr_v5")||lsg("hum_usr_v4");
   if(cu&&cu.length>0)USUARIOS=cu;
   const u=USUARIOS.find(x=>x.pass===p);
   if(!u){msg.textContent="Senha incorreta";return}
   curUser=u.name;isAdm=(u.role==="adm");
-  sessSave({u:curUser,a:isAdm});
-  startApp();
+  sessSave({u:curUser,a:isAdm});startApp();
 };
-
 window.doLogout=function(){
   if(!confirm("Deseja sair?"))return;
   try{localStorage.removeItem("hum_s6")}catch(e){}
   if(unsub){try{unsub()}catch(e){}}
   if(unsubU){try{unsubU()}catch(e){}}
-  unsub=null;unsubU=null;
-  curUser=null;isAdm=false;
+  unsub=null;unsubU=null;curUser=null;isAdm=false;
   document.getElementById("appMain").style.display="none";
   document.getElementById("scrLogin").classList.add("active");
   document.getElementById("inpSenha").value="";
   document.getElementById("msgLogin").textContent="";
 };
 
-// ── START APP ─────────────────────────────────────────────────────
+// START APP
 function startApp(){
   document.getElementById("scrLogin").classList.remove("active");
   document.getElementById("appMain").style.display="block";
   const badge=document.getElementById("userBadge");
-  badge.textContent=curUser;
-  badge.className="badge "+(isAdm?"badge-adm":"badge-user");
+  badge.textContent=curUser;badge.className="badge "+(isAdm?"badge-adm":"badge-user");
   if(isAdm){
     document.getElementById("btnPanel").style.display="flex";
     document.getElementById("fabBtn").style.display="flex";
@@ -623,12 +578,12 @@ function startApp(){
   const cu=lsg("hum_u6")||lsg("hum_usr_v5")||lsg("hum_usr_v4");
   if(cu&&cu.length>0)USUARIOS=cu;
   if(loadCache()&&meds.length>0){mostrarLista();render()}
-  if(!unsub)startListener();   // ← só inicia se não existir
-  if(!unsubU)startUsersL();    // ← só inicia se não existir
+  if(!unsub)startListener();
+  if(!unsubU)startUsersL();
   if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
 }
 
-// ── SESSION RESTORE ───────────────────────────────────────────────
+// SESSION RESTORE
 (function(){
   const s=sessLoad();if(!s)return;
   const cu=lsg("hum_u6")||lsg("hum_usr_v5")||lsg("hum_usr_v4");
@@ -637,45 +592,32 @@ function startApp(){
   if(u){curUser=s.u;isAdm=s.a||u.role==="adm";startApp()}
 })();
 
-// ── ONLINE/OFFLINE ────────────────────────────────────────────────
-window.addEventListener("online",()=>{
-  document.getElementById("offlineBar").style.display="none";
-  if(curUser&&!unsub)startListener();
-});
-window.addEventListener("offline",()=>{
-  document.getElementById("offlineBar").style.display="block";
-});
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();
-});
+// ONLINE/OFFLINE
+window.addEventListener("online",()=>{document.getElementById("offlineBar").style.display="none";if(curUser&&!unsub)startListener()});
+window.addEventListener("offline",()=>{document.getElementById("offlineBar").style.display="block"});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser&&!unsub)startListener()});
 if(!navigator.onLine)document.getElementById("offlineBar").style.display="block";
 
-// ── RENDER ────────────────────────────────────────────────────────
+// RENDER
 window.render=function(){
   const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
   const ord={expired:0,zero:1,soon:2,low:3,ok:4};
   const list=meds.filter(m=>{
     if(!m||typeof m!=="object")return false;
-    const n=nomeMed(m);
-    const st=status(m);
+    const n=nomeMed(m),st=status(m);
     const ms=(n==="—"?true:n.toLowerCase().includes(q))||(m.cod||"").includes(q);
-    const mf=filtro==="all"
-      ||(filtro==="expired"&&st==="expired")
-      ||(filtro==="soon"&&st==="soon")
-      ||(filtro==="zero"&&st==="zero")
-      ||(filtro==="ok"&&(st==="ok"||st==="low"));
+    const mf=filtro==="all"||(filtro==="expired"&&st==="expired")||(filtro==="soon"&&st==="soon")||(filtro==="zero"&&st==="zero")||(filtro==="ok"&&(st==="ok"||st==="low"));
     return ms&&mf;
   }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
 
-  document.getElementById("stTot").textContent=meds.length;
-  document.getElementById("stSoon").textContent=meds.filter(m=>status(m)==="soon").length;
-  document.getElementById("stAlt").textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+  // Stats — adapta ao HTML atual (container #stats com 3 .stat > .stat-n)
+  const statEls=document.querySelectorAll("#stats .stat-n");
+  if(statEls[0])statEls[0].textContent=meds.length;
+  if(statEls[1])statEls[1].textContent=meds.filter(m=>status(m)==="soon").length;
+  if(statEls[2])statEls[2].textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
 
   const el=document.getElementById("list");
-  if(!list.length){
-    el.innerHTML='<div class="empty">🔍 Nenhum medicamento encontrado</div>';
-    return;
-  }
+  if(!list.length){el.innerHTML='<div class="empty" style="text-align:center;color:#9ca3af;padding:36px 16px;font-size:14px">🔍 Nenhum medicamento encontrado</div>';return}
 
   const icoMap={ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"};
   const icoClsMap={ok:"ico-ok",soon:"ico-soon",expired:"ico-exp",zero:"ico-zero",low:"ico-soon"};
@@ -694,11 +636,7 @@ window.render=function(){
         <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div>
         <div class="cacts">
           <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
-          ${isAdm
-            ?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button>'
-            +'<button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button>'
-            +'<button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>'
-            :""}
+          ${isAdm?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button><button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button><button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>':""}
         </div>
       </div>
       <div class="cright"><span class="qty ${qcls}">${q}x</span></div>
@@ -706,38 +644,32 @@ window.render=function(){
   }).join("");
 };
 
-// ── EVENT DELEGATION ─────────────────────────────────────────────
+// EVENT DELEGATION
 document.addEventListener("click",function(e){
-  const btn=e.target.closest("[data-action]");
-  if(!btn)return;
+  const btn=e.target.closest("[data-action]");if(!btn)return;
   e.stopPropagation();
   const a=btn.dataset.action,id=btn.dataset.id;
-  if(a==="mov")   openMovModal(id);
-  else if(a==="hist")  openHist(id);
-  else if(a==="edit")  openMedModal(id);
-  else if(a==="del")   delMed(id);
+  if(a==="mov")openMovModal(id);
+  else if(a==="hist")openHist(id);
+  else if(a==="edit")openMedModal(id);
+  else if(a==="del")delMed(id);
   else if(a==="selmed")selecionarMed(id);
-  else if(a==="buscar-web")  buscarNaInternet(btn.dataset.cod);
+  else if(a==="buscar-web")buscarNaInternet(btn.dataset.cod);
   else if(a==="cadastrar-cod")abrirCadastroComCod(btn.dataset.nom||"",btn.dataset.cod||"");
 });
 
-window.setF=function(el,f){
-  filtro=f;
-  document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));
-  el.classList.add("active");
-  render();
-};
+window.setF=function(el,f){filtro=f;document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));el.classList.add("active");render()};
 
-// ── MODAL MEDICAMENTO ─────────────────────────────────────────────
+// MODAL MEDICAMENTO
 window.openMedModal=function(id=null){
-  editId=id;
-  const m=id?meds.find(x=>String(x.id)===String(id)):null;
+  editId=id;const m=id?meds.find(x=>String(x.id)===String(id)):null;
   document.getElementById("medModalTitle").textContent=m?"Editar medicamento":"Novo medicamento";
   document.getElementById("mNome").value=m?nomeMed(m):"";
   document.getElementById("mQtd").value=m?qtdMed(m):"";
   document.getElementById("mVenc").value=m?valMed(m):"";
-  document.getElementById("mMin").value=m?(m.min||""):"";
-  document.getElementById("mCod").value=m?(m.cod||""):"";
+  // mMin e mCod são opcionais (esta versão do HTML pode não ter)
+  const mMin=document.getElementById("mMin");if(mMin)mMin.value=m?(m.min||""):"";
+  const mCod=document.getElementById("mCod");if(mCod)mCod.value=m?(m.cod||""):"";
   document.getElementById("medConfirm").style.display="none";
   document.getElementById("ovMed").classList.add("open");
   setTimeout(()=>document.getElementById("mNome").focus(),100);
@@ -747,28 +679,23 @@ window.saveMed=function(){
   if(!n){showToast("Digite o nome");return}
   const q=parseInt(document.getElementById("mQtd").value)||0;
   const v=document.getElementById("mVenc").value.trim();
-  const min=parseInt(document.getElementById("mMin").value)||0;
-  const cod=document.getElementById("mCod").value.trim();
-  if(editId){
-    const i=meds.findIndex(x=>String(x.id)===String(editId));
-    if(i>=0)meds[i]={...meds[i],n,q,v,min,cod};
-  }else{
-    const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;
-    meds.push({id:nid,n,q,v,min,cod});
-  }
+  const mMin=document.getElementById("mMin");
+  const mCod=document.getElementById("mCod");
+  const min=mMin?parseInt(mMin.value)||0:0;
+  const cod=mCod?mCod.value.trim():"";
+  if(editId){const i=meds.findIndex(x=>String(x.id)===String(editId));if(i>=0)meds[i]={...meds[i],n,q,v,min,cod}}
+  else{const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;meds.push({id:nid,n,q,v,min,cod})}
   document.getElementById("medConfirmTxt").textContent=editId?"✅ Atualizado!":"✅ Cadastrado!";
   document.getElementById("medConfirm").style.display="block";
-  saveAll();render();
-  setTimeout(()=>{document.getElementById("medConfirm").style.display="none";closeOv("ovMed")},1500);
+  saveAll();render();setTimeout(()=>{document.getElementById("medConfirm").style.display="none";closeOv("ovMed")},1500);
 };
 window.delMed=function(id){
   const m=meds.find(x=>String(x.id)===String(id));
   if(!confirm("Excluir "+(m?nomeMed(m):id)+"?"))return;
-  meds=meds.filter(x=>String(x.id)!==String(id));
-  saveAll();render();showToast("🗑️ Removido");
+  meds=meds.filter(x=>String(x.id)!==String(id));saveAll();render();showToast("🗑️ Removido");
 };
 
-// ── MOVIMENTAÇÃO ──────────────────────────────────────────────────
+// MOVIMENTAÇÃO
 window.openMovModal=function(id){
   const m=meds.find(x=>String(x.id)===String(id));
   if(!m){showToast("Medicamento não encontrado");return}
@@ -777,8 +704,7 @@ window.openMovModal=function(id){
   document.getElementById("movEst").textContent="Estoque atual: "+qtdMed(m)+" unidades";
   document.getElementById("movQtd").value="";
   document.getElementById("movConfirm").style.display="none";
-  selTipo("ent");
-  document.getElementById("ovMov").classList.add("open");
+  selTipo("ent");document.getElementById("ovMov").classList.add("open");
   setTimeout(()=>document.getElementById("movQtd").focus(),100);
 };
 window.selTipo=function(t){
@@ -792,8 +718,7 @@ window.selTipo=function(t){
 window.saveMov=function(){
   const q=parseInt(document.getElementById("movQtd").value)||0;
   if(q<=0){showToast("Digite uma quantidade");return}
-  const i=meds.findIndex(x=>String(x.id)===String(movId));
-  if(i<0){showToast("Medicamento não encontrado");return}
+  const i=meds.findIndex(x=>String(x.id)===String(movId));if(i<0)return;
   const prev=qtdMed(meds[i]);
   if(movTipo==="sai"&&q>prev){showToast("⚠️ Quantidade maior que o estoque!");return}
   meds[i].q=movTipo==="ent"?prev+q:Math.max(0,prev-q);
@@ -802,23 +727,19 @@ window.saveMov=function(){
   document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?"📥 Entrada de "+q+"x registrada!":"📤 Saída de "+q+"x registrada!";
   document.getElementById("movConfirmSub").textContent="Novo estoque: "+meds[i].q+" unidades";
   document.getElementById("movConfirm").style.display="block";
-  saveAll();render();
-  setTimeout(()=>{document.getElementById("movConfirm").style.display="none";closeOv("ovMov")},1800);
+  saveAll();render();setTimeout(()=>{document.getElementById("movConfirm").style.display="none";closeOv("ovMov")},1800);
 };
 
-// ── HISTÓRICO ─────────────────────────────────────────────────────
+// HISTÓRICO
 function normMov(mv){
-  const n=mv.mn||mv.medName||mv.name||mv.n||"—";
-  const mid=String(mv.mid||mv.medId||"");
+  const n=mv.mn||mv.medName||mv.name||mv.n||"—";const mid=String(mv.mid||mv.medId||"");
   const medObj=n==="—"&&mid?meds.find(x=>String(x.id)===mid):null;
   const nomeR=n!=="—"?n:(medObj?nomeMed(medObj):"—");
-  const tipoR=mv.tipo||mv.type||"sai";
-  const tipo=(tipoR==="entrada"||tipoR==="ent")?"ent":"sai";
+  const tipoR=mv.tipo||mv.type||"sai";const tipo=(tipoR==="entrada"||tipoR==="ent")?"ent":"sai";
   const q=mv.qtd!=null?mv.qtd:(mv.qty!=null?mv.qty:0);
   const antes=mv.antes!=null?mv.antes:(mv.before!=null?mv.before:"?");
   const depois=mv.depois!=null?mv.depois:(mv.after!=null?mv.after:"?");
-  const resp=mv.resp||mv.user||"?";
-  let ts=mv.ts||null;
+  const resp=mv.resp||mv.user||"?";let ts=mv.ts||null;
   if(typeof ts==="number")ts=new Date(ts).toISOString();
   return{nome:nomeR,mid,tipo,q,antes,depois,resp,ts};
 }
@@ -828,41 +749,29 @@ window.openHist=function(id){
   const h=movs.filter(mv=>String(mv.mid||mv.medId||"")===String(id)).reverse().map(normMov);
   document.getElementById("histContent").innerHTML=h.length
     ?h.map(mv=>`<div class="hi ${mv.tipo}"><div class="hi-top"><span class="hi-tipo ${mv.tipo}">${mv.tipo==="ent"?"📥 Entrada":"📤 Saída"}</span><span class="hi-qtd">${mv.tipo==="ent"?"+":"-"}${mv.q}</span></div><div class="hi-info">${fmt(mv.ts)} · <b>${mv.resp}</b> · ${mv.antes}→${mv.depois}</div></div>`).join("")
-    :'<div class="empty">Sem movimentações registradas</div>';
+    :'<p style="text-align:center;color:#9ca3af;padding:20px">Sem movimentações</p>';
   document.getElementById("ovHist").classList.add("open");
 };
 
-// ── PAINEL ADM ────────────────────────────────────────────────────
+// PAINEL ADM
 window.openPanel=function(){
   if(!isAdm)return;
-  document.getElementById("povAdm").classList.add("open");
   document.getElementById("admPanel").classList.add("open");
   renderPTab();
 };
-window.closePanel=function(){
-  document.getElementById("povAdm").classList.remove("open");
-  document.getElementById("admPanel").classList.remove("open");
-};
+window.closePanel=function(){document.getElementById("admPanel").classList.remove("open")};
 window.setPTab=function(t){
   pTab=t;
   [["ptMov","mov"],["ptAlerta","alerta"],["ptCompras","compras"],["ptConfig","config"]].forEach(([el,v])=>{
     const e=document.getElementById(el);if(e)e.classList.toggle("active",v===t);
-  });
-  renderPTab();
+  });renderPTab();
 };
-function checkDot(){
-  const a=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
-  document.getElementById("ndot").style.display=a>0?"block":"none";
-}
+function checkDot(){const a=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;document.getElementById("ndot").style.display=a>0?"block":"none"}
 function renderPTab(){
   const body=document.getElementById("pBody");if(!body)return;
   if(pTab==="mov"){
     const list=[...movs].reverse().slice(0,200).map(normMov);
-    body.innerHTML=
-      '<button style="width:100%;padding:10px;background:var(--red-bg);color:var(--red);border:1px solid #fecaca;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="clearMovs()">🗑️ Limpar histórico</button>'
-      +(list.length
-        ?list.map(mv=>'<div class="ni mov-'+mv.tipo+'"><p>'+mv.nome+' <span style="float:right;font-weight:700;color:'+(mv.tipo==="ent"?"var(--green)":"var(--red)")+'">'+(mv.tipo==="ent"?"+":"-")+mv.q+'</span></p><span>'+fmt(mv.ts)+' · <b>'+mv.resp+'</b> · '+mv.antes+'→'+mv.depois+'</span></div>').join("")
-        :'<div class="pe">Sem movimentações</div>');
+    body.innerHTML='<button style="width:100%;padding:10px;background:var(--red-bg);color:var(--red);border:1px solid #fecaca;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="clearMovs()">🗑️ Limpar histórico</button>'+(list.length?list.map(mv=>'<div class="ni mov-'+mv.tipo+'"><p>'+mv.nome+' <span style="float:right;font-weight:700;color:'+(mv.tipo==="ent"?"var(--green)":"var(--red)")+'">'+(mv.tipo==="ent"?"+":"-")+mv.q+'</span></p><span>'+fmt(mv.ts)+' · <b>'+mv.resp+'</b> · '+mv.antes+'→'+mv.depois+'</span></div>').join(""):'<div class="pe">Sem movimentações</div>');
   }else if(pTab==="alerta"){
     let h="";
     meds.filter(m=>status(m)==="expired").forEach(m=>h+='<div class="ni" style="border-left:3px solid var(--red)"><p>⚠️ VENCIDO: '+nomeMed(m)+'</p><span>Val: '+valMed(m)+'</span></div>');
@@ -872,34 +781,12 @@ function renderPTab(){
     body.innerHTML=h||'<div class="pe">✅ Nenhum alerta</div>';
   }else if(pTab==="compras"){
     const need=meds.filter(m=>qtdMed(m)===0||(m.min&&qtdMed(m)<=m.min));
-    const txt="🛒 *Lista de Compras — Humanae*
-"+need.map(m=>"• "+nomeMed(m)+": "+qtdMed(m)+" un.").join("
-");
-    body.innerHTML=need.length
-      ?need.map(m=>'<div class="ni"><p>'+nomeMed(m)+'</p><span>'+qtdMed(m)+' un.</span></div>').join("")
-        +'<button onclick="window.open('https://wa.me/?text='+encodeURIComponent('+JSON.stringify(txt)+'),'_blank')" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>'
-      :'<div class="pe">✅ Estoque em dia!</div>';
+    const txt="🛒 *Lista de Compras — Humanae*\n"+need.map(m=>"• "+nomeMed(m)+": "+qtdMed(m)+" un.").join("\n");
+    body.innerHTML=need.length?need.map(m=>'<div class="ni"><p>'+nomeMed(m)+'</p><span>'+qtdMed(m)+' un.</span></div>').join("")+'<button onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent('+JSON.stringify(txt)+'),\'_blank\')" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>':'<div class="pe">✅ Estoque em dia!</div>';
   }else if(pTab==="config"){
     const isMaster=curUser===MASTER;
     const vis=isMaster?USUARIOS.filter(u=>u.name!==MASTER):USUARIOS.filter(u=>u.name===curUser);
-    body.innerHTML=
-      '<div style="background:var(--green-bg);border-radius:10px;padding:14px;margin-bottom:12px">'
-      +'<h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>'
-      +vis.map(u=>
-        '<div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--g200)">'
-        +'<label style="font-size:13px;font-weight:700;color:var(--g700);display:block;margin-bottom:8px">👤 '+u.name+' '+(u.role==="adm"?"🔐 ADM":"👁️ Usuário")+'</label>'
-        +(isMaster?'<div style="font-size:12px;color:var(--g500);margin-bottom:8px">Senha atual: <b style="font-family:monospace">'+u.pass+'</b></div>':"")
-        +'<div style="display:flex;gap:6px">'
-        +'<input type="password" id="np_'+u.name+'" placeholder="Nova senha" style="flex:1;height:42px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;outline:none" onkeydown="if(event.key==='Enter')trocarSenha(''+u.name+'')">'
-        +'<button onclick="trocarSenha(''+u.name+'')" style="padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button>'
-        +'</div></div>'
-      ).join("")
-      +'<div id="msgSenha" style="font-size:13px;text-align:center;margin-top:4px;min-height:18px;font-weight:600"></div></div>'
-      +'<div style="background:var(--blue-bg);border-radius:10px;padding:14px">'
-      +'<h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4>'
-      +'<p style="font-size:12px;color:var(--g700);margin-bottom:6px"><b>Android (Chrome):</b> Menu ⋮ → "Adicionar à tela inicial"</p>'
-      +'<p style="font-size:12px;color:var(--g700)"><b>iPhone (Safari):</b> Compartilhar ↑ → "Adicionar à Tela de Início"</p>'
-      +'<button onclick="tryInstall()" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer">📲 Instalar agora</button></div>';
+    body.innerHTML='<div style="background:var(--green-bg);border-radius:10px;padding:14px;margin-bottom:12px"><h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>'+vis.map(u=>'<div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--g200)"><label style="font-size:13px;font-weight:700;color:var(--g700);display:block;margin-bottom:8px">👤 '+u.name+' '+(u.role==="adm"?"🔐 ADM":"👁️ Usuário")+'</label>'+(isMaster?'<div style="font-size:12px;color:var(--g500);margin-bottom:8px">Senha atual: <b style="font-family:monospace">'+u.pass+'</b></div>':"")+'<div style="display:flex;gap:6px"><input type="password" id="np_'+u.name+'" placeholder="Nova senha" style="flex:1;height:42px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;outline:none" onkeydown="if(event.key===\'Enter\')trocarSenha(\''+u.name+'\')"><button onclick="trocarSenha(\''+u.name+'\')" style="padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button></div></div>').join('')+'<div id="msgSenha" style="font-size:13px;text-align:center;margin-top:4px;min-height:18px;font-weight:600"></div></div><div style="background:var(--blue-bg);border-radius:10px;padding:14px"><h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4><p style="font-size:12px;color:var(--g700);margin-bottom:6px"><b>Android (Chrome):</b> Menu ⋮ → "Adicionar à tela inicial"</p><p style="font-size:12px;color:var(--g700)"><b>iPhone (Safari):</b> Compartilhar ↑ → "Adicionar à Tela de Início"</p><button onclick="tryInstall()" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer">📲 Instalar agora</button></div>';
   }
 }
 window.trocarSenha=function(name){
@@ -914,49 +801,28 @@ window.trocarSenha=function(name){
 };
 window.clearMovs=function(){if(!confirm("Limpar todo o histórico?"))return;movs=[];saveAll();renderPTab();showToast("🗑️ Histórico limpo")};
 
-// ── QR CODE ───────────────────────────────────────────────────────
+// QR — usa qrWrap como container
 window.openQR=function(){
   const url=window.location.href;
-  document.getElementById("qrImg").src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url);
+  const wrap=document.getElementById("qrWrap");
+  if(wrap){wrap.innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(url)+'" style="max-width:180px;border-radius:8px" alt="QR">'}
   document.getElementById("qrUrl").textContent=url;
   document.getElementById("qrOv").classList.add("open");
 };
 window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
 window.qrOvClick=e=>{if(e.target.id==="qrOv")closeQR()};
-window.copyLink=function(){
-  navigator.clipboard.writeText(window.location.href)
-    .then(()=>showToast("✅ Link copiado!"))
-    .catch(()=>showToast("Link: "+window.location.href));
-};
-window.shareWA=function(){
-  window.open("https://wa.me/?text="+encodeURIComponent("💊 *Estoque Humanae*
-"+window.location.href),"_blank");
-};
+window.copyLink=function(){navigator.clipboard.writeText(window.location.href).then(()=>showToast("✅ Link copiado!")).catch(()=>showToast("Link: "+window.location.href))};
 
-// ── BARCODE SCANNER ───────────────────────────────────────────────
+// BARCODE
 window.openBarcodeScanner=function(){
   document.getElementById("ovBarcode").classList.add("open");
   document.getElementById("inpBuscaCod").value="";
-  document.getElementById("barcodeResultados").innerHTML="";
-  document.getElementById("barcodeWebArea").style.display="none";
   document.getElementById("barcodeStatus").textContent="Iniciando câmera...";
   if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
     navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
-      .then(s=>{
-        barcodeStream=s;
-        const v=document.getElementById("barcodeVideo");
-        v.style.display="block";v.srcObject=s;
-        v.onloadedmetadata=()=>v.play().catch(()=>{});
-        document.getElementById("barcodeStatus").textContent="📷 Aponte para o código ou use a busca";
-      })
-      .catch(()=>{
-        document.getElementById("barcodeVideo").style.display="none";
-        document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo";
-      });
-  }else{
-    document.getElementById("barcodeVideo").style.display="none";
-    document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo";
-  }
+      .then(s=>{barcodeStream=s;const v=document.getElementById("barcodeVideo");v.style.display="block";v.srcObject=s;v.onloadedmetadata=()=>v.play().catch(()=>{});document.getElementById("barcodeStatus").textContent="📷 Aponte para o código ou use a busca"})
+      .catch(()=>{document.getElementById("barcodeVideo").style.display="none";document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo"});
+  }else{document.getElementById("barcodeVideo").style.display="none";document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo"}
   setTimeout(()=>document.getElementById("inpBuscaCod").focus(),300);
 };
 window.closeBarcodeScanner=function(){
@@ -964,128 +830,44 @@ window.closeBarcodeScanner=function(){
   if(barcodeStream){barcodeStream.getTracks().forEach(t=>t.stop());barcodeStream=null}
   const v=document.getElementById("barcodeVideo");if(v)v.srcObject=null;
 };
-function hlTxt(txt,q){
-  if(!txt||!q)return txt||"";
-  const i=txt.toLowerCase().indexOf(q.toLowerCase());
-  if(i<0)return txt;
-  return txt.slice(0,i)+'<span class="bc-match">'+txt.slice(i,i+q.length)+'</span>'+txt.slice(i+q.length);
-}
-window.buscaAoVivo=function(v){
-  const q=v.trim(),el=document.getElementById("barcodeResultados"),wa=document.getElementById("barcodeWebArea");
-  wa.style.display="none";
-  document.getElementById("barcodeStatus").textContent="📷 Digite o nome ou código";
-  if(!q){el.innerHTML="";return}
-  const ql=q.toLowerCase();
-  const res=meds.filter(m=>{
-    const c=(m.cod||"").toLowerCase(),n=nomeMed(m).toLowerCase();
-    return c===ql||c.includes(ql)||n.includes(ql);
-  }).slice(0,8);
-  if(!res.length){
-    const ec=/^\d{8,14}$/.test(q.replace(/\s/g,""));
-    el.innerHTML='<div class="bc-notfound"><p>❌ "'+q+'" não encontrado</p>'
-      +(ec
-        ?'<button class="bc-btn-cad" data-action="buscar-web" data-cod="'+q+'">🌐 Buscar na internet</button>'
-        :'<button class="bc-btn-cad" data-action="cadastrar-cod" data-nom="" data-cod="'+q+'">➕ Cadastrar com este nome</button>')
-      +'</div>';
-    return;
-  }
-  el.innerHTML=res.map(m=>
-    '<div class="bc-item" data-action="selmed" data-id="'+m.id+'">'
-    +'<div class="bc-item-nome">'+hlTxt(nomeMed(m),ql)+'</div>'
-    +'<div class="bc-item-info">'+({ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"}[status(m)]||"")
-    +" · "+qtdMed(m)+"x · Val: "+(valMed(m)||"—")+(m.cod?" · 🔖 "+hlTxt(m.cod,ql):"")
-    +'</div></div>'
-  ).join("");
-};
 window.buscaManual=function(){
   const q=document.getElementById("inpBuscaCod").value.trim();if(!q)return;
   const ql=q.toLowerCase();
-  const found=meds.find(m=>(m.cod||"")===q)
-    ||meds.find(m=>(m.cod||"").toLowerCase().includes(ql))
-    ||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
+  const found=meds.find(m=>(m.cod||"")===q)||meds.find(m=>(m.cod||"").toLowerCase().includes(ql))||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
   if(found){closeBarcodeScanner();openMovModal(found.id)}
   else if(/^\d{8,14}$/.test(q.replace(/\s/g,"")))buscarNaInternet(q);
   else showToast("Medicamento não encontrado");
 };
 window.selecionarMed=function(id){closeBarcodeScanner();openMovModal(id)};
-window.abrirCadastroComCod=function(n,cod){
-  closeBarcodeScanner();openMedModal(null);
-  if(n)setTimeout(()=>{document.getElementById("mNome").value=n},120);
-  if(cod)setTimeout(()=>{document.getElementById("mCod").value=cod},120);
-};
+window.abrirCadastroComCod=function(n,cod){closeBarcodeScanner();openMedModal(null);if(n)setTimeout(()=>{document.getElementById("mNome").value=n},120)};
 window.buscarNaInternet=async function(cod){
-  const wa=document.getElementById("barcodeWebArea");
-  document.getElementById("barcodeResultados").innerHTML="";
-  wa.style.display="block";
-  wa.innerHTML='<div class="bc-loading">🌐 Buscando "'+cod+'" na internet...</div>';
-  let n="",marca="",ok=false;
-  try{
-    const r=await fetch("https://world.openfoodfacts.org/api/v2/product/"+cod+".json",{signal:AbortSignal.timeout(5000)});
-    const d=await r.json();
-    if(d.status===1&&d.product){n=d.product.product_name_pt||d.product.product_name||"";marca=d.product.brands||"";if(n)ok=true}
-  }catch(e){}
-  if(!ok){
-    try{
-      const r=await fetch("https://api.upcitemdb.com/prod/trial/lookup?upc="+cod,{signal:AbortSignal.timeout(5000)});
-      const d=await r.json();
-      if(d.code==="OK"&&d.items?.length){n=d.items[0].title||"";marca=d.items[0].brand||"";if(n)ok=true}
-    }catch(e){}
-  }
-  if(ok&&n){
-    const nl=n.toUpperCase().trim();
-    wa.innerHTML='<div class="bc-web-result">'
-      +'<div class="bc-web-nome">✅ Encontrado:</div>'
-      +'<div style="font-size:16px;font-weight:700;color:#6ee7b7;margin:6px 0">'+nl+'</div>'
-      +(marca?'<div class="bc-web-info">Marca: '+marca+'</div>':"")
-      +'<div class="bc-web-info">Código: '+cod+'</div>'
-      +'<button class="bc-btn-usar" data-action="cadastrar-cod" data-nom="'+nl.replace(/"/g,"&quot;")+'" data-cod="'+cod+'">➕ Usar este nome para cadastrar</button>'
-      +'</div>';
-  }else{
-    wa.innerHTML='<div class="bc-notfound">'
-      +'<p>🔍 Código <b>'+cod+'</b> não encontrado</p>'
-      +'<button class="bc-btn-cad" data-action="cadastrar-cod" data-nom="" data-cod="'+cod+'">➕ Cadastrar manualmente</button>'
-      +'</div>';
-  }
+  document.getElementById("barcodeStatus").textContent="🌐 Buscando na internet...";
+  let n="",ok=false;
+  try{const r=await fetch("https://world.openfoodfacts.org/api/v2/product/"+cod+".json",{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.status===1&&d.product){n=d.product.product_name_pt||d.product.product_name||"";if(n)ok=true}}catch(e){}
+  if(!ok){try{const r=await fetch("https://api.upcitemdb.com/prod/trial/lookup?upc="+cod,{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.code==="OK"&&d.items?.length){n=d.items[0].title||"";if(n)ok=true}}catch(e){}}
+  if(ok&&n){const nl=n.toUpperCase().trim();document.getElementById("barcodeStatus").textContent="✅ Encontrado: "+nl;document.getElementById("inpBuscaCod").value=nl;showToast("✅ "+nl+" — clique Buscar para confirmar")}
+  else{document.getElementById("barcodeStatus").textContent="❌ Código "+cod+" não encontrado";showToast("Código não encontrado — cadastre manualmente")}
 };
 
-// ── LEITOR USB/BLUETOOTH ──────────────────────────────────────────
+// LEITOR USB/BLUETOOTH
 document.addEventListener("keydown",e=>{
   if(!curUser)return;
-  const tag=document.activeElement?.tagName;
-  if(tag==="INPUT"||tag==="TEXTAREA")return;
+  const tag=document.activeElement?.tagName;if(tag==="INPUT"||tag==="TEXTAREA")return;
   if(e.key==="Enter"){
-    if(barcodeBuffer.length>=4){
-      const cod=barcodeBuffer;barcodeBuffer="";clearTimeout(barcodeTimer);
-      const ql=cod.toLowerCase();
-      const found=meds.find(m=>(m.cod||"")===cod)||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
-      if(found){showToast("📷 "+nomeMed(found));openMovModal(found.id)}
-      else{const s=document.getElementById("srch");if(s){s.value=cod;render();}showToast("🔍 "+cod)}
-    }
+    if(barcodeBuffer.length>=4){const cod=barcodeBuffer;barcodeBuffer="";clearTimeout(barcodeTimer);const ql=cod.toLowerCase();const found=meds.find(m=>(m.cod||"")===cod)||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));if(found){showToast("📷 "+nomeMed(found));openMovModal(found.id)}else{const s=document.getElementById("srch");if(s){s.value=cod;render();}showToast("🔍 "+cod)}}
     barcodeBuffer="";return;
   }
   if(e.key.length===1){barcodeBuffer+=e.key;clearTimeout(barcodeTimer);barcodeTimer=setTimeout(()=>{barcodeBuffer=""},200)}
 });
 
-// ── PWA ───────────────────────────────────────────────────────────
+// PWA
 let deferredPrompt=null;
-window.addEventListener("beforeinstallprompt",e=>{
-  e.preventDefault();deferredPrompt=e;
-  document.getElementById("installBanner").style.display="flex";
-});
-window.addEventListener("appinstalled",()=>{
-  document.getElementById("installBanner").style.display="none";
-  deferredPrompt=null;
-});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e});
+window.addEventListener("appinstalled",()=>{deferredPrompt=null});
 window.tryInstall=async function(){
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt=null;
-    document.getElementById("installBanner").style.display="none";
-  }else showToast("Menu do navegador → 'Adicionar à tela inicial'");
+  if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null}
+  else showToast("Menu do navegador → 'Adicionar à tela inicial'");
 };
-document.getElementById("installBtn").onclick=()=>tryInstall();
-document.getElementById("installDismiss").onclick=()=>{document.getElementById("installBanner").style.display="none"};
 
 </script>
 </body>
