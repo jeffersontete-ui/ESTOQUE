@@ -521,6 +521,53 @@ function status(m){
 function saveAll(){setSP("sync","⏳");saveCache();set(REF,{meds,movs}).then(()=>setSP("ok","✅ Ao vivo")).catch(()=>setSP("err","❌ Erro"))}
 function saveUsers(){set(UREF,USUARIOS).catch(()=>{});lss("hum_u6",USUARIOS)}
 
+// RENDER
+window.render=function(){
+  const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
+  const ord={expired:0,zero:1,soon:2,low:3,ok:4};
+  const list=meds.filter(m=>{
+    if(!m||typeof m!=="object")return false;
+    const n=nomeMed(m),st=status(m);
+    const ms=(n==="—"?true:n.toLowerCase().includes(q))||(m.cod||"").includes(q);
+    const mf=filtro==="all"||(filtro==="expired"&&st==="expired")||(filtro==="soon"&&st==="soon")||(filtro==="zero"&&st==="zero")||(filtro==="ok"&&(st==="ok"||st==="low"));
+    return ms&&mf;
+  }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
+
+  // Stats — adapta ao HTML atual (container #stats com 3 .stat > .stat-n)
+  const statEls=document.querySelectorAll("#stats .stat-n");
+  if(statEls[0])statEls[0].textContent=meds.length;
+  if(statEls[1])statEls[1].textContent=meds.filter(m=>status(m)==="soon").length;
+  if(statEls[2])statEls[2].textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+
+  const el=document.getElementById("list");
+  if(!list.length){el.innerHTML='<div class="empty" style="text-align:center;color:#9ca3af;padding:36px 16px;font-size:14px">🔍 Nenhum medicamento encontrado</div>';return}
+
+  const icoMap={ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"};
+  const icoClsMap={ok:"ico-ok",soon:"ico-soon",expired:"ico-exp",zero:"ico-zero",low:"ico-soon"};
+  const txtClsMap={ok:"tok",soon:"tso",expired:"tex",zero:"tze",low:"tso"};
+  const lblMap={ok:"OK",soon:"Vence em breve",expired:"VENCIDO",zero:"Sem estoque",low:"Estoque baixo"};
+
+  el.innerHTML=list.map(m=>{
+    const st=status(m),n=nomeMed(m),q=qtdMed(m),v=valMed(m);
+    const vl=st==="expired"?"VENCIDO":(v||"—");
+    const qcls=q===0?"qz":(m.min&&q<=m.min?"qlo":"");
+    return`<div class="card ${st}">
+      <div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div>
+      <div class="cbody">
+        <div class="cname">${n}</div>
+        <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.cod?" · 🔖 "+m.cod:""}</div>
+        <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div>
+        <div class="cacts">
+          <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
+          ${isAdm?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button><button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button><button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>':""}
+        </div>
+      </div>
+      <div class="cright"><span class="qty ${qcls}">${q}x</span></div>
+    </div>`;
+  }).join("");
+};
+
+
 // FIREBASE LISTENERS
 function mostrarLista(){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex"}
 
@@ -625,52 +672,6 @@ window.addEventListener("online",()=>{document.getElementById("offlineBar").styl
 window.addEventListener("offline",()=>{document.getElementById("offlineBar").style.display="block"});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser&&!unsub)startListener()});
 if(!navigator.onLine)document.getElementById("offlineBar").style.display="block";
-
-// RENDER
-window.render=function(){
-  const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
-  const ord={expired:0,zero:1,soon:2,low:3,ok:4};
-  const list=meds.filter(m=>{
-    if(!m||typeof m!=="object")return false;
-    const n=nomeMed(m),st=status(m);
-    const ms=(n==="—"?true:n.toLowerCase().includes(q))||(m.cod||"").includes(q);
-    const mf=filtro==="all"||(filtro==="expired"&&st==="expired")||(filtro==="soon"&&st==="soon")||(filtro==="zero"&&st==="zero")||(filtro==="ok"&&(st==="ok"||st==="low"));
-    return ms&&mf;
-  }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
-
-  // Stats — adapta ao HTML atual (container #stats com 3 .stat > .stat-n)
-  const statEls=document.querySelectorAll("#stats .stat-n");
-  if(statEls[0])statEls[0].textContent=meds.length;
-  if(statEls[1])statEls[1].textContent=meds.filter(m=>status(m)==="soon").length;
-  if(statEls[2])statEls[2].textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
-
-  const el=document.getElementById("list");
-  if(!list.length){el.innerHTML='<div class="empty" style="text-align:center;color:#9ca3af;padding:36px 16px;font-size:14px">🔍 Nenhum medicamento encontrado</div>';return}
-
-  const icoMap={ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"};
-  const icoClsMap={ok:"ico-ok",soon:"ico-soon",expired:"ico-exp",zero:"ico-zero",low:"ico-soon"};
-  const txtClsMap={ok:"tok",soon:"tso",expired:"tex",zero:"tze",low:"tso"};
-  const lblMap={ok:"OK",soon:"Vence em breve",expired:"VENCIDO",zero:"Sem estoque",low:"Estoque baixo"};
-
-  el.innerHTML=list.map(m=>{
-    const st=status(m),n=nomeMed(m),q=qtdMed(m),v=valMed(m);
-    const vl=st==="expired"?"VENCIDO":(v||"—");
-    const qcls=q===0?"qz":(m.min&&q<=m.min?"qlo":"");
-    return`<div class="card ${st}">
-      <div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div>
-      <div class="cbody">
-        <div class="cname">${n}</div>
-        <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.cod?" · 🔖 "+m.cod:""}</div>
-        <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div>
-        <div class="cacts">
-          <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
-          ${isAdm?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button><button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button><button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>':""}
-        </div>
-      </div>
-      <div class="cright"><span class="qty ${qcls}">${q}x</span></div>
-    </div>`;
-  }).join("");
-};
 
 // EVENT DELEGATION
 document.addEventListener("click",function(e){
