@@ -384,6 +384,27 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 
 <div class="toast" id="toast"></div>
 
+<!-- CAPTURA DE ERROS VISÍVEL NA TELA -->
+<div id="errBox" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:12px 16px;font-family:monospace;font-size:12px;max-height:50vh;overflow-y:auto"></div>
+<script>
+// Captura erros ANTES do módulo carregar
+window._errs=[];
+window.onerror=function(msg,src,line,col,err){
+  window._errs.push(msg+" (L"+line+")");
+  const b=document.getElementById("errBox");
+  if(b){b.style.display="block";b.innerHTML="❌ ERRO JS:<br>"+window._errs.join("<br>")}
+  console.error(msg,src,line);
+};
+window.onunhandledrejection=function(e){
+  const m="Promise: "+(e.reason?.message||e.reason||"unknown");
+  window._errs.push(m);
+  const b=document.getElementById("errBox");
+  if(b){b.style.display="block";b.innerHTML="❌ ERRO PROMISE:<br>"+window._errs.join("<br>")}
+};
+// Verificar versão do arquivo carregada
+console.log("INDEX.HTML versão: 2026-06-29-FINAL");
+</script>
+
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getDatabase,ref,onValue,set}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -562,6 +583,9 @@ window.doLogout=function(){
 
 // START APP
 function startApp(){
+  console.log("startApp() chamado — v2026-FINAL — user:",curUser);
+  const b=document.getElementById("errBox");
+  if(b&&b.style.display!=="none"&&window._errs.length===0)b.style.display="none";
   document.getElementById("scrLogin").classList.remove("active");
   document.getElementById("appMain").style.display="block";
   const badge=document.getElementById("userBadge");

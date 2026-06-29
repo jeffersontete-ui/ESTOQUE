@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Diagnóstico Humanae</title>
+<style>
+body{font-family:monospace;background:#111;color:#0f0;padding:20px;font-size:13px}
+h2{color:#fff;margin-bottom:10px}
+.ok{color:#0f0}.err{color:#f44}.warn{color:#fa0}
+.box{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:14px;margin-bottom:12px}
+button{background:#1a9e6b;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;margin:4px}
+#log{white-space:pre-wrap;word-break:break-all}
+</style>
+</head>
+<body>
+<h2>🔍 Diagnóstico — Drogaria Humanae</h2>
+<div class="box">
+  <b>Instruções:</b><br>
+  1. Abra o sistema em outra aba: <a href="https://jeffersontete-ui.github.io/ESTOQUE/" target="_blank" style="color:#6ee7b7">jeffersontete-ui.github.io/ESTOQUE/</a><br>
+  2. Faça login normalmente<br>
+  3. Quando a lista sumir, volte aqui e clique "Capturar erros da aba"<br><br>
+  <b>OU:</b> Cole a URL do sistema abaixo e clique Testar:
+  <br><br>
+  <input id="url" value="https://jeffersontete-ui.github.io/ESTOQUE/" style="width:400px;padding:8px;border-radius:6px;border:1px solid #444;background:#222;color:#fff;font-size:14px">
+  <button onclick="testar()">🔍 Testar</button>
+</div>
+
+<div class="box">
+  <b>Verificações automáticas:</b>
+  <div id="checks" style="margin-top:10px"></div>
+</div>
+
+<div class="box">
+  <b>Log de erros:</b><br>
+  <button onclick="limpar()">🗑 Limpar</button>
+  <div id="log" style="margin-top:8px;color:#fa0">Aguardando...</div>
+</div>
+
+<script>
+const log = document.getElementById("log");
+const out = (msg, cls="") => {
+  const d = document.createElement("div");
+  d.className = cls;
+  d.textContent = "[" + new Date().toLocaleTimeString("pt-BR") + "] " + msg;
+  log.prepend(d);
+};
+
+// Captura erros globais
+window.onerror = (msg,src,line,col,err) => out("❌ ERRO JS: "+msg+" (linha "+line+")", "err");
+window.onunhandledrejection = e => out("❌ Promise rejeitada: "+e.reason, "err");
+
+function limpar(){ log.innerHTML = ""; }
+
+// Verificações básicas
+function checks(){
+  const el = document.getElementById("checks");
+  const itens = [
+    ["Firebase SDK disponível", () => typeof fetch !== "undefined"],
+    ["localStorage disponível", () => { localStorage.setItem("_t","1"); localStorage.removeItem("_t"); return true; }],
+    ["Service Worker", () => "serviceWorker" in navigator],
+    ["onLine", () => navigator.onLine],
+  ];
+  el.innerHTML = itens.map(([nome, fn]) => {
+    let ok=false, err="";
+    try { ok = fn(); } catch(e) { err = e.message; }
+    return `<div class="${ok?'ok':'err'}">${ok?"✅":"❌"} ${nome}${err?" — "+err:""}</div>`;
+  }).join("");
+}
+checks();
+
+// Teste direto do Firebase
+async function testar(){
+  out("🔄 Iniciando teste Firebase...", "warn");
+  try {
+    const r = await fetch("https://estoque-remedios-7b785-default-rtdb.firebaseio.com/estoque/dados.json?shallow=true");
+    if(r.ok){
+      const d = await r.json();
+      out("✅ Firebase acessível! Chaves: " + JSON.stringify(Object.keys(d||{})), "ok");
+      
+      // Testar dados completos
+      const r2 = await fetch("https://estoque-remedios-7b785-default-rtdb.firebaseio.com/estoque/dados/meds.json?limitToFirst=1");
+      const d2 = await r2.json();
+      out("✅ Primeiro med no banco: " + JSON.stringify(d2), "ok");
+    } else {
+      out("❌ Firebase retornou status: " + r.status, "err");
+    }
+  } catch(e) {
+    out("❌ Erro ao acessar Firebase: " + e.message, "err");
+  }
+  
+  // Verificar cache local
+  try {
+    const keys = ["hum_c6","hum_est_v5","hum_est_v4","hum_est_v3"];
+    keys.forEach(k => {
+      const v = localStorage.getItem(k);
+      if(v){
+        const d = JSON.parse(v);
+        out("💾 Cache '"+k+"': "+((d&&d.meds)?d.meds.length+" meds":"vazio"), "ok");
+      }
+    });
+  } catch(e) {
+    out("⚠️ Erro ao ler cache: "+e.message, "warn");
+  }
+  
+  // Verificar sessão
+  const sessKeys = ["hum_s6","hum_sess_v5","hum_sess_v4"];
+  sessKeys.forEach(k => {
+    const v = localStorage.getItem(k);
+    if(v){
+      try { out("🔑 Sessão '"+k+"': "+JSON.stringify(JSON.parse(v)), "ok"); } catch(e){}
+    }
+  });
+}
+
+// Auto-teste ao carregar
+setTimeout(testar, 500);
+</script>
+</body>
+</html>
