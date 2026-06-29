@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Teste de Sincronização — Humanae</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:16px}
+h2{text-align:center;font-size:18px;font-weight:700;color:#1a9e6b;margin-bottom:14px}
+.sub{text-align:center;font-size:12px;color:#6b7280;margin-bottom:16px}
+.box{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.box h3{font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px}
+
+/* STATUS */
+.status{padding:12px 16px;border-radius:10px;text-align:center;font-weight:700;font-size:15px;margin-bottom:8px;transition:.3s}
+.verde{background:#d1fae5;color:#065f46}
+.vermelho{background:#fee2e2;color:#991b1b}
+.amarelo{background:#fef3c7;color:#92400e}
+
+/* DEVICE BADGE */
+.device-badge{display:inline-block;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;margin:0 auto 4px;display:block;text-align:center}
+.badge-pc{background:#e6f1fb;color:#185fa5}
+.badge-cel{background:#ede9fe;color:#5b21b6}
+
+/* CONTADOR */
+#contador{font-size:72px;font-weight:800;text-align:center;color:#1a9e6b;padding:8px 0;transition:transform .15s,color .15s}
+#contador.bump{transform:scale(1.18);color:#0f6e4a}
+.quem{text-align:center;font-size:12px;color:#6b7280;margin-bottom:14px;min-height:18px}
+
+/* BOTÕES */
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.btn{padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;color:#fff;transition:.1s}
+.btn:active{transform:scale(.96)}
+.b-inc{background:#1a9e6b}
+.b-dec{background:#185fa5}
+.b-rst{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;color:#fff;background:#d97706}
+
+/* PING */
+.ping-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid #f3f4f6}
+.ping-row:last-child{border:none}
+.ping-lbl{color:#6b7280}
+.ping-val{font-weight:700;color:#111827}
+.ping-val.ok{color:#065f46}
+.ping-val.warn{color:#92400e}
+.ping-val.err{color:#991b1b}
+
+/* DISPOSITIVOS ONLINE */
+#onlineList{display:flex;flex-direction:column;gap:6px}
+.dev-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#f9fafb;font-size:13px}
+.dev-name{font-weight:600;color:#111827}
+.dev-ago{font-size:11px;color:#9ca3af}
+.dev-dot{width:8px;height:8px;border-radius:50%;background:#1a9e6b;margin-right:8px;flex-shrink:0}
+
+/* LOG */
+#log{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.log-line{font-size:12px;font-family:monospace;display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f3f4f6}
+.log-time{color:#9ca3af;flex-shrink:0;font-size:11px}
+.log-msg{color:#374151}
+.log-msg.ok{color:#065f46;font-weight:600}
+.log-msg.err{color:#991b1b;font-weight:600}
+.log-msg.warn{color:#92400e}
+.log-msg.recv{color:#5b21b6;font-weight:600}
+</style>
+</head>
+<body>
+
+<h2>⚡ Teste de Sincronização</h2>
+<p class="sub">Abra este arquivo no celular E no PC ao mesmo tempo</p>
+
+<div class="box">
+  <div id="deviceBadge" class="device-badge badge-pc">💻 Detectando dispositivo...</div>
+  <div id="stConn" class="status amarelo">⏳ Conectando ao Firebase...</div>
+</div>
+
+<div class="box">
+  <h3>Contador em tempo real</h3>
+  <div id="contador">—</div>
+  <div class="quem" id="quem">aguardando...</div>
+  <div class="btns">
+    <button class="btn b-inc" onclick="incrementar()">👆 +1</button>
+    <button class="btn b-dec" onclick="decrementar()">👇 −1</button>
+  </div>
+  <button class="b-rst btn" onclick="resetar()">🔄 Resetar para zero</button>
+</div>
+
+<div class="box">
+  <h3>Métricas</h3>
+  <div class="ping-row"><span class="ping-lbl">Latência última escrita</span><span class="ping-val" id="mLatWrite">—</span></div>
+  <div class="ping-row"><span class="ping-lbl">Tempo até receber eco</span><span class="ping-val" id="mLatRead">—</span></div>
+  <div class="ping-row"><span class="ping-lbl">Total de atualizações</span><span class="ping-val" id="mUpdates">0</span></div>
+  <div class="ping-row"><span class="ping-lbl">Atualizações de outros</span><span class="ping-val ok" id="mFromOthers">0</span></div>
+</div>
+
+<div class="box">
+  <h3>Dispositivos ativos (últimos 30s)</h3>
+  <div id="onlineList"><div style="font-size:13px;color:#9ca3af">Nenhum dispositivo detectado ainda</div></div>
+</div>
+
+<div class="box">
+  <h3>Log ao vivo</h3>
+  <div id="log"></div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,onValue,set,update,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
+  authDomain:"estoque-remedios-7b785.firebaseapp.com",
+  databaseURL:"https://estoque-remedios-7b785-default-rtdb.firebaseio.com",
+  projectId:"estoque-remedios-7b785",
+  storageBucket:"estoque-remedios-7b785.firebasestorage.app",
+  messagingSenderId:"1005921072336",
+  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+});
+
+const db=getDatabase(app);
+const CONT_REF=ref(db,"teste/contador");
+const PRES_REF=ref(db,"teste/presenca");
+
+// Detecta dispositivo
+const isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const DEV_ICON=isMobile?"📱":"💻";
+const DEV_NAME=DEV_ICON+" "+(isMobile?"Celular":"PC");
+const DEV_ID=DEV_ICON+"_"+(isMobile?"CEL":"PC")+"_"+Math.random().toString(36).slice(2,5).toUpperCase();
+
+// UI inicial
+document.getElementById("deviceBadge").textContent=DEV_NAME+" ("+DEV_ID+")";
+document.getElementById("deviceBadge").className="device-badge "+(isMobile?"badge-cel":"badge-pc");
+
+let N=0, updates=0, fromOthers=0, writeTs=0;
+
+// === LOG ===
+const log=(m,cls="")=>{
+  const el=document.getElementById("log");
+  const t=new Date().toLocaleTimeString("pt-BR");
+  const line=document.createElement("div");
+  line.className="log-line";
+  line.innerHTML=`<span class="log-time">${t}</span><span class="log-msg ${cls}">${m}</span>`;
+  el.insertBefore(line,el.firstChild);
+  if(el.children.length>50)el.removeChild(el.lastChild);
+};
+
+const st=(m,c)=>{const el=document.getElementById("stConn");el.textContent=m;el.className="status "+c};
+const setMetric=(id,v,cls="")=>{const el=document.getElementById(id);el.textContent=v;el.className="ping-val "+(cls||"")};
+
+// === PRESENÇA ===
+const myRef=ref(db,"teste/presenca/"+DEV_ID);
+const atualizarPresenca=()=>{
+  set(myRef,{nome:DEV_NAME,ts:Date.now()}).catch(()=>{});
+};
+atualizarPresenca();
+setInterval(atualizarPresenca,10000);
+
+// Listener de presença
+onValue(PRES_REF,snap=>{
+  const d=snap.val();
+  const lista=document.getElementById("onlineList");
+  if(!d){lista.innerHTML=`<div style="font-size:13px;color:#9ca3af">Nenhum ainda</div>`;return}
+  const agora=Date.now();
+  const ativos=Object.entries(d)
+    .filter(([,v])=>(agora-(v.ts||0))<30000)
+    .sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+  if(!ativos.length){lista.innerHTML=`<div style="font-size:13px;color:#9ca3af">Nenhum ativo agora</div>`;return}
+  lista.innerHTML=ativos.map(([id,v])=>{
+    const secsAtras=Math.round((agora-(v.ts||0))/1000);
+    const sou=id===DEV_ID;
+    return`<div class="dev-item">
+      <div style="display:flex;align-items:center">
+        <div class="dev-dot" style="background:${secsAtras<15?'#1a9e6b':'#d97706'}"></div>
+        <span class="dev-name">${v.nome||id}${sou?" (você)":""}</span>
+      </div>
+      <span class="dev-ago">${secsAtras===0?"agora":secsAtras+"s atrás"}</span>
+    </div>`;
+  }).join("");
+});
+
+// === CONTADOR ===
+onValue(CONT_REF,snap=>{
+  const d=snap.val();
+  updates++;
+  setMetric("mUpdates",updates);
+
+  if(d!==null){
+    N=d.n||0;
+    const de=d.de||"?";
+    const sou=(de===DEV_ID);
+
+    // Anima número
+    const el=document.getElementById("contador");
+    el.textContent=N;
+    el.classList.add("bump");
+    setTimeout(()=>el.classList.remove("bump"),180);
+
+    // Latência de leitura (eco)
+    if(sou&&writeTs>0){
+      const lat=Date.now()-writeTs;
+      setMetric("mLatRead",lat+"ms",lat<150?"ok":lat<400?"warn":"err");
+      writeTs=0;
+    }
+
+    // Quem alterou
+    if(!sou){
+      fromOthers++;
+      setMetric("mFromOthers",fromOthers,"ok");
+      document.getElementById("quem").textContent="Alterado por: "+de;
+      log("🔄 RECEBIDO de "+de+" → n="+N,"recv");
+    } else {
+      document.getElementById("quem").textContent="Você alterou → "+N;
+      log("↩️ Eco confirmado: n="+N,"ok");
+    }
+
+    st("✅ Ao vivo","verde");
+  } else {
+    N=0;
+    document.getElementById("contador").textContent="0";
+    document.getElementById("quem").textContent="banco vazio";
+    st("✅ Conectado — banco vazio","verde");
+    log("Conectado. Banco de teste vazio.","");
+  }
+},(e)=>{
+  st("❌ Erro: "+e.code,"vermelho");
+  log("ERRO: "+e.message,"err");
+});
+
+// === AÇÕES ===
+const salvar=novoN=>{
+  writeTs=Date.now();
+  log("📤 Enviando n="+novoN+" ...","warn");
+  set(CONT_REF,{n:novoN,de:DEV_ID,ts:Date.now()})
+    .then(()=>{
+      const lat=Date.now()-writeTs;
+      setMetric("mLatWrite",lat+"ms",lat<150?"ok":lat<400?"warn":"err");
+      log("✅ Gravado em "+lat+"ms","ok");
+    })
+    .catch(e=>log("❌ Erro ao salvar: "+e.message,"err"));
+};
+
+window.incrementar=()=>salvar(N+1);
+window.decrementar=()=>salvar(Math.max(0,N-1));
+window.resetar=()=>{if(confirm("Resetar contador para zero?"))salvar(0)};
+
+log("Iniciado como: "+DEV_ID,"ok");
+</script>
+</body>
+</html>
