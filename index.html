@@ -4,1006 +4,834 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Estoque">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Humanae">
 <meta name="theme-color" content="#1a9e6b">
 <title>Estoque</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Humanae">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icone-180.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icone-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icone-512.png">
 <style>
-:root{--green:#1a9e6b;--green-d:#0f6e4a;--green-bg:#e6f7f1;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--blue:#185fa5;--blue-bg:#e6f1fb;--purple:#7c3aed;--purple-bg:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--r:14px;--rs:8px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--g900)}
+:root{
+  --green:#1a9e6b;--green-d:#157a53;--red:#e74c3c;--red-d:#c0392b;
+  --amber:#f39c12;--blue:#2980b9;--blue-d:#1f618d;
+  --bg:#f0f4f8;--card:#fff;--text:#2c3e50;--sub:#7f8c8d;
+  --border:#dce1e7;--shadow:0 2px 8px rgba(0,0,0,.10);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* ===== TELAS ===== */
-.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f6e4a,#1a9e6b)}
-.screen.active{display:flex}
-.box{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,.2)}
-.logo{text-align:center;font-size:52px;margin-bottom:10px}
-.box h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:4px}
-.box p{text-align:center;font-size:13px;color:var(--g500);margin-bottom:20px}
-.tabs{display:grid;gap:6px;margin-bottom:20px;background:var(--g100);border-radius:12px;padding:4px}
-.tabs-2{grid-template-columns:1fr 1fr}
-.tabs-3{grid-template-columns:1fr 1fr 1fr}
-.tab{height:36px;border-radius:8px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer}
-.tab.active{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.12)}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:11px;font-weight:700;color:var(--g700);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.field input{width:100%;height:48px;border-radius:var(--rs);border:1.5px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
-.field input:focus{border-color:var(--green);background:#fff}
-.field input.center{text-align:center;letter-spacing:4px;font-size:20px}
-.btn{width:100%;height:50px;border-radius:var(--r);border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
-.btn-green{background:var(--green);color:#fff}
-.btn-green:active{background:var(--green-d)}
-.btn-amber{background:var(--amber);color:#fff}
-.btn-amber:active{opacity:.85}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.msg{font-size:13px;text-align:center;margin-top:10px;min-height:18px;font-weight:500}
-.msg-err{color:var(--red)}
-.msg-ok{color:var(--green)}
-.msg-loading{color:var(--amber)}
-.success-box{display:none;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:8px 0}
-.success-box .ico{font-size:48px}
-.success-box h3{font-size:18px;font-weight:700;color:var(--green)}
-.success-box p{font-size:13px;color:var(--g500)}
-.divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:var(--g400);font-size:12px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--g200)}
+/* LOGIN */
+#loginWrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.lbox{background:var(--card);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;box-shadow:var(--shadow);text-align:center}
+.llogo{font-size:52px;margin-bottom:6px}
+.ltitle{font-size:22px;font-weight:700;margin-bottom:2px}
+.lsub{font-size:13px;color:var(--sub);margin-bottom:24px}
+.linput{width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;font-size:18px;outline:none;text-align:center;letter-spacing:6px;transition:.2s}
+.linput:focus{border-color:var(--green)}
+.lbtn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;transition:.15s}
+.lbtn:active{background:var(--green-d)}
+.lerr{font-size:13px;color:var(--red);margin-top:10px;min-height:18px;font-weight:500}
+.lnotice{font-size:12px;color:var(--sub);margin-top:14px;padding:10px;background:#f8f9fa;border-radius:8px;line-height:1.5}
 
-/* ===== HEADER ===== */
-.hdr{background:#fff;padding:14px 20px 12px;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
-.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.hdr-title{display:flex;align-items:center;gap:8px}
-.hdr-title h1{font-size:19px;font-weight:700}
-.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
-.badge-adm{background:var(--purple);color:#fff}
-.badge-user{background:var(--blue);color:#fff}
-.sp{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--g100);color:var(--g500)}
-.sp.ok{background:var(--green-bg);color:var(--green)}
-.sp.err{background:var(--red-bg);color:var(--red)}
-.sp.sync{background:var(--amber-bg);color:var(--amber)}
-.hdr-r{display:flex;align-items:center;gap:6px}
-.icon-btn{width:38px;height:38px;border-radius:50%;background:var(--g100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;position:relative;flex-shrink:0}
-.ndot{width:10px;height:10px;background:var(--red);border-radius:50%;position:absolute;top:4px;right:4px;border:2px solid #fff;display:none}
-.search-wrap{position:relative}
-.search-wrap input{width:100%;height:40px;border-radius:20px;border:1px solid var(--g200);background:var(--g100);padding:0 16px 0 38px;font-size:15px;outline:none}
-.search-wrap input::placeholder{color:var(--g400)}
-.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px}
+/* APP */
+#appWrap{display:none;padding-bottom:80px}
+.topbar{position:sticky;top:0;z-index:100;background:var(--green);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.topbar h1{font-size:18px;font-weight:700;flex:1}
+.ticon{background:rgba(255,255,255,.18);border:none;color:#fff;width:37px;height:37px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+.ticon:active{background:rgba(255,255,255,.35)}
+.ndot{position:absolute;top:3px;right:3px;width:9px;height:9px;background:#e74c3c;border-radius:50%;display:none;border:1.5px solid var(--green)}
 
-/* ===== APP ===== */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
-.stat{background:#fff;border-radius:var(--rs);padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)}
-.stat-n{font-size:21px;font-weight:700;line-height:1}
-.stat-l{font-size:10px;color:var(--g500);margin-top:2px}
-.sn{color:var(--green)}.sw{color:var(--amber)}.sd{color:var(--red)}
-.filters{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
-.filters::-webkit-scrollbar{display:none}
-.fb{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1px solid var(--g200);background:#fff;font-size:13px;color:var(--g500);cursor:pointer;font-weight:500;white-space:nowrap}
-.fb.active{background:var(--green);color:#fff;border-color:var(--green)}
-.list{padding:0 16px 100px;display:flex;flex-direction:column;gap:8px}
-.card{background:#fff;border-radius:var(--r);padding:13px 14px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid transparent;display:flex;align-items:flex-start;gap:11px}
-.card.ok{border-left-color:var(--green)}.card.soon{border-left-color:var(--amber)}.card.expired,.card.zero{border-left-color:var(--red)}
-.cico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;margin-top:2px}
-.ico-ok{background:var(--green-bg)}.ico-soon{background:var(--amber-bg)}.ico-exp{background:var(--red-bg)}.ico-zero{background:var(--g100)}
-.cbody{flex:1;min-width:0}
-.cname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.csub{font-size:12px;margin-top:2px}
-.tok{color:var(--green)}.tso{color:var(--amber)}.tex{color:var(--red);font-weight:600}.tze{color:var(--g400)}
-.cvenc{font-size:15px;font-weight:700;margin-top:4px}
-.vok{color:var(--green)}.vso{color:var(--amber)}.vex{color:var(--red)}.vze{color:var(--g400)}
-.clm{font-size:11px;color:var(--g400);margin-top:4px}
-.cacts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.abtn{padding:6px 11px;border-radius:6px;font-size:12px;border:1px solid var(--g200);background:var(--g50);color:var(--g500);cursor:pointer;font-weight:500}
-.abtn:active{background:var(--g200)}
-.adel{color:var(--red);border-color:#fecaca;background:var(--red-bg)}
-.ahist{color:var(--purple);border-color:#ddd6fe;background:var(--purple-bg)}
-.cright{flex-shrink:0;padding-top:2px}
-.qty{font-size:15px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--g100);color:var(--g700)}
-.qty.qz{background:var(--red-bg);color:var(--red)}
-.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--green);border:none;box-shadow:0 4px 16px rgba(26,158,107,.45);color:#fff;font-size:28px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center}
-.fab:active{transform:scale(.94)}
+.offbar{background:var(--amber);color:#fff;text-align:center;font-size:13px;font-weight:600;padding:7px;display:none}
+.synbar{background:var(--green);color:#fff;text-align:center;font-size:12px;padding:5px;display:none}
 
-/* ===== MODAIS ===== */
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end}
-.ov.open{display:flex}
-.modal{background:#fff;border-radius:22px 22px 0 0;padding:22px 20px 40px;width:100%;max-height:92vh;overflow-y:auto}
-.mh{width:36px;height:4px;background:var(--g300);border-radius:2px;margin:0 auto 18px}
-.modal h2{font-size:18px;font-weight:700;margin-bottom:18px}
-.mfield{margin-bottom:14px}
-.mfield label{display:block;font-size:13px;font-weight:600;color:var(--g700);margin-bottom:5px}
-.mfield input{width:100%;height:48px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
-.mfield input:focus{border-color:var(--green);background:#fff}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.mbtn{width:100%;height:52px;border-radius:var(--r);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-top:6px}
-.mbtn-green{background:var(--green)}.mbtn-green:active{background:var(--green-d)}
-.mbtn-red{background:var(--red)}
-.mbtn-amber{background:var(--amber)}
-.mcan{width:100%;height:44px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:16px;cursor:pointer;margin-top:10px}
-.back-home{width:100%;height:44px;border-radius:var(--r);background:var(--g100);border:none;color:var(--g700);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
-.mt2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.mtt{height:52px;border-radius:var(--rs);border:2px solid var(--g200);background:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.mtt.ent.sel{background:var(--green-bg);border-color:var(--green);color:var(--green)}
-.mtt.sai.sel{background:var(--red-bg);border-color:var(--red);color:var(--red)}
-.mtt:not(.sel){color:var(--g400)}
-.confirm-ok{background:var(--green-bg);border:1px solid #6ee7b7;border-radius:var(--rs);padding:12px;text-align:center;margin-bottom:14px;display:none}
-.confirm-ok p{font-size:14px;font-weight:700;color:var(--green-d)}
-.confirm-ok span{font-size:12px;color:var(--g500)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 12px 0}
+.scard{background:var(--card);border-radius:12px;padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.snum{font-size:26px;font-weight:800;color:var(--green)}
+.snum.red{color:var(--red)}
+.snum.amber{color:var(--amber)}
+.slbl{font-size:11px;color:var(--sub);margin-top:2px}
 
-/* ===== HISTÓRICO ===== */
-.hist-list{display:flex;flex-direction:column;gap:8px}
-.hi{background:var(--g50);border-radius:var(--rs);padding:11px 14px}
-.hi.ent{border-left:3px solid var(--green)}.hi.sai{border-left:3px solid var(--red)}
-.hi-top{display:flex;align-items:center;justify-content:space-between}
-.hi-tipo{font-size:13px;font-weight:700}
-.hi-tipo.ent{color:var(--green)}.hi-tipo.sai{color:var(--red)}
-.hi-qtd{font-size:15px;font-weight:700}
-.hi-info{font-size:12px;color:var(--g500);margin-top:3px}
+.filterbar{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;scrollbar-width:none}
+.filterbar::-webkit-scrollbar{display:none}
+.ftag{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;white-space:nowrap;cursor:pointer;font-weight:500;user-select:none}
+.ftag.on{background:var(--green);border-color:var(--green);color:#fff}
 
-/* ===== PAINEL ADM ===== */
-.panel{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100%;background:#fff;z-index:400;transition:right .25s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
-.panel.open{right:0}
-.ph{padding:18px 20px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between}
-.ph h3{font-size:17px;font-weight:700}
-.ph-x{background:none;border:none;font-size:24px;color:var(--g400);cursor:pointer}
-.ptabs{display:flex;border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none}
-.ptabs::-webkit-scrollbar{display:none}
-.ptab{flex-shrink:0;height:44px;border:none;background:none;font-size:11px;font-weight:700;color:var(--g400);cursor:pointer;border-bottom:2px solid transparent;padding:0 10px;white-space:nowrap}
-.ptab.active{color:var(--green);border-bottom-color:var(--green)}
-.pbody{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
-.ni{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
-.ni.mov-e{border-left:3px solid var(--green)}.ni.mov-s{border-left:3px solid var(--red)}
-.ni.cad-u{border-left:3px solid var(--purple);background:var(--purple-bg)}
-.ni.alerta{border-left:3px solid var(--red)}.ni.alerta-w{border-left:3px solid var(--amber)}
-.ni p{font-size:14px;font-weight:600}.ni span{font-size:12px;color:var(--g500);margin-top:3px;display:block}
-.ni-time{font-size:10px;color:var(--g400);margin-top:4px}
-.pe{text-align:center;color:var(--g400);padding:32px 20px;font-size:14px}
+.searchbar{padding:0 12px 8px;display:flex;gap:8px}
+.searchbar input{flex:1;padding:10px 14px;border:2px solid var(--border);border-radius:12px;font-size:14px;outline:none;transition:.2s}
+.searchbar input:focus{border-color:var(--green)}
+.scanbtn{background:var(--blue);color:#fff;border:none;border-radius:12px;width:44px;font-size:18px;cursor:pointer}
+.scanbtn:active{background:var(--blue-d)}
 
-/* ===== USUÁRIOS ===== */
-.user-card{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
-.user-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.user-name{font-size:15px;font-weight:700}
-.user-meta{font-size:11px;color:var(--g500);margin-top:2px}
-.ustatus{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
-.u-ok{background:var(--green-bg);color:var(--green)}.u-blocked{background:var(--red-bg);color:var(--red)}
-.uacts{display:flex;gap:6px;margin-bottom:10px}
-.ua{flex:1;height:34px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer}
-.ua-block{background:var(--amber-bg);color:var(--amber)}
-.ua-unblock{background:var(--green-bg);color:var(--green)}
-.ua-del{background:var(--red-bg);color:var(--red)}
-.ptitle{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.prow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--g200)}
-.prow:last-child{border-bottom:none}
-.prow-label{font-size:13px;color:var(--g700)}
-.toggle{position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0}
-.toggle input{opacity:0;width:0;height:0;position:absolute}
-.tslider{position:absolute;inset:0;background:var(--g300);border-radius:11px;transition:.2s}
-.toggle input:checked+.tslider{background:var(--green)}
-.tslider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
-.toggle input:checked+.tslider:before{transform:translateX(18px)}
+/* CARDS */
+.medlist{padding:0 12px;display:flex;flex-direction:column;gap:9px}
+.mcard{background:var(--card);border-radius:14px;padding:13px 15px;box-shadow:var(--shadow);border-left:5px solid var(--green)}
+.mcard.red{border-left-color:var(--red)}
+.mcard.amber{border-left-color:var(--amber)}
+.mtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.mname{font-size:15px;font-weight:700;line-height:1.3;flex:1}
+.mqty{font-size:13px;font-weight:700;padding:3px 10px;border-radius:16px;background:var(--green);color:#fff;white-space:nowrap;flex-shrink:0}
+.mqty.zero{background:var(--red)}
+.mqty.low{background:var(--amber)}
+.minfo{margin-top:7px;font-size:12px;color:var(--sub);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mval{font-size:13px;font-weight:700}
+.mval.red{color:var(--red)}
+.mval.amber{color:var(--amber)}
+.macts{margin-top:9px;display:flex;gap:7px;flex-wrap:wrap}
+.abtn{flex:1;min-width:70px;padding:8px 6px;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;text-align:center}
+.abtn.mov{background:var(--blue);color:#fff}
+.abtn.mov:active{background:var(--blue-d)}
+.abtn.hist{background:#ecf0f1;color:var(--text)}
+.abtn.edit{background:var(--amber);color:#fff}
+.abtn.del{background:var(--red);color:#fff}
 
-/* ===== CADASTRO RÁPIDO ADM ===== */
-.quick-add{background:var(--green-bg);border-radius:var(--rs);padding:14px}
-.quick-add h4{font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px}
-.quick-add input{width:100%;height:42px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 12px;font-size:15px;background:#fff;outline:none;margin-bottom:8px}
-.quick-add input:focus{border-color:var(--green)}
-.quick-add-btn{width:100%;height:42px;border-radius:var(--rs);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
-.quick-add-msg{font-size:12px;text-align:center;margin-top:6px;min-height:16px}
+.fab{position:fixed;bottom:22px;right:18px;width:56px;height:56px;background:var(--green);color:#fff;border:none;border-radius:50%;font-size:28px;cursor:pointer;box-shadow:0 4px 16px rgba(26,158,107,.4);z-index:90;display:none;align-items:center;justify-content:center}
+.fab:active{background:var(--green-d);transform:scale(.94)}
 
-/* ===== QR ===== */
-.qr-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
-.qr-ov.open{display:flex}
-.qr-box{background:#fff;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center}
-.qr-box h3{font-size:18px;font-weight:700;margin-bottom:4px}
-.qr-box p{font-size:13px;color:var(--g500);margin-bottom:20px}
-.qr-wrap{background:var(--g50);border-radius:16px;padding:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;min-height:140px}
-.qr-url{font-size:11px;color:var(--g400);word-break:break-all;margin-bottom:14px;padding:8px 12px;background:var(--g100);border-radius:8px}
-.qr-copy{width:100%;height:44px;border-radius:var(--r);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
-.qr-close-btn{width:100%;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:15px;cursor:pointer}
+/* MODAIS */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.ov.center{align-items:center}
+.ov.on{display:flex}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:22px 18px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.ov.center .modal{border-radius:20px;max-height:86vh}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:14px;text-align:center}
+.modal label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:3px;margin-top:11px;text-transform:uppercase;letter-spacing:.4px}
+.modal input,.modal select{width:100%;padding:11px 13px;border:2px solid var(--border);border-radius:10px;font-size:15px;outline:none;transition:.2s}
+.modal input:focus,.modal select:focus{border-color:var(--green)}
+.mbtns{display:flex;gap:8px;margin-top:18px}
+.mbtn{flex:1;padding:12px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;transition:.12s}
+.mbtn.g{background:var(--green);color:#fff}
+.mbtn.g:active{background:var(--green-d)}
+.mbtn.r{background:var(--red);color:#fff}
+.mbtn.r:active{background:var(--red-d)}
+.mbtn.gr{background:#ecf0f1;color:var(--text)}
+.mbtn.h{background:#8e44ad;color:#fff;font-size:12px}
+.mbtn.h:active{background:#6c3483}
 
-/* ===== TOAST + SKELETON ===== */
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.sk{padding:0 16px;display:flex;flex-direction:column;gap:8px}
-.skc{background:#fff;border-radius:var(--r);padding:16px;border-left:4px solid var(--g200);display:flex;gap:12px;align-items:center}
-.ski{width:40px;height:40px;border-radius:50%;background:var(--g200);flex-shrink:0;animation:pulse 1.2s infinite}
-.skb{flex:1;display:flex;flex-direction:column;gap:8px}
-.skl{height:12px;border-radius:6px;background:var(--g200);animation:pulse 1.2s infinite}
-.w80{width:80%}.w50{width:50%}.w30{width:30%}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-/* BARCODE SCANNER */
-#ovBarcode{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:none;align-items:flex-end}
-#ovBarcode.open{display:flex}
-.barcode-modal{background:#111;border-radius:22px 22px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
-#barcodeVideo{width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover;margin-bottom:12px}
-#barcodeStatus{text-align:center;color:#fff;font-size:14px;margin-bottom:12px;padding:8px;background:rgba(255,255,255,.1);border-radius:8px}
-.barcode-search{display:flex;gap:8px;margin-bottom:10px}
-.barcode-search input{flex:1;height:46px;border-radius:8px;border:none;padding:0 12px;font-size:16px;background:#fff}
-.barcode-search button{padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
-.barcode-close{width:100%;padding:12px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:11px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:600;opacity:0;transition:.28s;pointer-events:none;text-align:center;max-width:88vw;white-space:pre-wrap}
+.toast.on{opacity:1}
 
+/* PAINEL */
+.pov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none}
+.pov.on{display:block}
+.panel{position:fixed;top:0;right:-100%;width:min(100%,420px);height:100vh;background:var(--card);z-index:301;transition:.3s;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.2)}
+.panel.on{right:0}
+.phead{background:var(--green);color:#fff;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.phead h2{font-size:17px;font-weight:700}
+.pclose{background:rgba(255,255,255,.2);border:none;color:#fff;width:33px;height:33px;border-radius:50%;font-size:18px;cursor:pointer}
+.ptabs{display:flex;border-bottom:2px solid var(--border);background:var(--bg)}
+.ptab{flex:1;padding:11px 2px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border:none;background:none;color:var(--sub)}
+.ptab.on{color:var(--green);border-bottom:3px solid var(--green);margin-bottom:-2px}
+.pbody{padding:14px}
+.psec{display:none}
+.psec.on{display:block}
+
+.mitem{background:#f8f9fa;border-radius:10px;padding:11px;margin-bottom:7px;border-left:4px solid var(--green)}
+.mitem.out{border-left-color:var(--red)}
+.mitem .mt{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.mitem .mn{font-size:13px;font-weight:700}
+.mitem .mb{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--green);color:#fff;white-space:nowrap}
+.mitem .mb.out{background:var(--red)}
+.mitem .mm{font-size:11px;color:var(--sub);margin-top:3px}
+
+.aitem{background:#fff5f5;border:1px solid #ffd5d5;border-radius:10px;padding:11px;margin-bottom:7px;font-size:13px}
+.aitem.am{background:#fffbf0;border-color:#ffe0a0}
+
+.shopitem{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+
+.cfgsec{margin-bottom:18px}
+.cfgsec h4{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:9px;text-transform:uppercase;letter-spacing:.5px}
+.ucard{background:#f8f9fa;border-radius:11px;padding:13px;margin-bottom:9px}
+.ucard h5{font-size:13px;font-weight:700;color:var(--green);margin-bottom:9px}
+.prow{display:flex;gap:7px;align-items:center}
+.prow input{flex:1;padding:9px 11px;border:2px solid var(--border);border-radius:9px;font-size:14px;outline:none;transition:.2s}
+.prow input:focus{border-color:var(--green)}
+.prow button{padding:9px 13px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pshow{font-size:12px;color:var(--sub);margin-top:5px;font-style:italic}
+.clrbtn{width:100%;padding:11px;background:var(--red);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px}
+.sndbtn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px}
+
+/* HISTÓRICO */
+.hov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.hov.on{display:flex}
+.hbox{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:76vh;display:flex;flex-direction:column}
+.hhead{padding:15px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.hhead h3{font-size:15px;font-weight:700}
+.hhead button{background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub)}
+.hlist{overflow-y:auto;padding:10px 14px;flex:1}
+
+/* QR */
+.qrov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center}
+.qrov.on{display:flex}
+.qrbox{background:var(--card);border-radius:18px;padding:26px 22px;width:88%;max-width:340px;text-align:center}
+.qrbox h3{font-size:16px;font-weight:700;margin-bottom:14px}
+#qrCanvas{border-radius:10px;max-width:190px}
+.qrbox p{font-size:12px;color:var(--sub);margin:10px 0 14px}
+.qrbtns{display:flex;gap:8px}
+
+/* SCANNER */
+.scanOv{position:fixed;inset:0;background:#000;z-index:600;display:none;flex-direction:column}
+.scanOv.on{display:flex}
+.scanhead{padding:14px 18px;color:#fff;display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.6)}
+.scanhead h3{flex:1;font-size:15px;font-weight:700}
+.scanhead button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:7px 13px;border-radius:9px;cursor:pointer;font-size:13px}
+#scanVid{width:100%;flex:1;object-fit:cover}
+.scanline{position:absolute;top:50%;left:10%;right:10%;height:2px;background:var(--green);box-shadow:0 0 10px var(--green);animation:scanA 2s infinite}
+@keyframes scanA{0%,100%{top:30%}50%{top:70%}}
+.scanman{padding:14px;background:rgba(0,0,0,.7)}
+.scanman input{width:100%;padding:11px;border:2px solid rgba(255,255,255,.25);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:15px;outline:none;text-align:center}
+.scanman input::placeholder{color:rgba(255,255,255,.45)}
+
+.empty{text-align:center;padding:36px 18px;color:var(--sub)}
+.ei{font-size:44px;margin-bottom:10px}
 </style>
 </head>
 <body>
 
-<!-- ===== TELA LOGIN ===== -->
-<div class="screen active" id="scrLogin">
-  <div class="box">
-    <div class="logo">💊</div>
-    <h2>Estoque</h2>
-    <p>Controle de medicamentos</p>
-    <p style="font-size:12px;color:var(--g400);margin-top:-12px">Para cadastrar usuários, contate o ADM</p>
-    <!-- Abas removidas - apenas login direto -->
-    <!-- ENTRAR -->
-    <div id="formEnt">
-      <div class="field">
-        <label>Senha de acesso</label>
-        <input type="password" id="inpSenha" class="center" placeholder="••••" inputmode="numeric"
-          onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <button class="btn btn-green" id="btnEnt" onclick="doLogin()">Entrar</button>
-    </div>
-    <!-- Formulário cadastro removido - apenas ADM cadastra pelo painel -->
-    <div id="formCad" style="display:none"></div>
-    <div class="msg" id="msgLogin"></div>
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="lbox">
+    <div class="llogo">💊</div>
+    <div class="ltitle">Estoque</div>
+    <div class="lsub">Controle de medicamentos</div>
+    <input class="linput" type="password" id="lpass" placeholder="••••" maxlength="20" autocomplete="current-password">
+    <button class="lbtn" onclick="doLogin()">Entrar</button>
+    <div class="lerr" id="lerr"></div>
+    <div class="lnotice">Para cadastrar usuários, contate o ADM</div>
   </div>
 </div>
 
-<div id="offlineBar" style="display:none;background:var(--amber);color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:700">📶 Sem internet — trabalhando offline</div>
-<!-- ===== APP PRINCIPAL ===== -->
-<div id="appMain" style="display:none">
-  <div class="hdr">
-    <div class="hdr-top">
-      <div class="hdr-title">
-        <span style="font-size:22px">💊</span>
-        <h1>Estoque</h1>
-        <span class="badge" id="userBadge">ADM</span>
-      </div>
-      <div class="hdr-r">
-        <span class="sp sync" id="spPill">⏳</span>
-        <button class="icon-btn" id="btnPanel" onclick="openPanel()" style="display:none">🔔<span class="ndot" id="ndot"></span></button>
-        <button class="icon-btn" onclick="openQR()" id="btnQR">🔗</button>
-        <button class="icon-btn" onclick="doLogout()">🚪</button>
-      </div>
-    </div>
-    <div class="search-wrap">
-      <span class="si">🔍</span>
-      <input type="text" id="srch" placeholder="Buscar medicamento..." oninput="render()" autocomplete="off">
-    </div>
+<!-- APP -->
+<div id="appWrap">
+  <div class="offbar" id="offbar">📶 Sem internet — trabalhando offline</div>
+  <div class="synbar" id="synbar">✅ Sincronizado</div>
+
+  <div class="topbar">
+    <span style="font-size:22px">💊</span>
+    <h1>Estoque</h1>
+    <span id="ulabel" style="font-size:12px;opacity:.85;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="ticon" id="syncIco">⏳</button>
+    <button class="ticon" id="bellBtn" onclick="openPanel()" style="display:none">🔔<span class="ndot" id="ndot"></span></button>
+    <button class="ticon" onclick="openQR()" title="QR / Link">🔗</button>
+    <button class="ticon" onclick="doLogout()" title="Sair">🚪</button>
   </div>
-  <div class="stats" id="stats">
-    <div class="stat"><div class="stat-n sn">—</div><div class="stat-l">Cadastrados</div></div>
-    <div class="stat"><div class="stat-n sw">—</div><div class="stat-l">Vence em breve</div></div>
-    <div class="stat"><div class="stat-n sd">—</div><div class="stat-l">Atenção</div></div>
+
+  <div class="summary">
+    <div class="scard"><div class="snum" id="sTot">—</div><div class="slbl">Cadastrados</div></div>
+    <div class="scard"><div class="snum amber" id="sSoon">—</div><div class="slbl">Vence em breve</div></div>
+    <div class="scard"><div class="snum red" id="sAlert">—</div><div class="slbl">Atenção</div></div>
   </div>
-  <div class="filters">
-    <button class="fb active" onclick="setF(this,'all')">Todos</button>
-    <button class="fb" onclick="setF(this,'expired')">⚠️ Vencidos</button>
-    <button class="fb" onclick="setF(this,'soon')">🕐 Vence em breve</button>
-    <button class="fb" onclick="setF(this,'zero')">📭 Sem estoque</button>
-    <button class="fb" onclick="setF(this,'ok')">✅ OK</button>
+
+  <div class="filterbar">
+    <span class="ftag on" onclick="setF('all',this)">Todos</span>
+    <span class="ftag" onclick="setF('exp',this)">⚠️ Vencidos</span>
+    <span class="ftag" onclick="setF('soon',this)">🕐 Vence em breve</span>
+    <span class="ftag" onclick="setF('zero',this)">📭 Sem estoque</span>
+    <span class="ftag" onclick="setF('ok',this)">✅ OK</span>
   </div>
-  <div class="sk" id="skeleton">
-    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
-    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
-    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+
+  <div class="searchbar">
+    <input type="text" id="srch" placeholder="🔍 Buscar medicamento..." oninput="render()">
+    <button class="scanbtn" onclick="openScan()" title="Câmera / Leitor">📷</button>
   </div>
-  <div class="list" id="list" style="display:none"></div>
-  <button class="fab" id="fabBtn" onclick="openMedModal()" style="display:none">+</button>
-<button class="fab" id="fabBar" onclick="openBarcodeScanner()" style="display:none;bottom:90px;background:var(--blue);font-size:20px">📷</button>
+
+  <div class="medlist" id="medlist"></div>
+  <button class="fab" id="fabBtn" onclick="openMedM()">+</button>
 </div>
 
 <!-- MODAL MEDICAMENTO -->
-<div class="ov" id="ovMed" onclick="ovClick(event,'ovMed')">
+<div class="ov center" id="medOv">
   <div class="modal">
-    <div class="mh"></div>
-    <h2 id="medModalTitle">Novo medicamento</h2>
-    <div class="mfield"><label>Nome</label><input type="text" id="mNome" placeholder="Ex: Paracetamol 500mg" autocomplete="off"></div>
-    <div class="frow">
-      <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
-      <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
+    <h3 id="medMT">Novo medicamento</h3>
+    <label>Nome</label>
+    <input id="mNm" type="text" placeholder="Nome do medicamento">
+    <label>Quantidade</label>
+    <input id="mQt" type="number" placeholder="0" min="0">
+    <label>Validade (MM/AA)</label>
+    <input id="mVl" type="text" placeholder="12/27" maxlength="5">
+    <label>Estoque mínimo (alerta)</label>
+    <input id="mMn" type="number" placeholder="5" min="0">
+    <label>Código de barras (opcional)</label>
+    <input id="mBc" type="text" placeholder="7891000315507">
+    <div class="mbtns">
+      <button class="mbtn gr" onclick="closeAll()">Cancelar</button>
+      <button class="mbtn h" onclick="closeAll()">🏠 Tela inicial</button>
+      <button class="mbtn g" onclick="saveMed()">Salvar</button>
     </div>
-    <div class="confirm-ok" id="medConfirm"><p id="medConfirmTxt"></p></div>
-    <button class="mbtn mbtn-green" onclick="saveMed()">Salvar</button>
-    <button class="mcan" onclick="closeOv('ovMed')">Cancelar</button>
-    <button class="back-home" onclick="closeOv('ovMed');scrollToTop()">🏠 Tela inicial</button>
   </div>
 </div>
 
 <!-- MODAL MOVIMENTAÇÃO -->
-<div class="ov" id="ovMov" onclick="ovClick(event,'ovMov')">
+<div class="ov center" id="movOv">
   <div class="modal">
-    <div class="mh"></div>
-    <h2 id="movNome" style="font-size:15px;margin-bottom:4px"></h2>
-    <div id="movEst" style="font-size:13px;color:var(--g500);margin-bottom:14px"></div>
-    <div class="mt2">
-      <button class="mtt ent sel" id="btnEnt2" onclick="selTipo('ent')">📥 Entrada</button>
-      <button class="mtt sai" id="btnSai" onclick="selTipo('sai')">📤 Saída</button>
+    <h3 id="movT">Movimentar</h3>
+    <div style="text-align:center;margin-bottom:12px">
+      <span style="font-size:13px;color:var(--sub)">Estoque atual: </span>
+      <span id="movCur" style="font-size:22px;font-weight:800;color:var(--green)">0</span>
     </div>
-    <div class="mfield"><label>Quantidade</label><input type="number" id="movQtd" placeholder="0" min="1" inputmode="numeric"></div>
-    <div class="confirm-ok" id="movConfirm"><p id="movConfirmTxt"></p><span id="movConfirmSub"></span></div>
-    <button class="mbtn mbtn-green" id="btnConfMov" onclick="saveMov()">✅ Confirmar entrada</button>
-    <button class="mcan" onclick="closeOv('ovMov')">Cancelar</button>
-    <button class="back-home" onclick="closeOv('ovMov');scrollToTop()">🏠 Tela inicial</button>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <button class="mbtn g" id="bEnt" onclick="setMT('entrada')">📥 Entrada</button>
+      <button class="mbtn r" id="bSai" onclick="setMT('saida')">📤 Saída</button>
+    </div>
+    <label>Quantidade</label>
+    <input id="movQ" type="number" placeholder="0" min="1">
+    <div class="mbtns">
+      <button class="mbtn gr" onclick="closeAll()">Cancelar</button>
+      <button class="mbtn h" onclick="closeAll()">🏠 Tela inicial</button>
+      <button class="mbtn g" id="movOk" onclick="confirmMov()">✅ Confirmar entrada</button>
+    </div>
   </div>
 </div>
 
-<!-- MODAL HISTÓRICO -->
-<div class="ov" id="ovHist" onclick="ovClick(event,'ovHist')">
-  <div class="modal">
-    <div class="mh"></div>
-    <h2 id="histTitle">Histórico</h2>
-    <div id="histContent"></div>
-    <button class="mcan" onclick="closeOv('ovHist')">Fechar</button>
+<!-- HISTÓRICO -->
+<div class="hov" id="histOv">
+  <div class="hbox">
+    <div class="hhead">
+      <h3 id="histT">Histórico</h3>
+      <button onclick="closeHist()">✕</button>
+    </div>
+    <div class="hlist" id="histL"></div>
+  </div>
+</div>
+
+<!-- QR -->
+<div class="qrov" id="qrOv">
+  <div class="qrbox">
+    <h3>📱 Link do Sistema</h3>
+    <canvas id="qrCanvas"></canvas>
+    <p>Escaneie ou compartilhe para acessar</p>
+    <div class="qrbtns">
+      <button class="mbtn gr" onclick="closeQR()">Fechar</button>
+      <button class="mbtn g" onclick="copyLink()">📋 Copiar link</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCANNER -->
+<div class="scanOv" id="scanOv">
+  <div class="scanhead">
+    <h3>📷 Leitor de Código de Barras</h3>
+    <button onclick="closeScan()">✕ Fechar</button>
+  </div>
+  <div style="position:relative;flex:1;overflow:hidden">
+    <video id="scanVid" autoplay playsinline muted></video>
+    <div class="scanline"></div>
+  </div>
+  <div class="scanman">
+    <input type="text" id="scanTxt" placeholder="Ou digite o código / nome aqui..." oninput="scanSearch(this.value)">
   </div>
 </div>
 
 <!-- PAINEL ADM -->
-<div class="panel" id="admPanel">
-  <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-x" onclick="closePanel()">✕</button></div>
+<div class="pov" id="pov" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="phead">
+    <h2>🔐 Painel ADM</h2>
+    <button class="pclose" onclick="closePanel()">✕</button>
+  </div>
   <div class="ptabs">
-    <button class="ptab active" id="ptMov"   onclick="setPTab('mov')">🔔 Movim.</button>
-    <button class="ptab"        id="ptAlerta" onclick="setPTab('alerta')">⚠️ Alertas</button>
-    <button class="ptab"        id="ptCompras" onclick="setPTab('compras')">🛒 Compras</button>
-    <button class="ptab"        id="ptConfig" onclick="setPTab('config')">⚙️ Config</button>
+    <button class="ptab on" onclick="showTab('Movs',this)">🔔 Movim.</button>
+    <button class="ptab" onclick="showTab('Alerts',this)">⚠️ Alertas</button>
+    <button class="ptab" onclick="showTab('Shop',this)">🛒 Compras</button>
+    <button class="ptab" onclick="showTab('Cfg',this)">⚙️ Config</button>
   </div>
-  <div class="pbody" id="pBody"></div>
-</div>
-
-<!-- QR CODE -->
-<div class="qr-ov" id="qrOv" onclick="qrOvClick(event)">
-  <div class="qr-box">
-    <h3>📱 Link do Sistema</h3>
-    <p>Escaneie ou compartilhe para acessar</p>
-    <div class="qr-wrap" id="qrWrap"></div>
-    <div class="qr-url" id="qrUrl"></div>
-    <button class="qr-copy" onclick="copyLink()">📋 Copiar link</button>
-    <button class="qr-close-btn" onclick="closeQR()">Fechar</button>
-  </div>
-</div>
-
-<!-- BARCODE SCANNER MODAL -->
-<div id="ovBarcode">
-  <div class="barcode-modal">
-    <div style="text-align:center;color:#fff;font-size:17px;font-weight:700;margin-bottom:12px">
-      📷 Leitor de Código de Barras
+  <div class="pbody">
+    <div class="psec on" id="pMovs">
+      <button class="clrbtn" onclick="clearMovs()" style="margin-bottom:10px">🗑️ Limpar histórico</button>
+      <div id="movlist2"></div>
     </div>
-    <video id="barcodeVideo" autoplay playsinline muted></video>
-    <div id="barcodeStatus">Iniciando câmera...</div>
-    <div class="barcode-search">
-      <input type="text" id="inpBuscaCod" placeholder="Ou digite o código / nome..." autocomplete="off"
-        onkeydown="if(event.key==='Enter')buscaManual()">
-      <button onclick="buscaManual()">🔍 Buscar</button>
+    <div class="psec" id="pAlerts">
+      <div id="alertlist"></div>
     </div>
-    <button class="barcode-close" onclick="closeBarcodeScanner()">✕ Fechar</button>
+    <div class="psec" id="pShop">
+      <p style="font-size:12px;color:var(--sub);margin-bottom:10px">Zerados ou abaixo do mínimo:</p>
+      <div id="shoplist"></div>
+      <button class="sndbtn" onclick="sendShop()">📤 Enviar pelo WhatsApp</button>
+    </div>
+    <div class="psec" id="pCfg">
+      <div class="cfgsec">
+        <h4>Alterar Senhas</h4>
+        <div id="cfgCards"></div>
+      </div>
+      <div class="cfgsec">
+        <h4>Instalar como App</h4>
+        <p style="font-size:13px;color:var(--sub);line-height:1.7">
+          <b>Android (Chrome):</b> Menu ⋮ → "Adicionar à tela inicial"<br>
+          <b>iPhone (Safari):</b> Compartilhar ↑ → "Adicionar à Tela de Início"
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,onValue,set}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// ===== CONFIG FIREBASE =====
-const FB={
+const FB = {
   apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
   authDomain:"estoque-remedios-7b785.firebaseapp.com",
   projectId:"estoque-remedios-7b785",
-  databaseURL:"https://estoque-remedios-7b785-default-rtdb.firebaseio.com",
   storageBucket:"estoque-remedios-7b785.firebasestorage.app",
   messagingSenderId:"1005921072336",
-  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5",
+  databaseURL:"https://estoque-remedios-7b785-default-rtdb.firebaseio.com"
 };
-const db=getDatabase(initializeApp(FB));
-const REF=ref(db,"estoque/dados");
-const ADM="2407";
-const CK="est_cache_v2"; // v2: invalida cache antigo
-const SK="est_sess_v2"; // v2
-const DEFAULT_PERMS={verEstoque:true,movimentar:true,verHistorico:false,verResponsavel:false};
+const fbApp = initializeApp(FB);
+const db    = getDatabase(fbApp);
+const DREF  = ref(db,"estoque/dados");
+const UREF  = ref(db,"estoque/users");
 
-// ===== ESTADO =====
-let meds=[],movs=[],users=[],logs=[];
-let curUser=null,isAdm=false;
-let filter="all",editId=null,movId=null,movTipo="ent";
-let pTab="mov",unsub=null;
-let firstSnap=true,prevMovLen=0,prevLogsLen=0;
-
-const DEFAULTS=[
-  {id:"a01",n:"ALPRAZOLAM 0,25MG",q:1,v:"12/27"},{id:"a02",n:"ARIPIPRAZOL 15MG",q:1,v:"08/26"},
-  {id:"a03",n:"BACTRIM 400MG",q:3,v:"07/27"},{id:"a04",n:"BETOGENTA CREME",q:4,v:"05/27"},
-  {id:"a05",n:"BETOGENTA POMADA",q:2,v:"09/27"},{id:"a06",n:"CEFALEXINA SUSP",q:2,v:"08/27"},
-  {id:"a07",n:"CEFATRIOXONA 500MG",q:1,v:"06/27"},{id:"a08",n:"CLINDAMICINA",q:2,v:"12/26"},
-  {id:"a09",n:"CLONZEPAM GOTAS",q:1,v:"11/27"},{id:"a10",n:"CODEINA 30MG",q:1,v:"12/27"},
-  {id:"a11",n:"DESVE 100MG 28COMP",q:1,v:"10/27"},{id:"a12",n:"DEXAVISON",q:2,v:"09/27"},
-  {id:"a13",n:"ESCITOPRAM GOTAS",q:1,v:"07/27"},{id:"a14",n:"ESCITOPRAM GOTAS",q:2,v:"11/27"},
-  {id:"a15",n:"FENITOINA 100MG",q:4,v:"10/27"},{id:"a16",n:"LISDEXA 70MG",q:1,v:"06/27"},
-  {id:"a17",n:"METILFENIDATO 10MG",q:8,v:"02/28"},{id:"a18",n:"METRONIDAZOL 250",q:4,v:"09/27"},
-  {id:"a19",n:"NEULEPTIL 10MG",q:1,v:"05/28"},{id:"a20",n:"NITROFUROTEINA",q:2,v:"04/28"},
-  {id:"a21",n:"OTOSYLASE",q:1,v:"07/27"},{id:"a22",n:"PARACE+CODEINA 24C",q:1,v:"03/28"},
-  {id:"a23",n:"PREGABALINA 150MG",q:1,v:"07/27"},{id:"a24",n:"PREGABALINA 50MG",q:2,v:"10/28"},
-  {id:"a25",n:"QUADRIDERM CREME",q:6,v:"12/27"},{id:"a26",n:"SERTRALINA 50MG",q:1,v:"08/27"},
-  {id:"a27",n:"SIBUTRAMINA 10MG",q:2,v:"12/27"},{id:"a28",n:"SIBUTRAMINA 15MG",q:3,v:"03/28"},
-  {id:"a29",n:"TRAM+CODEINA",q:2,v:"03/28"},{id:"a30",n:"VELIJA 30MG 30 COMP",q:1,v:"05/27"},
-  {id:"a31",n:"VENLAFAXINA 75MG",q:3,v:"12/27"},{id:"a32",n:"VENLAXIN 150MG",q:1,v:"10/26"},
-  {id:"a33",n:"VENLAXIN 75MG",q:1,v:"05/27"},{id:"a34",n:"ZOLPIDEM 10MG 30 C",q:9,v:"06/27"}
+// ── USUÁRIOS ──
+const MASTER = "Jefferson";
+let USERS = [
+  {name:"Jefferson", pass:"2407", role:"adm"},
+  {name:"ADM",       pass:"9876", role:"adm"},
+  {name:"D.Humanae", pass:"1991", role:"user"}
 ];
 
-// ===== UTILITÁRIOS =====
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const setSP=(s,t)=>{const p=document.getElementById("spPill");if(p){p.className="sp "+s;p.textContent=t}};
-const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify({meds,movs,users,logs}))}catch(e){}};
-const loadCache=()=>{try{const c=localStorage.getItem(CK);if(c){const d=JSON.parse(c);if(d.meds?.length){meds=d.meds;movs=d.movs||[];users=d.users||[];logs=d.logs||[];return true}}}catch(e){}return false};
-const sessSave=d=>{try{sessionStorage.setItem(SK,JSON.stringify(d));localStorage.setItem(SK+"_b",JSON.stringify(d))}catch(e){}};
-const sessLoad=()=>{try{const s=sessionStorage.getItem(SK)||localStorage.getItem(SK+"_b");if(s)return JSON.parse(s)}catch(e){}return null};
-const showToast=msg=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
-const scrollToTop=()=>window.scrollTo({top:0,behavior:"smooth"});
-const setMsg=(txt,cls="msg-err")=>{const m=document.getElementById("msgLogin");m.textContent=txt;m.className="msg "+cls};
-const fmt=iso=>{const d=new Date(iso);return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
-const maskV=el=>{let v=el.value.replace(/\D/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
-const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true}:{...DEFAULT_PERMS,...(users.find(x=>x.name===curUser)?.perms||{})};
+// ── DEFAULTS ──
+const DMEDS = [
+  {id:1,name:"ESCITALOPRAM 10MG",qty:10,val:"12/27",min:5,bc:""},
+  {id:2,name:"ESCITALOPRAM 20MG",qty:8,val:"06/27",min:3,bc:""},
+  {id:3,name:"QUETIAPINA 25MG",qty:15,val:"09/27",min:5,bc:""},
+  {id:4,name:"QUETIAPINA 100MG",qty:12,val:"03/27",min:5,bc:""},
+  {id:5,name:"QUETIAPINA 200MG",qty:6,val:"08/27",min:3,bc:""},
+  {id:6,name:"ARIPIPRAZOL 10MG",qty:4,val:"11/26",min:3,bc:""},
+  {id:7,name:"ARIPIPRAZOL 15MG",qty:2,val:"08/26",min:3,bc:""},
+  {id:8,name:"RISPERIDONA 2MG",qty:20,val:"01/28",min:5,bc:""},
+  {id:9,name:"RISPERIDONA 3MG",qty:14,val:"07/27",min:5,bc:""},
+  {id:10,name:"HALOPERIDOL 1MG",qty:18,val:"02/28",min:5,bc:""},
+  {id:11,name:"CLONAZEPAM 0,5MG",qty:25,val:"05/28",min:10,bc:""},
+  {id:12,name:"CLONAZEPAM 2MG",qty:30,val:"10/27",min:10,bc:""},
+  {id:13,name:"DIAZEPAM 5MG",qty:22,val:"04/28",min:8,bc:""},
+  {id:14,name:"LORAZEPAM 1MG",qty:16,val:"12/27",min:5,bc:""},
+  {id:15,name:"ALPRAZOLAM 0,25MG",qty:11,val:"08/27",min:5,bc:""},
+  {id:16,name:"ALPRAZOLAM 0,5MG",qty:9,val:"06/27",min:5,bc:""},
+  {id:17,name:"ZOLPIDEM 10MG",qty:8,val:"11/27",min:5,bc:""},
+  {id:18,name:"VENLAFAXINA 75MG",qty:5,val:"09/27",min:3,bc:""},
+  {id:19,name:"VENLAFAXINA 150MG",qty:3,val:"10/26",min:3,bc:""},
+  {id:20,name:"DULOXETINA 30MG",qty:7,val:"03/28",min:3,bc:""},
+  {id:21,name:"DULOXETINA 60MG",qty:4,val:"07/27",min:3,bc:""},
+  {id:22,name:"SERTRALINA 50MG",qty:19,val:"01/28",min:8,bc:""},
+  {id:23,name:"SERTRALINA 100MG",qty:13,val:"06/28",min:5,bc:""},
+  {id:24,name:"FLUOXETINA 20MG",qty:21,val:"02/28",min:8,bc:""},
+  {id:25,name:"PAROXETINA 20MG",qty:10,val:"08/27",min:5,bc:""},
+  {id:26,name:"AMITRIPTILINA 25MG",qty:17,val:"11/27",min:5,bc:""},
+  {id:27,name:"NORTRIPTILINA 25MG",qty:8,val:"05/27",min:3,bc:""},
+  {id:28,name:"BUPROPIONA 150MG",qty:6,val:"09/27",min:3,bc:""},
+  {id:29,name:"BUPROPIONA 300MG",qty:4,val:"12/27",min:3,bc:""},
+  {id:30,name:"CARBONATO DE LITIO",qty:24,val:"04/28",min:8,bc:""},
+  {id:31,name:"VALPROATO 250MG",qty:11,val:"07/27",min:5,bc:""},
+  {id:32,name:"VALPROATO 500MG",qty:9,val:"10/27",min:5,bc:""},
+  {id:33,name:"CARBAMAZEPINA 200MG",qty:15,val:"03/28",min:5,bc:""},
+  {id:34,name:"CLINDAMICINA 300MG",qty:0,val:"12/26",min:3,bc:""}
+];
 
-// ===== FIREBASE =====
+// ── ESTADO ──
+let me=null, meds=[], movs=[], curF="all", editId=null, movId=null, movType="saida";
+let scanStream=null, bcBuf="", bcTmr=null, unsubD=null, unsubU=null;
 
+const CK="hum_meds_v4", MK="hum_movs_v4", UK="hum_users_v4", SK="hum_sess_v4";
+const ls = k => { try{return localStorage.getItem(k)}catch(e){return null} };
+const lss = (k,v) => { try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} };
+const lsc = k => { try{const r=ls(k); return r?JSON.parse(r):null}catch(e){return null} };
 
-// ===== NOTIFICAÇÕES PUSH =====
-const pushNotif=(title,body)=>{
-  if("Notification"in window&&Notification.permission==="granted"){
-    new Notification(title,{body,icon:"icon-192.png"});
-  }
-};
+function saveCache(){ lss(CK,meds); lss(MK,movs); }
+function loadCache(){
+  const m=lsc(CK); if(m&&m.length>0) meds=m;
+  const mv=lsc(MK); if(mv) movs=mv;
+}
 
-function startListener(){
-  if(unsub){try{unsub();}catch(e){}unsub=null;}
-  firstSnap=true;
-  unsub=onValue(REF,snap=>{
+// ── FIREBASE SAVE ──
+function saveData(){
+  set(DREF,{meds,movs}).catch(e=>console.warn("saveData:",e));
+  saveCache();
+}
+function saveUsers(){
+  set(UREF,USERS).catch(e=>console.warn("saveUsers:",e));
+  lss(UK,USERS);
+}
+
+// ── LISTENERS ──
+function startDataL(){
+  if(unsubD) unsubD();
+  setSI("⏳");
+  unsubD = onValue(DREF, snap=>{
+    setSI("✅"); setOnline(true);
     const d=snap.val();
-    if(d!==null){
+    if(d){
       if(d.meds&&d.meds.length>0) meds=d.meds;
-      if(d.movs) movs=d.movs;
-      if(d.users) users=d.users;
-      if(d.logs) logs=d.logs;
+      else if(meds.length===0) meds=JSON.parse(JSON.stringify(DMEDS));
+      if(d.movs&&d.movs.length>0) movs=d.movs;
     } else {
-      // Banco vazio: inicializa com medicamentos padrão
-      meds=DEFAULTS;movs=[];users=[];logs=[];
-      set(REF,{meds,movs,users,logs});
+      if(meds.length===0) meds=JSON.parse(JSON.stringify(DMEDS));
+      saveData();
     }
     saveCache();
-    document.getElementById("skeleton").style.display="none";
-    document.getElementById("list").style.display="flex";
-    setSP("ok","✅ Ao vivo");
-    if(isAdm&&!firstSnap){
-      if(movs.length>prevMovLen){
-        movs.slice(prevMovLen).forEach(mv=>{
-          const m=meds.find(x=>x.id===mv.mid);
-          pushNotif(mv.tipo==="ent"?"📥 Entrada":"📤 Saída",`${m?m.n:"Medicamento"} — ${mv.qtd}un por ${mv.resp}`);
-          document.getElementById("ndot").style.display="block";
-        });
-      }
-      if(document.getElementById("admPanel").classList.contains("open"))renderPTab();
-    }
-    prevMovLen=movs.length;prevLogsLen=logs.length;firstSnap=false;
     render();
-  },(e)=>{
-    setSP("err","❌ Offline");
-    setTimeout(()=>{if(curUser)startListener();},5000);
-  });
+    if(me&&me.role==="adm"){ renderPanel(); checkDot(); }
+  }, e=>{ setSI("❌"); console.warn("dataL:",e); });
 }
 
-async function save(){
-  setSP("sync","⏳");
-  saveCache();
-  set(REF,{meds,movs,users,logs})
-    .then(()=>setSP("ok","✅ Ao vivo"))
-    .catch(e=>{
-      setSP("err","❌ Erro");
-      showToast("❌ Erro: "+e.message);
-      setTimeout(()=>{
-        set(REF,{meds,movs,users,logs}).catch(()=>{});
-      },3000);
-    });
+function startUsersL(){
+  if(unsubU) unsubU();
+  unsubU = onValue(UREF, snap=>{
+    const d=snap.val();
+    if(d&&Array.isArray(d)&&d.length>0){ USERS=d; lss(UK,USERS); }
+  }, e=>console.warn("usersL:",e));
 }
 
-// ===== LOGIN =====
-// switchTab removido - cadastro só pelo ADM
+// ── UI HELPERS ──
+function setSI(i){ document.getElementById("syncIco").textContent=i; }
+function setOnline(on){
+  document.getElementById("offbar").style.display=on?"none":"block";
+  if(on){ const b=document.getElementById("synbar"); b.style.display="block"; setTimeout(()=>b.style.display="none",2500); }
+}
+function showToast(msg,dur=2800){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("on");
+  setTimeout(()=>t.classList.remove("on"),dur);
+}
+function closeAll(){
+  document.querySelectorAll(".ov").forEach(o=>o.classList.remove("on"));
+}
+window.closeAll=closeAll;
 
-// Usuários fixos — senhas podem ser alteradas pelo ADM
-let SENHAS={Jefferson:"2407","D.Humanae":"1991",ADM:"9876"};
-const SENHAS_KEY="est_senhas_v1";
-try{const s=localStorage.getItem(SENHAS_KEY);if(s)SENHAS={...SENHAS,...JSON.parse(s)};}catch(e){}
-const saveSenhas=()=>{try{localStorage.setItem(SENHAS_KEY,JSON.stringify(SENHAS));}catch(e){}};
+// ── LOGIN ──
+window.doLogin = function(){
+  const p=document.getElementById("lpass").value.trim();
+  const e=document.getElementById("lerr");
+  if(!p){ e.textContent="Digite a senha"; return; }
+  // tentar cache de usuários
+  const cu=lsc(UK); if(cu&&cu.length>0) USERS=cu;
+  let found=USERS.find(u=>u.pass===p);
+  if(!found){ e.textContent="Senha incorreta"; return; }
+  me=found; lss(SK,{name:me.name,role:me.role}); startApp();
+};
+document.getElementById("lpass").addEventListener("keydown",e=>{ if(e.key==="Enter") window.doLogin(); });
 
-const USUARIOS=[
-  {name:"Jefferson",isAdm:true},
-  {name:"D.Humanae",isAdm:false,somenteSaida:true},
-  {name:"ADM",isAdm:true}
-];
-
-window.doLogin=async()=>{
-  const pass=document.getElementById("inpSenha").value.trim();
-  setMsg("");
-  if(!pass)return setMsg("Digite sua senha");
-  const btn=document.getElementById("btnEnt");
-  btn.disabled=true;
-  // Verificar nos usuários fixos com senhas dinâmicas
-  const u=USUARIOS.find(x=>SENHAS[x.name]===pass);
-  btn.disabled=false;
-  if(!u){
-    setMsg("❌ Senha incorreta");
-    document.getElementById("inpSenha").value="";
-    return;
-  }
-  curUser=u.name;
-  isAdm=u.isAdm;
-  sessSave({u:u.name,a:u.isAdm});
-  startApp();
+// ── LOGOUT ──
+window.doLogout = function(){
+  if(!confirm("Deseja sair?")) return;
+  try{localStorage.removeItem(SK)}catch(e){}
+  if(unsubD) unsubD(); if(unsubU) unsubU();
+  me=null;
+  document.getElementById("appWrap").style.display="none";
+  document.getElementById("loginWrap").style.display="flex";
+  document.getElementById("lpass").value="";
+  document.getElementById("lerr").textContent="";
 };
 
-// doCadastro removido - cadastro só pelo ADM
-
-window.doLogout=()=>{
-  sessionStorage.removeItem(SK);localStorage.removeItem(SK+"_b");
-  curUser=null;isAdm=false;
-  document.getElementById("appMain").style.display="none";
-  document.getElementById("scrLogin").className="screen active";
-  document.getElementById("inpSenha").value="";
-  setMsg("");
-};
-
+// ── START APP ──
 function startApp(){
-  document.getElementById("scrLogin").className="screen";
-  document.getElementById("appMain").style.display="block";
-  const b=document.getElementById("userBadge");
-  if(isAdm){b.textContent="ADM";b.className="badge badge-adm";document.getElementById("btnPanel").style.display="flex";document.getElementById("fabBtn").style.display="flex";document.getElementById("fabBar").style.display="flex";}
-  else{b.textContent=curUser;b.className="badge badge-user";document.getElementById("btnPanel").style.display="none";document.getElementById("fabBtn").style.display="none";}
-  const cached=loadCache();
-  if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
-  startListener();
+  document.getElementById("loginWrap").style.display="none";
+  document.getElementById("appWrap").style.display="block";
+  document.getElementById("ulabel").textContent=me.name;
+  if(me.role==="adm"){
+    document.getElementById("bellBtn").style.display="flex";
+    document.getElementById("fabBtn").style.display="flex";
+  }
+  loadCache();
+  if(meds.length>0) render();
+  const cu=lsc(UK); if(cu&&cu.length>0) USERS=cu;
+  startDataL(); startUsersL();
+  setupBC();
+  reqNotif();
 }
 
-// ===== RENDER =====
-window.render=()=>{
-  const p=myPerms();
-  if(!p.verEstoque&&!isAdm){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔒 Sem permissão para ver o estoque</div>';return;}
-  const q=document.getElementById("srch").value.toLowerCase();
-  let data=meds.filter(m=>m.n.toLowerCase().includes(q));
-  if(filter!=="all")data=data.filter(m=>status(m)===filter);
-  const exp=meds.filter(m=>status(m)==="expired").length;
-  const soon=meds.filter(m=>status(m)==="soon").length;
-  const zero=meds.filter(m=>status(m)==="zero").length;
-  document.getElementById("stats").innerHTML=`<div class="stat"><div class="stat-n sn">${meds.length}</div><div class="stat-l">Cadastrados</div></div><div class="stat"><div class="stat-n sw">${soon}</div><div class="stat-l">Vence em breve</div></div><div class="stat"><div class="stat-n sd">${exp+zero}</div><div class="stat-l">Atenção</div></div>`;
-  const ord={expired:0,zero:1,soon:2,ok:3};
-  data.sort((a,b)=>ord[status(a)]-ord[status(b)]||a.n.localeCompare(b.n));
-  if(!data.length){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔍 Nenhum encontrado</div>';return;}
-  document.getElementById("list").innerHTML=data.map(m=>{
-    const s=status(m),lb=subLbl(m),ic=ico(s),qz=m.q<=0,vc=vC(s);
-    const lm=[...movs].reverse().find(x=>x.mid===m.id);
-    const sp=isAdm||p.verResponsavel;
-    const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
-    const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
-    const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
-    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${m.n}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
+// ── SESSION RESTORE ──
+(function restoreSess(){
+  const s=lsc(SK); if(!s) return;
+  const cu=lsc(UK); if(cu&&cu.length>0) USERS=cu;
+  const found=USERS.find(u=>u.name===s.name&&u.role===s.role);
+  if(found){ me=found; startApp(); }
+})();
+
+// ── ONLINE/OFFLINE ──
+window.addEventListener("online", ()=>{ setOnline(true); startDataL(); });
+window.addEventListener("offline",()=>{ setOnline(false); setSI("📶"); });
+
+// ── STATUS ──
+function status(m){
+  if(m.qty===0) return "zero";
+  const [mo,yr]=(m.val||"").split("/").map(Number);
+  if(!mo||!yr) return "ok";
+  const exp=new Date(2000+yr,mo-1,28);
+  const days=(exp-new Date())/86400000;
+  if(days<0) return "expired";
+  if(days<=90) return "soon";
+  if(m.min&&m.qty<=m.min) return "low";
+  return "ok";
+}
+function scol(s){ return(s==="expired"||s==="zero")?"red":(s==="soon"||s==="low")?"amber":"green"; }
+
+// ── RENDER ──
+window.render = function(){
+  const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
+  const isAdm=me&&me.role==="adm";
+  const ord={expired:0,zero:1,soon:2,low:3,ok:4};
+  let list=meds.filter(m=>{
+    const s=status(m);
+    const ms=m.name.toLowerCase().includes(q)||(m.bc||"").includes(q);
+    const mf=curF==="all"||(curF==="exp"&&s==="expired")||(curF==="soon"&&s==="soon")||(curF==="zero"&&s==="zero")||(curF==="ok"&&(s==="ok"||s==="low"));
+    return ms&&mf;
+  }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
+
+  document.getElementById("sTot").textContent=meds.length;
+  document.getElementById("sSoon").textContent=meds.filter(m=>status(m)==="soon").length;
+  document.getElementById("sAlert").textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+
+  const el=document.getElementById("medlist");
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="ei">🔍</div><div>Nenhum medicamento encontrado</div></div>`; return; }
+
+  el.innerHTML=list.map(m=>{
+    const s=status(m); const c=scol(s);
+    const qc=m.qty===0?"zero":(m.min&&m.qty<=m.min?"low":"");
+    const vl=s==="expired"?"VENCIDO":m.val||"—";
+    return `<div class="mcard ${c}">
+      <div class="mtop">
+        <div class="mname">${m.name}</div>
+        <span class="mqty ${qc}">${m.qty}x</span>
+      </div>
+      <div class="minfo">
+        <span>Val: <span class="mval ${c}">${vl}</span></span>
+        ${m.min?`<span>Mín: ${m.min}</span>`:""}
+        ${m.bc?`<span>🔖 ${m.bc}</span>`:""}
+      </div>
+      <div class="macts">
+        <button class="abtn mov" onclick="openMov(${m.id})">📦 Movimentar</button>
+        ${isAdm?`<button class="abtn hist" onclick="openHist(${m.id})">📋 Histórico</button>
+        <button class="abtn edit" onclick="openMedM(${m.id})">✏️</button>
+        <button class="abtn del" onclick="delMed(${m.id})">🗑️</button>`:""}
+      </div>
+    </div>`;
   }).join("");
 };
 
-// ===== HELPERS STATUS =====
-const parseV=v=>{const p=v.split("/");if(p.length!==2)return null;const m=parseInt(p[0]),y=parseInt(p[1]);if(isNaN(m)||isNaN(y))return null;return new Date(2000+y,m-1,1);};
-const status=m=>{if(m.q<=0)return"zero";const d=parseV(m.v);if(!d)return"ok";const diff=(d-new Date())/86400000;if(diff<0)return"expired";if(diff<=90)return"soon";return"ok";};
-const subLbl=m=>{const s=status(m);if(s==="zero")return{t:"Sem estoque",c:"tze"};const d=parseV(m.v);if(!d)return{t:"Inválida",c:"tze"};const days=Math.floor((d-new Date())/86400000);if(s==="expired")return{t:"VENCIDO",c:"tex"};if(s==="soon"){if(days<=30)return{t:`Vence em ${days} dias!`,c:"tso"};return{t:"Vence em breve",c:"tso"};}return{t:"Válido",c:"tok"};};
-const vC=s=>({expired:"vex",soon:"vso",zero:"vze",ok:"vok"}[s]);
-const ico=s=>({expired:{e:"⚠️",c:"ico-exp"},soon:{e:"🕐",c:"ico-soon"},zero:{e:"📭",c:"ico-zero"},ok:{e:"💊",c:"ico-ok"}}[s]);
-
-// ===== MOVIMENTAÇÃO =====
-window.openMovModal=id=>{
-  movId=id;
-  const m=meds.find(x=>x.id===id);
-  const uAtual=USUARIOS.find(x=>x.name===curUser);
-  document.getElementById("movNome").textContent="💊 "+m.n;
-  document.getElementById("movEst").textContent="Estoque atual: "+m.q+" un.";
-  document.getElementById("movQtd").value="";
-  document.getElementById("movConfirm").style.display="none";
-  // D.Humanae só pode dar saída
-  if(uAtual&&uAtual.somenteSaida){
-    document.getElementById("btnEnt2").style.display="none";
-    selTipo("sai");
-  } else {
-    document.getElementById("btnEnt2").style.display="";
-    selTipo("ent");
-  }
-  document.getElementById("ovMov").classList.add("open");
-  setTimeout(()=>document.getElementById("movQtd").focus(),300);
-};
-window.selTipo=t=>{
-  movTipo=t;
-  document.getElementById("btnEnt2").className="mtt ent"+(t==="ent"?" sel":"");
-  document.getElementById("btnSai").className="mtt sai"+(t==="sai"?" sel":"");
-  document.getElementById("btnConfMov").textContent=t==="ent"?"✅ Confirmar entrada":"✅ Confirmar saída";
-  document.getElementById("btnConfMov").className="mbtn "+(t==="sai"?"mbtn-red":"mbtn-green");
-  document.getElementById("movConfirm").style.display="none";
-};
-window.saveMov=async()=>{
-  const qtd=parseInt(document.getElementById("movQtd").value);
-  if(!qtd||qtd<=0)return showToast("Informe a quantidade");
-  const m=meds.find(x=>x.id===movId);if(!m)return;
-  if(movTipo==="sai"&&qtd>m.q)return showToast(`Qtd maior que estoque (${m.q})`);
-  const delta=movTipo==="ent"?qtd:-qtd;
-  const novaQ=Math.max(0,m.q+delta);
-  m.q=novaQ;
-  movs.push({id:uid(),mid:movId,tipo:movTipo,qtd,resp:curUser,dt:new Date().toISOString()});
-  const box=document.getElementById("movConfirm");
-  document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?`✅ Entrada de ${qtd} un. confirmada!`:`✅ Saída de ${qtd} un. confirmada!`;
-  document.getElementById("movConfirmSub").textContent=`Novo estoque: ${novaQ} un.`;
-  box.style.display="block";
-  save(); // dispara sem await - não trava a UI
-  showToast(movTipo==="ent"?"📥 Entrada registrada!":"📤 Saída registrada!");
-  setTimeout(()=>{closeOv("ovMov");scrollToTop();},1000);
+window.setF = function(f,el){
+  curF=f;
+  document.querySelectorAll(".ftag").forEach(t=>t.classList.remove("on"));
+  el.classList.add("on"); render();
 };
 
-// ===== HISTÓRICO =====
-window.openHist=id=>{
-  const p=myPerms();if(!isAdm&&!p.verHistorico)return;
-  const m=meds.find(x=>x.id===id);
-  document.getElementById("histTitle").textContent="📋 "+m.n;
-  const hist=[...movs].filter(x=>x.mid===id).reverse();
-  const sr=isAdm||p.verResponsavel;
-  document.getElementById("histContent").innerHTML=hist.length?
-    `<div class="hist-list">${hist.map(h=>`<div class="hi ${h.tipo}"><div class="hi-top"><span class="hi-tipo ${h.tipo}">${h.tipo==="ent"?"📥 ENTRADA":"📤 SAÍDA"}</span><span class="hi-qtd">${h.tipo==="ent"?"+":"-"}${h.qtd} un.</span></div>${sr?`<div class="hi-info">👤 ${h.resp}</div>`:""}<div class="hi-info">🕐 ${fmt(h.dt)}</div></div>`).join("")}</div>`:
-    `<div style="text-align:center;padding:24px;color:var(--g400)">Sem movimentações.</div>`;
-  document.getElementById("ovHist").classList.add("open");
-};
-
-// ===== MEDICAMENTOS (ADM) =====
-window.openMedModal=()=>{
-  if(!isAdm)return;
-  editId=null;
-  document.getElementById("medModalTitle").textContent="Novo medicamento";
-  document.getElementById("mNome").value="";document.getElementById("mQtd").value="";document.getElementById("mVenc").value="";
-  document.getElementById("medConfirm").style.display="none";
-  document.getElementById("ovMed").classList.add("open");
-  setTimeout(()=>document.getElementById("mNome").focus(),300);
-};
-window.openEditMed=id=>{
-  if(!isAdm)return;
-  const m=meds.find(x=>x.id===id);if(!m)return;
+// ── MODAL MEDICAMENTO ──
+window.openMedM = function(id=null){
   editId=id;
-  document.getElementById("medModalTitle").textContent="Editar medicamento";
-  document.getElementById("mNome").value=m.n;document.getElementById("mQtd").value=m.q;document.getElementById("mVenc").value=m.v;
-  document.getElementById("medConfirm").style.display="none";
-  document.getElementById("ovMed").classList.add("open");
-};
-window.saveMed=async()=>{
-  const n=document.getElementById("mNome").value.trim().toUpperCase();
-  const q=parseInt(document.getElementById("mQtd").value);
-  const v=document.getElementById("mVenc").value.trim();
-  if(!n)return showToast("Informe o nome");
-  if(isNaN(q)||q<0)return showToast("Quantidade inválida");
-  if(!/^\d{2}\/\d{2}$/.test(v))return showToast("Validade: MM/AA");
-  const isEdit=!!editId;
-  if(isEdit){const m=meds.find(x=>x.id===editId);if(m){m.n=n;m.q=q;m.v=v;}}
-  else meds.push({id:uid(),n,q,v});
-  document.getElementById("medConfirmTxt").textContent=isEdit?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!";
-  document.getElementById("medConfirm").style.display="block";
-  save(); // sem await
-  setTimeout(()=>{closeOv("ovMed");editId=null;scrollToTop();},1000);
-};
-window.delMed=async id=>{
-  if(!isAdm)return;
-  const m=meds.find(x=>x.id===id);if(!m)return;
-  if(!confirm(`Excluir "${m.n}"?`))return;
-  meds=meds.filter(x=>x.id!==id);movs=movs.filter(x=>x.mid!==id);
-  save();showToast("✅ Excluído");
+  const m=id?meds.find(x=>x.id===id):null;
+  document.getElementById("medMT").textContent=m?"Editar medicamento":"Novo medicamento";
+  document.getElementById("mNm").value=m?m.name:"";
+  document.getElementById("mQt").value=m?m.qty:"";
+  document.getElementById("mVl").value=m?m.val:"";
+  document.getElementById("mMn").value=m?(m.min||""):"";
+  document.getElementById("mBc").value=m?(m.bc||""):"";
+  document.getElementById("medOv").classList.add("on");
+  setTimeout(()=>document.getElementById("mNm").focus(),120);
 };
 
-// ===== PAINEL ADM =====
-// ===== LIMPAR HISTÓRICO =====
-window.limparHistorico=async()=>{
-  if(!confirm("Apagar todo o histórico de movimentações? Esta ação não pode ser desfeita."))return;
-  movs=[];
-  save();
-  showToast("✅ Histórico limpo!");
-  renderPTab();
+window.saveMed = function(){
+  const name=document.getElementById("mNm").value.trim();
+  const qty=parseInt(document.getElementById("mQt").value)||0;
+  const val=document.getElementById("mVl").value.trim();
+  const min=parseInt(document.getElementById("mMn").value)||0;
+  const bc=document.getElementById("mBc").value.trim();
+  if(!name){ showToast("Digite o nome"); return; }
+  if(editId){ const i=meds.findIndex(x=>x.id===editId); if(i>=0) meds[i]={...meds[i],name,qty,val,min,bc}; }
+  else { const nid=meds.length>0?Math.max(...meds.map(x=>x.id))+1:1; meds.push({id:nid,name,qty,val,min,bc}); }
+  saveData(); closeAll(); render();
+  showToast(editId?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!");
 };
 
-// ===== TROCAR SENHA =====
-window.trocarSenha=(nome)=>{
-  const inp=document.getElementById("senha_"+nome);
-  const nova=inp.value.trim();
-  const msg=document.getElementById("msgSenha");
-  if(!nova||nova.length<4){msg.style.color="var(--red)";msg.textContent="Mínimo 4 dígitos";return;}
-  // Verificar se senha já está em uso por outro usuário
-  const emUso=USUARIOS.find(u=>u.name!==nome&&SENHAS[u.name]===nova);
-  if(emUso){msg.style.color="var(--red)";msg.textContent="Senha já usada por "+emUso.name;return;}
-  SENHAS[nome]=nova;
-  saveSenhas();
-  inp.value="";
-  msg.style.color="var(--green)";
-  msg.textContent="✅ Senha de "+nome+" alterada!";
-  setTimeout(()=>{msg.textContent="";},3000);
+window.delMed = function(id){
+  if(!confirm("Excluir este medicamento?")) return;
+  meds=meds.filter(m=>m.id!==id); saveData(); render(); showToast("🗑️ Removido");
 };
 
-// ===== LEITOR DE CÓDIGO DE BARRAS =====
-window.openBarcodeScanner=()=>{
-  document.getElementById("ovBarcode").classList.add("open");
-  startCamera();
+// ── MOVIMENTAÇÃO ──
+window.openMov = function(id){
+  movId=id; const m=meds.find(x=>x.id===id); if(!m) return;
+  movType="saida";
+  document.getElementById("movT").textContent=m.name;
+  document.getElementById("movCur").textContent=m.qty;
+  document.getElementById("movQ").value="";
+  updMovBtns();
+  document.getElementById("movOv").classList.add("on");
+  setTimeout(()=>document.getElementById("movQ").focus(),120);
 };
 
-window.closeBarcodeScanner=()=>{
-  stopCamera();
-  document.getElementById("ovBarcode").classList.remove("open");
-};
-
-window.buscaManual=()=>{
-  const txt=document.getElementById("inpBuscaCod").value.trim();
-  if(!txt)return;
-  processarCodigo(txt);
-};
-
-const processarCodigo=(cod)=>{
-  stopCamera();
-  document.getElementById("ovBarcode").classList.remove("open");
-  // Buscar por código de barras ou nome
-  const found=meds.find(m=>
-    m.n.toLowerCase().includes(cod.toLowerCase())||
-    (m.cod&&m.cod===cod)
-  );
-  if(found){
-    showToast("✅ "+found.n+" encontrado!");
-    openMovModal(found.id);
-  } else {
-    if(confirm(`"${cod}" não encontrado.\nCadastrar novo medicamento?`)){
-      openMedModal();
-      setTimeout(()=>{
-        const inp=document.getElementById("mNome");
-        if(inp)inp.value=cod.toUpperCase();
-      },300);
-    }
-  }
-};
-
-let cameraStream=null;
-let scanInterval=null;
-
-const startCamera=async()=>{
-  const video=document.getElementById("barcodeVideo");
-  const status=document.getElementById("barcodeStatus");
-  status.textContent="📷 Iniciando câmera...";
-  try{
-    cameraStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:"environment",width:640,height:480}
-    });
-    video.srcObject=cameraStream;
-    video.play();
-    status.textContent="🔍 Aponte para o código de barras";
-    // Escanear a cada 500ms usando ZXing
-    if(window.ZXing){
-      const hints=new Map();
-      const formats=[
-        ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,
-        ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,
-        ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.DATA_MATRIX
-      ];
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,formats);
-      const reader=new ZXing.MultiFormatReader();
-      reader.setHints(hints);
-      const canvas=document.createElement("canvas");
-      scanInterval=setInterval(()=>{
-        if(video.readyState===video.HAVE_ENOUGH_DATA){
-          canvas.width=video.videoWidth;
-          canvas.height=video.videoHeight;
-          const ctx=canvas.getContext("2d");
-          ctx.drawImage(video,0,0);
-          try{
-            const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-            const lum=ZXing.RGBLuminanceSource?
-              new ZXing.RGBLuminanceSource(imgData.data,canvas.width,canvas.height):null;
-            if(lum){
-              const bmp=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-              const result=reader.decode(bmp);
-              if(result){
-                clearInterval(scanInterval);
-                status.textContent="✅ Código: "+result.getText();
-                setTimeout(()=>processarCodigo(result.getText()),500);
-              }
-            }
-          }catch(e){}
-        }
-      },500);
-    }
-  }catch(e){
-    status.textContent="❌ Câmera não disponível — use busca manual";
-    video.style.display="none";
-  }
-};
-
-const stopCamera=()=>{
-  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
-  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-  const video=document.getElementById("barcodeVideo");
-  if(video){video.srcObject=null;video.style.display="block";}
-};
-
-
-window.openPanel=()=>{
-  document.getElementById("admPanel").classList.add("open");
-  document.getElementById("ndot").style.display="none";
-  renderPTab();
-  if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
-};
-window.closePanel=()=>document.getElementById("admPanel").classList.remove("open");
-window.setPTab=t=>{
-  pTab=t;
-  ["mov","alerta","compras","config"].forEach(x=>{
-    const el=document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1));
-    if(el)el.className="ptab"+(t===x?" active":"");
-  });
-  renderPTab();
-};
-
-function renderPTab(){
-  const body=document.getElementById("pBody");
-  if(pTab==="mov"){
-    const all=[...movs].reverse().slice(0,100);
-    body.innerHTML=all.length?
-      `<button onclick="limparHistorico()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#fee2e2;color:#991b1b;font-weight:700;cursor:pointer;margin-bottom:10px">🗑️ Limpar histórico de movimentações</button>`+
-      all.map(h=>{const m=meds.find(x=>x.id===h.mid);return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;}).join(""):
-      `<div class="pe">Nenhuma movimentação ainda.</div>`;
-  } else if(pTab==="alerta"){
-    const exp=meds.filter(m=>status(m)==="expired");
-    const soon=meds.filter(m=>status(m)==="soon");
-    const zero=meds.filter(m=>m.q<=0);
-    const baixo=meds.filter(m=>m.min>0&&m.q>0&&m.q<=m.min);
-    const its=[
-      ...exp.map(m=>`<div class="ni alerta"><p>⚠️ VENCIDO — ${m.n}</p><span>Validade: ${m.v}</span></div>`),
-      ...soon.map(m=>{const d=parseV(m.v);const days=d?Math.floor((d-new Date())/86400000):0;return`<div class="ni alerta-w"><p>🕐 Vence em ${days} dias — ${m.n}</p><span>Validade: ${m.v}</span></div>`;}),
-      ...zero.map(m=>`<div class="ni alerta"><p>📭 Sem estoque — ${m.n}</p></div>`),
-      ...baixo.map(m=>`<div class="ni alerta-w"><p>⬇️ Estoque baixo — ${m.n}</p><span>${m.q} un. (mín: ${m.min})</span></div>`)
-    ];
-    body.innerHTML=its.length?its.join(""):`<div class="pe">✅ Nenhum alerta!</div>`;
-  } else if(pTab==="compras"){
-    const zerados=meds.filter(m=>m.q<=0);
-    const baixo=meds.filter(m=>m.min>0&&m.q>0&&m.q<=m.min);
-    const lista=[...zerados,...baixo];
-    const texto="🛒 *Lista de Compras — Estoque*
-
-"+
-      lista.map(m=>`• ${m.n}: ${m.q===0?"ZERADO":`${m.q} un. (mín: ${m.min})`}`).join("
-")+
-      "
-
-_Gerado em "+new Date().toLocaleDateString("pt-BR")+"_";
-    body.innerHTML=lista.length?`
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${lista.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;background:var(--red-bg);border-radius:8px;padding:10px 12px"><span style="font-size:13px;font-weight:600;color:var(--red)">💊 ${m.n}</span><span style="font-size:12px;color:var(--g500)">${m.q===0?"📭 ZERADO":`⬇️ ${m.q}un`}</span></div>`).join("")}
-        <button onclick="navigator.clipboard.writeText(${JSON.stringify(texto)}).then(()=>showToast('✅ Lista copiada!'))" style="padding:12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;margin-top:8px">📋 Copiar lista</button>
-        <button onclick="window.open('https://wa.me/?text='+encodeURIComponent(${JSON.stringify(texto)}),'_blank')" style="padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>
-      </div>`:`<div class="pe">✅ Estoque em dia!</div>`;
-  } else if(pTab==="config"){
-    const isJefferson = curUser==="Jefferson";
-    // Jefferson vê e altera todas as senhas
-    // ADM vê e altera só a própria senha
-    // Usuários para mostrar no painel de cada ADM
-    const usuariosVisiveis = isJefferson
-      ? USUARIOS.filter(u=>u.name!=="Jefferson") // Jefferson vê ADM e D.Humanae
-      : USUARIOS.filter(u=>u.name===curUser);    // ADM vê só a si mesmo
-
-    body.innerHTML=`
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div style="background:var(--green-bg);border-radius:10px;padding:14px">
-          <h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>
-          ${isJefferson?`<div style="background:#fff3cd;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:12px;color:#92400e">
-            🔐 Você está vendo as senhas como administrador master
-          </div>`:""}
-          ${usuariosVisiveis.map(u=>`
-            <div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--g200)">
-              <label style="font-size:13px;font-weight:700;color:var(--g700);display:block;margin-bottom:8px">
-                👤 ${u.name} ${u.isAdm?"🔐 ADM":"👁️ Usuário"}
-              </label>
-              ${isJefferson?`<div style="font-size:12px;color:var(--g500);margin-bottom:8px">
-                Senha atual: <b style="color:var(--g900);font-family:monospace">${SENHAS[u.name]}</b>
-              </div>`:""}
-              <div style="display:flex;gap:6px">
-                <input type="password" id="senha_${u.name}" 
-                  placeholder="Nova senha (mín. 4 dígitos)" 
-                  inputmode="numeric" maxlength="8"
-                  style="flex:1;height:42px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;background:var(--g50);outline:none"
-                  onkeydown="if(event.key==='Enter')trocarSenha('${u.name}')">
-                <button onclick="trocarSenha('${u.name}')"
-                  style="padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer">
-                  💾 Salvar
-                </button>
-              </div>
-            </div>`).join("")}
-          <div id="msgSenha" style="font-size:13px;text-align:center;margin-top:4px;min-height:18px;font-weight:600"></div>
-        </div>
-        <div style="background:var(--blue-bg);border-radius:10px;padding:14px">
-          <h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4>
-          <p style="font-size:12px;color:var(--g700);margin-bottom:8px"><b>Android:</b> Chrome → menu ⋮ → "Adicionar à tela inicial"</p>
-          <p style="font-size:12px;color:var(--g700)"><b>iPhone:</b> Safari → compartilhar ↑ → "Adicionar à Tela de Início"</p>
-        </div>
-      </div>`;
-  }
+window.setMT = function(t){ movType=t; updMovBtns(); };
+function updMovBtns(){
+  const oe=movType==="entrada";
+  document.getElementById("bEnt").style.opacity=oe?"1":".45";
+  document.getElementById("bSai").style.opacity=oe?".45":"1";
+  const ob=document.getElementById("movOk");
+  ob.textContent=oe?"✅ Confirmar entrada":"✅ Confirmar saída";
+  ob.className="mbtn "+(oe?"g":"r");
 }
 
+window.confirmMov = function(){
+  const qty=parseInt(document.getElementById("movQ").value)||0;
+  if(qty<=0){ showToast("Digite uma quantidade"); return; }
+  const i=meds.findIndex(x=>x.id===movId); if(i<0) return;
+  if(movType==="saida"&&qty>meds[i].qty){ showToast("⚠️ Quantidade maior que o estoque!"); return; }
+  const prev=meds[i].qty;
+  meds[i].qty+=(movType==="entrada"?qty:-qty);
+  if(meds[i].qty<0) meds[i].qty=0;
+  movs.push({id:Date.now(),medId:movId,medName:meds[i].name,type:movType,qty,before:prev,after:meds[i].qty,user:me.name,ts:new Date().toISOString()});
+  if(movs.length>500) movs=movs.slice(-500);
+  saveData(); closeAll(); render();
+  showToast(movType==="entrada"?`📥 Entrada de ${qty}x!\nEstoque: ${meds[i].qty}`:`📤 Saída de ${qty}x!\nEstoque: ${meds[i].qty}`);
+};
 
+// ── HISTÓRICO ──
+window.openHist = function(id){
+  const m=meds.find(x=>x.id===id); if(!m) return;
+  document.getElementById("histT").textContent=`📋 ${m.name}`;
+  const h=movs.filter(mv=>mv.medId===id).reverse();
+  document.getElementById("histL").innerHTML=h.length?h.map(mv=>{
+    const d=new Date(mv.ts);
+    const dt=d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    return `<div class="mitem ${mv.type==="saida"?"out":""}">
+      <div class="mt"><span class="mn">${mv.type==="entrada"?"📥 Entrada":"📤 Saída"}</span>
+      <span class="mb ${mv.type==="saida"?"out":""}">${mv.type==="entrada"?"+":"-"}${mv.qty}</span></div>
+      <div class="mm">${dt} · <b>${mv.user}</b> · ${mv.before} → ${mv.after}</div>
+    </div>`;
+  }).join(""):`<div class="empty"><div>Sem movimentações</div></div>`;
+  document.getElementById("histOv").classList.add("on");
+};
+window.closeHist=()=>document.getElementById("histOv").classList.remove("on");
 
-// ===== OFFLINE DETECTION =====
-window.addEventListener("online",()=>{
-  const b=document.getElementById("offlineBar");if(b)b.style.display="none";
-  if(curUser&&!unsub)startListener();
-  showToast("✅ Online — sincronizando...");
-});
-window.addEventListener("offline",()=>{
-  const b=document.getElementById("offlineBar");if(b)b.style.display="block";
-  showToast("📶 Sem internet — modo offline");
-});
-if(!navigator.onLine){const b=document.getElementById("offlineBar");if(b)b.style.display="block";}
+// ── PAINEL ADM ──
+window.openPanel=function(){ if(!me||me.role!=="adm") return; document.getElementById("pov").classList.add("on"); document.getElementById("panel").classList.add("on"); renderPanel(); };
+window.closePanel=function(){ document.getElementById("pov").classList.remove("on"); document.getElementById("panel").classList.remove("on"); };
+window.showTab=function(tab,el){
+  document.querySelectorAll(".psec").forEach(s=>s.classList.remove("on"));
+  document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("on"));
+  document.getElementById("p"+tab).classList.add("on"); el.classList.add("on"); renderPanel();
+};
 
-// ===== LEITOR USB/BLUETOOTH =====
-// Captura códigos digitados por leitores de código de barras (USB/BT)
-// Leitores digitam muito rápido (< 100ms entre teclas) e enviam Enter
-let barcodeBuffer="";
-let barcodeTimer=null;
-document.addEventListener("keydown",(e)=>{
-  // Só captura se não estiver em um input/textarea
-  const tag=document.activeElement?.tagName;
-  if(tag==="INPUT"||tag==="TEXTAREA")return;
-  // Só captura se o app estiver aberto (usuário logado)
-  if(!curUser)return;
-  
-  if(e.key==="Enter"){
-    // Enter = fim do código de barras
-    if(barcodeBuffer.length>=4){
-      const cod=barcodeBuffer;
-      barcodeBuffer="";
-      clearTimeout(barcodeTimer);
-      // Buscar medicamento
-      const found=meds.find(m=>
-        m.n.toLowerCase().includes(cod.toLowerCase())||
-        (m.cod&&m.cod===cod)
-      );
-      if(found){
-        showToast("📷 "+found.n);
-        openMovModal(found.id);
-      } else {
-        // Não encontrou - mostrar na busca
-        const srch=document.getElementById("srch");
-        if(srch){srch.value=cod;render();}
-        showToast("🔍 Buscando: "+cod);
-      }
-    }
-    barcodeBuffer="";
-    return;
+function renderPanel(){ renderMovList(); renderAlerts(); renderShop(); renderCfg(); }
+function checkDot(){
+  const dot=document.getElementById("ndot");
+  const alerts=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+  dot.style.display=alerts>0?"block":"none";
+}
+
+function renderMovList(){
+  const el=document.getElementById("movlist2"); if(!el) return;
+  const list=[...movs].reverse().slice(0,200);
+  el.innerHTML=list.length?list.map(mv=>{
+    const d=new Date(mv.ts);
+    const dt=d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    return `<div class="mitem ${mv.type==="saida"?"out":""}">
+      <div class="mt"><span class="mn">${mv.medName}</span>
+      <span class="mb ${mv.type==="saida"?"out":""}">${mv.type==="entrada"?"+":"-"}${mv.qty}</span></div>
+      <div class="mm">${dt} · <b>${mv.user}</b> · ${mv.before} → ${mv.after}</div>
+    </div>`;
+  }).join(""):`<div class="empty"><div>Sem movimentações</div></div>`;
+}
+
+function renderAlerts(){
+  const el=document.getElementById("alertlist"); if(!el) return;
+  let h="";
+  meds.filter(m=>status(m)==="expired").forEach(m=>h+=`<div class="aitem"><b>⚠️ VENCIDO:</b> ${m.name} (${m.val})</div>`);
+  meds.filter(m=>m.qty===0).forEach(m=>h+=`<div class="aitem"><b>📭 SEM ESTOQUE:</b> ${m.name}</div>`);
+  meds.filter(m=>status(m)==="soon").forEach(m=>h+=`<div class="aitem am"><b>🕐 VENCE EM BREVE:</b> ${m.name} (${m.val})</div>`);
+  meds.filter(m=>status(m)==="low").forEach(m=>h+=`<div class="aitem am"><b>📉 ESTOQUE BAIXO:</b> ${m.name} (${m.qty}/${m.min})</div>`);
+  el.innerHTML=h||`<div class="empty"><div>✅ Nenhum alerta</div></div>`;
+}
+
+function renderShop(){
+  const el=document.getElementById("shoplist"); if(!el) return;
+  const need=meds.filter(m=>m.qty===0||(m.min&&m.qty<=m.min));
+  el.innerHTML=need.length?need.map(m=>`<div class="shopitem"><span>${m.name}</span><span style="color:var(--sub)">${m.qty} un.</span></div>`).join(""):`<div class="empty"><div>✅ Estoque OK</div></div>`;
+}
+
+window.sendShop=function(){
+  const need=meds.filter(m=>m.qty===0||(m.min&&m.qty<=m.min));
+  if(!need.length){ showToast("Nenhum item a comprar"); return; }
+  const txt="🛒 *Lista de Compras — Humanae*\n"+need.map(m=>`• ${m.name}: ${m.qty} un.`).join("\n");
+  window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank");
+};
+
+window.clearMovs=function(){
+  if(!confirm("Limpar todo o histórico?")) return;
+  movs=[]; saveData(); renderMovList(); showToast("🗑️ Histórico limpo");
+};
+
+function renderCfg(){
+  const el=document.getElementById("cfgCards"); if(!el) return;
+  const isMaster=me&&me.name===MASTER;
+  el.innerHTML=USERS.filter(u=>u.name!==MASTER||isMaster).map(u=>{
+    const showPass=isMaster;
+    return `<div class="ucard">
+      <h5>${u.name} <small style="font-weight:400;color:var(--sub)">(${u.role==="adm"?"ADM":"Usuário"})</small></h5>
+      ${showPass?`<div class="pshow">Senha atual: <b>${u.pass}</b></div>`:""}
+      <div class="prow">
+        <input type="text" id="np_${u.name}" placeholder="Nova senha">
+        <button onclick="changePass('${u.name}')">Alterar</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+window.changePass=function(name){
+  const inp=document.getElementById("np_"+name); if(!inp) return;
+  const np=inp.value.trim();
+  if(!np||np.length<3){ showToast("Senha muito curta"); return; }
+  if(USERS.some(u=>u.name!==name&&u.pass===np)){ showToast("Senha já em uso"); return; }
+  const i=USERS.findIndex(u=>u.name===name); if(i<0) return;
+  USERS[i].pass=np;
+  if(me.name===name) me.pass=np;
+  saveUsers(); renderCfg(); showToast(`✅ Senha de ${name} alterada!`);
+};
+
+// ── NOTIFICAÇÕES ──
+function reqNotif(){ if("Notification"in window&&Notification.permission==="default") Notification.requestPermission(); }
+function pushN(title,body){ if(Notification.permission==="granted") new Notification(title,{body,icon:"icone-192.png"}); }
+
+// ── QR ──
+window.openQR=function(){
+  document.getElementById("qrOv").classList.add("on");
+  const url=window.location.href;
+  const c=document.getElementById("qrCanvas");
+  const sz=Math.min(window.innerWidth*.55,190);
+  c.width=sz; c.height=sz;
+  drawQR(c,url);
+};
+window.closeQR=()=>document.getElementById("qrOv").classList.remove("on");
+window.copyLink=function(){ navigator.clipboard.writeText(window.location.href).then(()=>showToast("✅ Link copiado!")); };
+
+function drawQR(canvas,text){
+  // QR simples via API pública
+  const img=new Image();
+  img.crossOrigin="anonymous";
+  img.onload=()=>{ const ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0,canvas.width,canvas.height); };
+  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=${canvas.width}x${canvas.height}&data=${encodeURIComponent(text)}`;
+}
+
+// ── SCANNER ──
+window.openScan=function(){
+  document.getElementById("scanOv").classList.add("on");
+  document.getElementById("scanTxt").value="";
+  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
+      .then(s=>{ scanStream=s; document.getElementById("scanVid").srcObject=s; })
+      .catch(()=>{});
   }
-  
-  // Acumular caracteres
-  if(e.key.length===1){
-    barcodeBuffer+=e.key;
-    // Limpar buffer se demorar mais de 200ms (digitação humana)
-    clearTimeout(barcodeTimer);
-    barcodeTimer=setTimeout(()=>{barcodeBuffer="";},200);
-  }
-});
+};
+window.closeScan=function(){
+  document.getElementById("scanOv").classList.remove("on");
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+};
+window.scanSearch=function(v){
+  if(!v||v.length<2) return;
+  const found=meds.find(m=>m.name.toLowerCase().includes(v.toLowerCase())||(m.bc||"").includes(v));
+  if(found){ closeScan(); openMov(found.id); }
+};
 
-// ===== VISIBILIDADE =====
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();
-});
-setInterval(()=>{
-  if(curUser&&document.visibilityState==="visible"){
-    const sp=document.getElementById("spPill");
-    if(sp&&sp.className.includes("err"))startListener();
-  }
-},30000);
+// ── LEITOR USB (
 
-// ===== INICIALIZAÇÃO =====
-['est_cache_v1','est_v7_cache','estoque_cache_v5','est_sess_v1','est_sess_v1_b'].forEach(k=>{
-  try{localStorage.removeItem(k);sessionStorage.removeItem(k);}catch(e){}
-});
-const sess=sessLoad();
-if(sess){curUser=sess.u;isAdm=sess.a;loadCache();startApp();}
-</script>
-</body>
-</html>
