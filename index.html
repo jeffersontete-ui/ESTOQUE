@@ -197,6 +197,17 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .bc-item-info{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px}
 .bc-empty{text-align:center;color:rgba(255,255,255,.45);font-size:13px;padding:14px}
 .bc-match{color:#6ee7b7;font-weight:700}
+.bc-notfound{background:rgba(255,255,255,.07);border-radius:10px;padding:14px;margin-top:4px;text-align:center}
+.bc-notfound p{color:rgba(255,255,255,.6);font-size:13px;margin-bottom:10px}
+.bc-btn-cad{width:100%;padding:12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px}
+.bc-btn-cad:active{background:var(--green-d)}
+.bc-btn-web{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.bc-web-result{background:rgba(255,255,255,.1);border-radius:9px;padding:12px;margin-top:6px;text-align:left}
+.bc-web-nome{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.bc-web-info{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px}
+.bc-btn-usar{width:100%;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.bc-loading{text-align:center;color:rgba(255,255,255,.5);font-size:13px;padding:12px;animation:pulse2 1s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ===== TOAST ===== */
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:700;pointer-events:none;max-width:90vw;text-align:center}
@@ -365,7 +376,8 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
         onkeydown="if(event.key==='Enter')buscaManual()">
       <button onclick="buscaManual()">🔍</button>
     </div>
-    <div id="barcodeResultados" style="max-height:220px;overflow-y:auto;margin-top:4px"></div>
+    <div id="barcodeResultados" style="max-height:260px;overflow-y:auto;margin-top:4px"></div>
+    <div id="barcodeWebArea" style="display:none;margin-top:6px"></div>
     <button class="barcode-close" onclick="closeBarcodeScanner()">✕ Fechar</button>
   </div>
 </div>
@@ -621,29 +633,16 @@ window.render=function(){
         <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lbl[st]||"OK"}</span>${m.cod?` · 🔖 ${m.cod}`:""}</div>
         <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?` · Mín: ${m.min}`:""}</div>
         <div class="cacts">
-          <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
-          ${isAdm?`<button class="abtn ahist" data-action="hist" data-id="${m.id}">📋 Histórico</button>
-          <button class="abtn" data-action="edit" data-id="${m.id}">✏️ Editar</button>
-          <button class="abtn adel" data-action="del" data-id="${m.id}">🗑️</button>`:""}
+          <button class="abtn" onclick="event.stopPropagation();openMovModal('${m.id}')">📦 Movimentar</button>
+          ${isAdm?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>
+          <button class="abtn" onclick="openMedModal('${m.id}')">✏️ Editar</button>
+          <button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`:""}
         </div>
       </div>
       <div class="cright"><span class="qty ${qcls}">${m.q}x</span></div>
     </div>`;
   }).join("");
 };
-
-// ── EVENT DELEGATION: captura cliques dos botões dos cards ──────
-document.addEventListener('click', function(e){
-  const btn = e.target.closest('[data-action]');
-  if(!btn) return;
-  e.stopPropagation();
-  const action = btn.dataset.action;
-  const id = btn.dataset.id;
-  if(action==='mov')  openMovModal(id);
-  if(action==='hist') openHist(id);
-  if(action==='edit') openMedModal(id);
-  if(action==='del')  delMed(id);
-});
 
 window.setF=function(el,f){
   filter=f;
@@ -655,7 +654,7 @@ window.setF=function(el,f){
 // ===== MODAL MEDICAMENTO =====
 window.openMedModal=function(id=null){
   editId=id;
-  const m=id?meds.find(x=>String(x.id)===String(id)):null;
+  const m=id?meds.find(x=>x.id==id):null;
   document.getElementById("medModalTitle").textContent=m?"Editar medicamento":"Novo medicamento";
   document.getElementById("mNome").value=m?m.n:"";
   document.getElementById("mQtd").value=m?m.q:"";
@@ -675,7 +674,7 @@ window.saveMed=function(){
   const cod=document.getElementById("mCod").value.trim();
   if(!n){showToast("Digite o nome do medicamento");return}
   if(editId){
-    const i=meds.findIndex(x=>String(x.id)===String(editId));
+    const i=meds.findIndex(x=>x.id==editId);
     if(i>=0)meds[i]={...meds[i],n,q,v,min,cod};
   } else {
     const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;
@@ -690,14 +689,14 @@ window.saveMed=function(){
 
 window.delMed=function(id){
   if(!confirm("Excluir este medicamento?"))return;
-  meds=meds.filter(m=>String(m.id)!==String(id));
+  meds=meds.filter(m=>m.id!=id);
   saveAll();render();showToast("🗑️ Removido");
 };
 
 // ===== MOVIMENTAÇÃO =====
 window.openMovModal=function(id){
   movId=id;movTipo="ent";
-  const m=meds.find(x=>String(x.id)===String(id));if(!m)return;
+  const m=meds.find(x=>x.id==id);if(!m)return;
   document.getElementById("movNome").textContent=m.n;
   document.getElementById("movEst").textContent=`Estoque atual: ${m.q} unidades`;
   document.getElementById("movQtd").value="";
@@ -719,7 +718,7 @@ window.selTipo=function(t){
 window.saveMov=function(){
   const q=parseInt(document.getElementById("movQtd").value)||0;
   if(q<=0){showToast("Digite uma quantidade");return}
-  const i=meds.findIndex(x=>String(x.id)===String(movId));if(i<0)return;
+  const i=meds.findIndex(x=>x.id==movId);if(i<0)return;
   if(movTipo==="sai"&&q>meds[i].q){showToast("⚠️ Quantidade maior que o estoque!");return}
   const prev=meds[i].q;
   meds[i].q+=(movTipo==="ent"?q:-q);
@@ -737,9 +736,9 @@ window.saveMov=function(){
 
 // ===== HISTÓRICO =====
 window.openHist=function(id){
-  const m=meds.find(x=>String(x.id)===String(id));if(!m)return;
+  const m=meds.find(x=>x.id==id);if(!m)return;
   document.getElementById("histTitle").textContent=`📋 ${m.n}`;
-  const h=movs.filter(mv=>(String(mv.mid)===String(id)||String(mv.medId)===String(id))).reverse().map(normMov);
+  const h=movs.filter(mv=>(mv.mid===id||mv.medId===id)).reverse().map(normMov);
   document.getElementById("histContent").innerHTML=h.length?h.map(mv=>`
     <div class="hi ${mv.tipo}">
       <div class="hi-top">
@@ -778,7 +777,7 @@ function normMov(mv){
   // Nome: tenta todos os campos possíveis em ordem de prioridade
   const nome = mv.mn || mv.medName || mv.name || mv.n || mv.medicamento || null;
   // Se não achou nome pelo campo, tenta buscar pelo id do med na lista
-  const mid = String(mv.mid||mv.medId||mv.medicamentoId||"") || null;
+  const mid = mv.mid || mv.medId || mv.medicamentoId || null;
   const medObj = (!nome && mid) ? meds.find(x=>x.id==mid) : null;
   const nomeResolvido = nome || (medObj ? medObj.n : "—");
 
@@ -898,14 +897,20 @@ window.openBarcodeScanner=function(){
   document.getElementById("barcodeResultados").innerHTML="";
   document.getElementById("barcodeStatus").textContent="Iniciando câmera...";
   if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
-    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
+    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}})
       .then(s=>{
         barcodeStream=s;
         const v=document.getElementById("barcodeVideo");
-        v.srcObject=s;v.play().catch(()=>{});
+        v.style.display="block";
+        v.srcObject=s;
+        v.onloadedmetadata=()=>v.play().catch(()=>{});
         document.getElementById("barcodeStatus").textContent="📷 Aponte para o código ou use a busca abaixo";
       })
-      .catch(()=>{document.getElementById("barcodeStatus").textContent="📵 Câmera indisponível — use a busca manual abaixo"});
+      .catch(err=>{
+        console.warn("Câmera:",err);
+        document.getElementById("barcodeVideo").style.display="none";
+        document.getElementById("barcodeStatus").textContent="📵 Câmera indisponível — use a busca manual abaixo";
+      });
   } else {
     document.getElementById("barcodeStatus").textContent="📵 Câmera não disponível — use a busca manual abaixo";
   }
@@ -920,64 +925,162 @@ window.closeBarcodeScanner=function(){
   document.getElementById("barcodeResultados").innerHTML="";
 };
 
-// Busca em tempo real ao digitar
+// ─── Destaque de texto ──────────────────────────────────────────
+function hlTxt(txt,q){
+  if(!txt||!q)return txt||"";
+  const idx=txt.toLowerCase().indexOf(q.toLowerCase());
+  if(idx<0)return txt;
+  return txt.slice(0,idx)+'<span class="bc-match">'+txt.slice(idx,idx+q.length)+'</span>'+txt.slice(idx+q.length);
+}
+
+// ─── Busca local em tempo real ───────────────────────────────────
 window.buscaAoVivo=function(val){
-  const q=val.trim().toLowerCase();
+  const q=val.trim();
   const el=document.getElementById("barcodeResultados");
+  const wa=document.getElementById("barcodeWebArea");
+  wa.style.display="none";
+  // Limpa status para não duplicar mensagem
+  document.getElementById("barcodeStatus").textContent="📷 Digite o nome ou código";
   if(!q){el.innerHTML="";return}
 
-  // Busca por: código exato, código parcial, nome parcial
+  const ql=q.toLowerCase();
   const resultados=meds.filter(m=>{
     const codM=(m.cod||m.barcode||m.codigo||"").toString().toLowerCase();
     const nomeM=(m.n||m.name||"").toLowerCase();
-    return codM===q || codM.includes(q) || nomeM.includes(q);
+    return codM===ql||codM.includes(ql)||nomeM.includes(ql);
   }).slice(0,8);
 
   if(!resultados.length){
-    el.innerHTML=`<div class="bc-empty">❌ Nenhum resultado para "<b>${val}</b>"</div>`;
+    // Verificar se parece código de barras (só números, 8+ dígitos)
+    const eCodBarras=/^\d{8,14}$/.test(q.replace(/\s/g,""));
+    el.innerHTML=`<div class="bc-notfound">
+      <p>❌ "${q}" não encontrado no estoque</p>
+      ${eCodBarras?
+        `<button class="bc-btn-cad" onclick="buscarNaInternet('${q}')">🌐 Buscar na internet</button>`:
+        `<button class="bc-btn-cad" onclick="abrirCadastroComCod('','${q.replace(/'/g,"\'")}')">➕ Cadastrar medicamento</button>`
+      }
+    </div>`;
     return;
   }
 
-  // Destaca o trecho que casou
-  const hl=(txt,q)=>{
-    if(!txt||!q)return txt||"";
-    const idx=txt.toLowerCase().indexOf(q);
-    if(idx<0)return txt;
-    return txt.slice(0,idx)+`<span class="bc-match">`+txt.slice(idx,idx+q.length)+`</span>`+txt.slice(idx+q.length);
-  };
-
   el.innerHTML=resultados.map(m=>{
     const cod=(m.cod||m.barcode||m.codigo||"");
-    const nomeDest=hl(m.n||m.name||"",q);
-    const codDest=cod?hl(cod,q):"";
     const st=status(m);
     const stTxt={ok:"✅ OK",soon:"⏰ Vence em breve",expired:"⚠️ VENCIDO",zero:"📭 Sem estoque",low:"📉 Baixo"}[st]||"";
-    return`<div class="bc-item" onclick="selecionarMed(${m.id})">
-      <div class="bc-item-nome">${nomeDest}</div>
-      <div class="bc-item-info">${stTxt} · ${m.q||0}x · Val: ${m.v||"—"}${codDest?` · 🔖 ${codDest}`:""}
+    return`<div class="bc-item" data-action="selmed" data-id="${m.id}">
+      <div class="bc-item-nome">${hlTxt(m.n||"",ql)}</div>
+      <div class="bc-item-info">${stTxt} · ${m.q||0}x · Val: ${m.v||"—"}${cod?` · 🔖 ${hlTxt(cod,ql)}`:""}
       </div>
     </div>`;
   }).join("");
 };
 
-// Busca ao pressionar Enter ou botão — abre o primeiro resultado
+// ─── Busca ao pressionar Enter / botão ──────────────────────────
 window.buscaManual=function(){
   const q=document.getElementById("inpBuscaCod").value.trim();
   if(!q)return;
-  const cod=q.toLowerCase();
-  // Prioridade: código exato > código parcial > nome
+  const ql=q.toLowerCase();
   const found=
-    meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString()===q) ||
-    meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString().toLowerCase().includes(cod)) ||
-    meds.find(m=>(m.n||m.name||"").toLowerCase().includes(cod));
+    meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString()===q)||
+    meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString().toLowerCase().includes(ql))||
+    meds.find(m=>(m.n||m.name||"").toLowerCase().includes(ql));
   if(found){closeBarcodeScanner();openMovModal(found.id)}
-  else{document.getElementById("barcodeStatus").textContent=`❌ Nenhum resultado para "${q}"`;showToast("Nenhum medicamento encontrado")}
+  else{
+    const eCodBarras=/^\d{8,14}$/.test(q.replace(/\s/g,""));
+    if(eCodBarras) buscarNaInternet(q);
+    else showToast("Medicamento não encontrado no estoque");
+  }
 };
 
-// Seleciona da lista de resultados
+// ─── Seleciona da lista local ────────────────────────────────────
 window.selecionarMed=function(id){
   closeBarcodeScanner();
   openMovModal(id);
+};
+
+// ─── Abre cadastro pré-preenchido com código ─────────────────────
+window.abrirCadastroComCod=function(nome,cod){
+  closeBarcodeScanner();
+  openMedModal(null);
+  if(nome) setTimeout(()=>{document.getElementById("mNome").value=nome;},120);
+  if(cod)  setTimeout(()=>{document.getElementById("mCod").value=cod;},120);
+};
+
+// ─── Busca código de barras na internet (Open Food Facts + Cosmos) ──
+window.buscarNaInternet=async function(cod){
+  const wa=document.getElementById("barcodeWebArea");
+  const el=document.getElementById("barcodeResultados");
+  el.innerHTML="";
+  wa.style.display="block";
+  wa.innerHTML=`<div class="bc-loading">🌐 Buscando código ${cod} na internet...</div>`;
+
+  let nome="", descricao="", encontrado=false;
+
+  // Tentativa 1: Open Food Facts (boa para medicamentos e produtos Brasil)
+  try{
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${cod}.json`,{signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    if(d.status===1&&d.product){
+      nome=d.product.product_name_pt||d.product.product_name||d.product.generic_name||"";
+      descricao=d.product.brands||"";
+      if(nome) encontrado=true;
+    }
+  }catch(e){}
+
+  // Tentativa 2: Cosmos API (banco de dados de produtos brasileiros)
+  if(!encontrado){
+    try{
+      const r=await fetch(`https://api.cosmos.bluesoft.com.br/gtins/${cod}`,{
+        headers:{"X-Cosmos-Token":""},
+        signal:AbortSignal.timeout(5000)
+      });
+      if(r.ok){
+        const d=await r.json();
+        nome=d.description||d.comercial_name||"";
+        descricao=d.brand?.name||"";
+        if(nome) encontrado=true;
+      }
+    }catch(e){}
+  }
+
+  // Tentativa 3: Open Product Data
+  if(!encontrado){
+    try{
+      const r=await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${cod}`,{signal:AbortSignal.timeout(5000)});
+      const d=await r.json();
+      if(d.code==="OK"&&d.items?.length){
+        nome=d.items[0].title||"";
+        descricao=d.items[0].brand||"";
+        if(nome) encontrado=true;
+      }
+    }catch(e){}
+  }
+
+  if(encontrado&&nome){
+    // Limpa o nome: remove palavras genéricas desnecessárias
+    const nomeLimpo=nome.toUpperCase().trim();
+    wa.innerHTML=`
+      <div class="bc-web-result">
+        <div class="bc-web-nome">✅ Produto encontrado:</div>
+        <div style="font-size:16px;font-weight:700;color:#6ee7b7;margin:6px 0">${nomeLimpo}</div>
+        ${descricao?`<div class="bc-web-info">Marca: ${descricao}</div>`:""}
+        <div class="bc-web-info">Código: ${cod}</div>
+        <button class="bc-btn-usar" onclick="abrirCadastroComCod('${nomeLimpo.replace(/'/g,"\'")}','${cod}')">
+          ➕ Usar este nome para cadastrar
+        </button>
+      </div>`;
+  } else {
+    wa.innerHTML=`
+      <div class="bc-notfound">
+        <p>🔍 Código <b>${cod}</b> não encontrado na internet</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px">
+          Pode ser código de medicamento controlado (não está em bases públicas)
+        </p>
+        <button class="bc-btn-cad" onclick="abrirCadastroComCod('','${cod}')">
+          ➕ Cadastrar manualmente com este código
+        </button>
+      </div>`;
+  }
 };
 
 // ===== LEITOR USB/BLUETOOTH =====
