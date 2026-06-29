@@ -2,47 +2,60 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Humanae">
+<meta name="apple-mobile-web-app-title" content="Estoque">
 <meta name="theme-color" content="#1a9e6b">
-<title>Estoque — Humanae</title>
+<title>Estoque</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Humanae">
 <style>
 :root{--green:#1a9e6b;--green-d:#0f6e4a;--green-bg:#e6f7f1;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--blue:#185fa5;--blue-bg:#e6f1fb;--purple:#7c3aed;--purple-bg:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--r:14px;--rs:8px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--g900)}
 
-/* ===== LOGIN ===== */
+/* ===== TELAS ===== */
 .screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f6e4a,#1a9e6b)}
 .screen.active{display:flex}
 .box{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,.2)}
-.llogo{text-align:center;margin-bottom:12px}
-.llogo img{width:140px;height:auto}
-.box h2{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px;color:var(--g900)}
-.box p{text-align:center;font-size:13px;color:var(--g500);margin-bottom:22px}
+.logo{text-align:center;font-size:52px;margin-bottom:10px}
+.box h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:4px}
+.box p{text-align:center;font-size:13px;color:var(--g500);margin-bottom:20px}
+.tabs{display:grid;gap:6px;margin-bottom:20px;background:var(--g100);border-radius:12px;padding:4px}
+.tabs-2{grid-template-columns:1fr 1fr}
+.tabs-3{grid-template-columns:1fr 1fr 1fr}
+.tab{height:36px;border-radius:8px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer}
+.tab.active{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.field{margin-bottom:14px}
 .field label{display:block;font-size:11px;font-weight:700;color:var(--g700);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.field input{width:100%;height:50px;border-radius:var(--rs);border:1.5px solid var(--g200);padding:0 14px;font-size:22px;color:var(--g900);background:var(--g50);outline:none;text-align:center;letter-spacing:6px}
+.field input{width:100%;height:48px;border-radius:var(--rs);border:1.5px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
 .field input:focus{border-color:var(--green);background:#fff}
-.btn{width:100%;height:50px;border-radius:var(--r);border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
+.field input.center{text-align:center;letter-spacing:4px;font-size:20px}
+.btn{width:100%;height:50px;border-radius:var(--r);border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
 .btn-green{background:var(--green);color:#fff}
 .btn-green:active{background:var(--green-d)}
-.msg{font-size:13px;text-align:center;margin-top:10px;min-height:18px;font-weight:500;color:var(--red)}
-.lnote{font-size:12px;color:var(--g400);text-align:center;margin-top:12px;padding:8px;background:var(--g100);border-radius:8px}
-
-/* ===== INSTALL BANNER ===== */
-#installBanner{display:none;background:var(--green);color:#fff;padding:10px 16px;align-items:center;gap:10px;font-size:13px;font-weight:600}
-#installBanner button{margin-left:auto;background:#fff;color:var(--green);border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
-#installBanner .ib-x{background:transparent;color:rgba(255,255,255,.7);font-size:18px;padding:0 4px;margin-left:0}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-amber:active{opacity:.85}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.msg{font-size:13px;text-align:center;margin-top:10px;min-height:18px;font-weight:500}
+.msg-err{color:var(--red)}
+.msg-ok{color:var(--green)}
+.msg-loading{color:var(--amber)}
+.success-box{display:none;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:8px 0}
+.success-box .ico{font-size:48px}
+.success-box h3{font-size:18px;font-weight:700;color:var(--green)}
+.success-box p{font-size:13px;color:var(--g500)}
+.divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:var(--g400);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--g200)}
 
 /* ===== HEADER ===== */
-.hdr{background:#fff;padding:12px 16px 10px;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
+.hdr{background:#fff;padding:14px 20px 12px;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .hdr-title{display:flex;align-items:center;gap:8px}
 .hdr-title h1{font-size:19px;font-weight:700}
@@ -55,37 +68,29 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .sp.sync{background:var(--amber-bg);color:var(--amber)}
 .hdr-r{display:flex;align-items:center;gap:6px}
 .icon-btn{width:38px;height:38px;border-radius:50%;background:var(--g100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;position:relative;flex-shrink:0}
-.icon-btn:active{background:var(--g200)}
 .ndot{width:10px;height:10px;background:var(--red);border-radius:50%;position:absolute;top:4px;right:4px;border:2px solid #fff;display:none}
 .search-wrap{position:relative}
 .search-wrap input{width:100%;height:40px;border-radius:20px;border:1px solid var(--g200);background:var(--g100);padding:0 16px 0 38px;font-size:15px;outline:none}
 .search-wrap input::placeholder{color:var(--g400)}
 .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px}
 
-/* ===== OFFLINE BAR ===== */
-#offlineBar{display:none;background:var(--amber);color:#fff;text-align:center;padding:7px;font-size:13px;font-weight:700}
-
-/* ===== STATS ===== */
+/* ===== APP ===== */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
 .stat{background:#fff;border-radius:var(--rs);padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)}
-.stat-n{font-size:22px;font-weight:800;line-height:1}
+.stat-n{font-size:21px;font-weight:700;line-height:1}
 .stat-l{font-size:10px;color:var(--g500);margin-top:2px}
 .sn{color:var(--green)}.sw{color:var(--amber)}.sd{color:var(--red)}
-
-/* ===== FILTROS ===== */
 .filters{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
 .filters::-webkit-scrollbar{display:none}
 .fb{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1px solid var(--g200);background:#fff;font-size:13px;color:var(--g500);cursor:pointer;font-weight:500;white-space:nowrap}
 .fb.active{background:var(--green);color:#fff;border-color:var(--green)}
-
-/* ===== LISTA ===== */
 .list{padding:0 16px 100px;display:flex;flex-direction:column;gap:8px}
 .card{background:#fff;border-radius:var(--r);padding:13px 14px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid transparent;display:flex;align-items:flex-start;gap:11px}
 .card.ok{border-left-color:var(--green)}.card.soon{border-left-color:var(--amber)}.card.expired,.card.zero{border-left-color:var(--red)}
 .cico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;margin-top:2px}
-.ico-ok{background:var(--green-bg)}.ico-soon{background:var(--amber-bg)}.ico-exp,.ico-zero{background:var(--red-bg)}
+.ico-ok{background:var(--green-bg)}.ico-soon{background:var(--amber-bg)}.ico-exp{background:var(--red-bg)}.ico-zero{background:var(--g100)}
 .cbody{flex:1;min-width:0}
-.cname{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .csub{font-size:12px;margin-top:2px}
 .tok{color:var(--green)}.tso{color:var(--amber)}.tex{color:var(--red);font-weight:600}.tze{color:var(--g400)}
 .cvenc{font-size:15px;font-weight:700;margin-top:4px}
@@ -99,21 +104,8 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .cright{flex-shrink:0;padding-top:2px}
 .qty{font-size:15px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--g100);color:var(--g700)}
 .qty.qz{background:var(--red-bg);color:var(--red)}
-.qty.qlo{background:var(--amber-bg);color:var(--amber)}
-
-/* ===== FAB ===== */
-.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--green);border:none;box-shadow:0 4px 16px rgba(26,158,107,.45);color:#fff;font-size:28px;cursor:pointer;z-index:200;display:none;align-items:center;justify-content:center}
+.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--green);border:none;box-shadow:0 4px 16px rgba(26,158,107,.45);color:#fff;font-size:28px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center}
 .fab:active{transform:scale(.94)}
-#fabBar{bottom:90px;background:var(--blue);font-size:20px}
-
-/* ===== SKELETON ===== */
-.sk{padding:0 16px;display:flex;flex-direction:column;gap:8px}
-.skc{background:#fff;border-radius:var(--r);padding:16px;border-left:4px solid var(--g200);display:flex;gap:12px;align-items:center}
-.ski{width:40px;height:40px;border-radius:50%;background:var(--g200);flex-shrink:0;animation:pulse 1.2s infinite}
-.skb{flex:1;display:flex;flex-direction:column;gap:8px}
-.skl{height:12px;border-radius:6px;background:var(--g200);animation:pulse 1.2s infinite}
-.w80{width:80%}.w50{width:50%}.w30{width:30%}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ===== MODAIS ===== */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end}
@@ -137,12 +129,13 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .mtt.ent.sel{background:var(--green-bg);border-color:var(--green);color:var(--green)}
 .mtt.sai.sel{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 .mtt:not(.sel){color:var(--g400)}
-.confirm-ok{display:none;background:var(--green-bg);border:1px solid #6ee7b7;border-radius:var(--rs);padding:12px;text-align:center;margin-bottom:14px}
+.confirm-ok{background:var(--green-bg);border:1px solid #6ee7b7;border-radius:var(--rs);padding:12px;text-align:center;margin-bottom:14px;display:none}
 .confirm-ok p{font-size:14px;font-weight:700;color:var(--green-d)}
 .confirm-ok span{font-size:12px;color:var(--g500)}
 
 /* ===== HISTÓRICO ===== */
-.hi{background:var(--g50);border-radius:var(--rs);padding:11px 14px;margin-bottom:8px}
+.hist-list{display:flex;flex-direction:column;gap:8px}
+.hi{background:var(--g50);border-radius:var(--rs);padding:11px 14px}
 .hi.ent{border-left:3px solid var(--green)}.hi.sai{border-left:3px solid var(--red)}
 .hi-top{display:flex;align-items:center;justify-content:space-between}
 .hi-tipo{font-size:13px;font-weight:700}
@@ -151,22 +144,54 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .hi-info{font-size:12px;color:var(--g500);margin-top:3px}
 
 /* ===== PAINEL ADM ===== */
-.pov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:390;display:none}
-.pov.open{display:block}
 .panel{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100%;background:#fff;z-index:400;transition:right .25s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
 .panel.open{right:0}
-.ph{padding:18px 20px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between;background:var(--green);color:#fff}
+.ph{padding:18px 20px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between}
 .ph h3{font-size:17px;font-weight:700}
-.ph-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer}
-.ptabs{display:flex;border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none;background:var(--g50)}
+.ph-x{background:none;border:none;font-size:24px;color:var(--g400);cursor:pointer}
+.ptabs{display:flex;border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none}
 .ptabs::-webkit-scrollbar{display:none}
 .ptab{flex-shrink:0;height:44px;border:none;background:none;font-size:11px;font-weight:700;color:var(--g400);cursor:pointer;border-bottom:2px solid transparent;padding:0 10px;white-space:nowrap}
 .ptab.active{color:var(--green);border-bottom-color:var(--green)}
 .pbody{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
 .ni{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
 .ni.mov-e{border-left:3px solid var(--green)}.ni.mov-s{border-left:3px solid var(--red)}
+.ni.cad-u{border-left:3px solid var(--purple);background:var(--purple-bg)}
+.ni.alerta{border-left:3px solid var(--red)}.ni.alerta-w{border-left:3px solid var(--amber)}
 .ni p{font-size:14px;font-weight:600}.ni span{font-size:12px;color:var(--g500);margin-top:3px;display:block}
+.ni-time{font-size:10px;color:var(--g400);margin-top:4px}
 .pe{text-align:center;color:var(--g400);padding:32px 20px;font-size:14px}
+
+/* ===== USUÁRIOS ===== */
+.user-card{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
+.user-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.user-name{font-size:15px;font-weight:700}
+.user-meta{font-size:11px;color:var(--g500);margin-top:2px}
+.ustatus{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.u-ok{background:var(--green-bg);color:var(--green)}.u-blocked{background:var(--red-bg);color:var(--red)}
+.uacts{display:flex;gap:6px;margin-bottom:10px}
+.ua{flex:1;height:34px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer}
+.ua-block{background:var(--amber-bg);color:var(--amber)}
+.ua-unblock{background:var(--green-bg);color:var(--green)}
+.ua-del{background:var(--red-bg);color:var(--red)}
+.ptitle{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--g200)}
+.prow:last-child{border-bottom:none}
+.prow-label{font-size:13px;color:var(--g700)}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.tslider{position:absolute;inset:0;background:var(--g300);border-radius:11px;transition:.2s}
+.toggle input:checked+.tslider{background:var(--green)}
+.tslider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.tslider:before{transform:translateX(18px)}
+
+/* ===== CADASTRO RÁPIDO ADM ===== */
+.quick-add{background:var(--green-bg);border-radius:var(--rs);padding:14px}
+.quick-add h4{font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px}
+.quick-add input{width:100%;height:42px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 12px;font-size:15px;background:#fff;outline:none;margin-bottom:8px}
+.quick-add input:focus{border-color:var(--green)}
+.quick-add-btn{width:100%;height:42px;border-radius:var(--rs);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.quick-add-msg{font-size:12px;text-align:center;margin-top:6px;min-height:16px}
 
 /* ===== QR ===== */
 .qr-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
@@ -174,14 +199,22 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .qr-box{background:#fff;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center}
 .qr-box h3{font-size:18px;font-weight:700;margin-bottom:4px}
 .qr-box p{font-size:13px;color:var(--g500);margin-bottom:20px}
-.qr-wrap{background:var(--g50);border-radius:16px;padding:20px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;min-height:140px}
-.qr-wrap img{max-width:180px;border-radius:8px}
+.qr-wrap{background:var(--g50);border-radius:16px;padding:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;min-height:140px}
 .qr-url{font-size:11px;color:var(--g400);word-break:break-all;margin-bottom:14px;padding:8px 12px;background:var(--g100);border-radius:8px}
 .qr-copy{width:100%;height:44px;border-radius:var(--r);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
-.qr-wa{width:100%;height:44px;border-radius:var(--r);background:#25d366;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
 .qr-close-btn{width:100%;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:15px;cursor:pointer}
 
-/* ===== BARCODE SCANNER ===== */
+/* ===== TOAST + SKELETON ===== */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sk{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.skc{background:#fff;border-radius:var(--r);padding:16px;border-left:4px solid var(--g200);display:flex;gap:12px;align-items:center}
+.ski{width:40px;height:40px;border-radius:50%;background:var(--g200);flex-shrink:0;animation:pulse 1.2s infinite}
+.skb{flex:1;display:flex;flex-direction:column;gap:8px}
+.skl{height:12px;border-radius:6px;background:var(--g200);animation:pulse 1.2s infinite}
+.w80{width:80%}.w50{width:50%}.w30{width:30%}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* BARCODE SCANNER */
 #ovBarcode{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:none;align-items:flex-end}
 #ovBarcode.open{display:flex}
 .barcode-modal{background:#111;border-radius:22px 22px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
@@ -191,60 +224,36 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .barcode-search input{flex:1;height:46px;border-radius:8px;border:none;padding:0 12px;font-size:16px;background:#fff}
 .barcode-search button{padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
 .barcode-close{width:100%;padding:12px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
-.bc-item{background:rgba(255,255,255,.12);border-radius:9px;padding:11px 13px;margin-bottom:6px;cursor:pointer;border:1px solid rgba(255,255,255,.15);transition:.15s}
-.bc-item:active{background:rgba(255,255,255,.25)}
-.bc-item-nome{font-size:14px;font-weight:700;color:#fff}
-.bc-item-info{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px}
-.bc-empty{text-align:center;color:rgba(255,255,255,.45);font-size:13px;padding:14px}
-.bc-match{color:#6ee7b7;font-weight:700}
-.bc-notfound{background:rgba(255,255,255,.07);border-radius:10px;padding:14px;margin-top:4px;text-align:center}
-.bc-notfound p{color:rgba(255,255,255,.6);font-size:13px;margin-bottom:10px}
-.bc-btn-cad{width:100%;padding:12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px}
-.bc-btn-cad:active{background:var(--green-d)}
-.bc-btn-web{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
-.bc-web-result{background:rgba(255,255,255,.1);border-radius:9px;padding:12px;margin-top:6px;text-align:left}
-.bc-web-nome{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
-.bc-web-info{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px}
-.bc-btn-usar{width:100%;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
-.bc-loading{text-align:center;color:rgba(255,255,255,.5);font-size:13px;padding:12px;animation:pulse2 1s infinite}
-@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* ===== TOAST ===== */
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:700;pointer-events:none;max-width:90vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.empty{text-align:center;color:var(--g400);padding:36px 16px;font-size:14px}
 </style>
 </head>
 <body>
 
-<!-- INSTALL BANNER (PWA) -->
-<div id="installBanner">
-  <span>📲 Instale o app Humanae na tela inicial!</span>
-  <button id="installBtn">Instalar</button>
-  <button class="ib-x" id="installDismiss">✕</button>
-</div>
-
-<!-- LOGIN -->
+<!-- ===== TELA LOGIN ===== -->
 <div class="screen active" id="scrLogin">
   <div class="box">
-    <div class="llogo"><img src="icon-512.png" alt="Humanae" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:52px">💊</span></div>
-    <h2>Drogaria Humanae</h2>
-    <p>Controle de estoque</p>
-    <div class="field">
-      <label>Senha de acesso</label>
-      <input type="password" id="inpSenha" placeholder="••••" inputmode="numeric"
-        onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="logo">💊</div>
+    <h2>Estoque</h2>
+    <p>Controle de medicamentos</p>
+    <p style="font-size:12px;color:var(--g400);margin-top:-12px">Para cadastrar usuários, contate o ADM</p>
+    <!-- Abas removidas - apenas login direto -->
+    <!-- ENTRAR -->
+    <div id="formEnt">
+      <div class="field">
+        <label>Senha de acesso</label>
+        <input type="password" id="inpSenha" class="center" placeholder="••••" inputmode="numeric"
+          onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-green" id="btnEnt" onclick="doLogin()">Entrar</button>
     </div>
-    <button class="btn btn-green" onclick="doLogin()">Entrar</button>
+    <!-- Formulário cadastro removido - apenas ADM cadastra pelo painel -->
+    <div id="formCad" style="display:none"></div>
     <div class="msg" id="msgLogin"></div>
-    <div class="lnote">Para cadastrar usuários, contate o ADM</div>
   </div>
 </div>
 
-<!-- OFFLINE BAR -->
-<div id="offlineBar">📶 Sem internet — trabalhando offline</div>
-
-<!-- APP PRINCIPAL -->
+<div id="offlineBar" style="display:none;background:var(--amber);color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:700">📶 Sem internet — trabalhando offline</div>
+<!-- ===== APP PRINCIPAL ===== -->
 <div id="appMain" style="display:none">
   <div class="hdr">
     <div class="hdr-top">
@@ -255,9 +264,9 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       </div>
       <div class="hdr-r">
         <span class="sp sync" id="spPill">⏳</span>
-        <button class="icon-btn" id="btnPanel" onclick="openPanel()" style="display:none" title="Painel ADM">🔔<span class="ndot" id="ndot"></span></button>
-        <button class="icon-btn" onclick="openQR()" title="Compartilhar link">🔗</button>
-        <button class="icon-btn" onclick="doLogout()" title="Sair">🚪</button>
+        <button class="icon-btn" id="btnPanel" onclick="openPanel()" style="display:none">🔔<span class="ndot" id="ndot"></span></button>
+        <button class="icon-btn" onclick="openQR()" id="btnQR">🔗</button>
+        <button class="icon-btn" onclick="doLogout()">🚪</button>
       </div>
     </div>
     <div class="search-wrap">
@@ -265,13 +274,11 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <input type="text" id="srch" placeholder="Buscar medicamento..." oninput="render()" autocomplete="off">
     </div>
   </div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-n sn" id="stTot">—</div><div class="stat-l">Cadastrados</div></div>
-    <div class="stat"><div class="stat-n sw" id="stSoon">—</div><div class="stat-l">Vence em breve</div></div>
-    <div class="stat"><div class="stat-n sd" id="stAlt">—</div><div class="stat-l">Atenção</div></div>
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-n sn">—</div><div class="stat-l">Cadastrados</div></div>
+    <div class="stat"><div class="stat-n sw">—</div><div class="stat-l">Vence em breve</div></div>
+    <div class="stat"><div class="stat-n sd">—</div><div class="stat-l">Atenção</div></div>
   </div>
-
   <div class="filters">
     <button class="fb active" onclick="setF(this,'all')">Todos</button>
     <button class="fb" onclick="setF(this,'expired')">⚠️ Vencidos</button>
@@ -279,16 +286,14 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <button class="fb" onclick="setF(this,'zero')">📭 Sem estoque</button>
     <button class="fb" onclick="setF(this,'ok')">✅ OK</button>
   </div>
-
   <div class="sk" id="skeleton">
     <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
     <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
     <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
   </div>
   <div class="list" id="list" style="display:none"></div>
-
   <button class="fab" id="fabBtn" onclick="openMedModal()" style="display:none">+</button>
-  <button class="fab" id="fabBar" onclick="openBarcodeScanner()" style="display:none">📷</button>
+<button class="fab" id="fabBar" onclick="openBarcodeScanner()" style="display:none;bottom:90px;background:var(--blue);font-size:20px">📷</button>
 </div>
 
 <!-- MODAL MEDICAMENTO -->
@@ -301,12 +306,10 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
       <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
     </div>
-    <div class="mfield"><label>Estoque mínimo</label><input type="number" id="mMin" placeholder="5" min="0" inputmode="numeric"></div>
-    <div class="mfield"><label>Código de barras (opcional)</label><input type="text" id="mCod" placeholder="7891000315507" autocomplete="off"></div>
     <div class="confirm-ok" id="medConfirm"><p id="medConfirmTxt"></p></div>
-    <button class="mbtn mbtn-green" onclick="saveMed()">💾 Salvar</button>
+    <button class="mbtn mbtn-green" onclick="saveMed()">Salvar</button>
     <button class="mcan" onclick="closeOv('ovMed')">Cancelar</button>
-    <button class="back-home" onclick="closeOv('ovMed')">🏠 Tela inicial</button>
+    <button class="back-home" onclick="closeOv('ovMed');scrollToTop()">🏠 Tela inicial</button>
   </div>
 </div>
 
@@ -324,7 +327,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <div class="confirm-ok" id="movConfirm"><p id="movConfirmTxt"></p><span id="movConfirmSub"></span></div>
     <button class="mbtn mbtn-green" id="btnConfMov" onclick="saveMov()">✅ Confirmar entrada</button>
     <button class="mcan" onclick="closeOv('ovMov')">Cancelar</button>
-    <button class="back-home" onclick="closeOv('ovMov')">🏠 Tela inicial</button>
+    <button class="back-home" onclick="closeOv('ovMov');scrollToTop()">🏠 Tela inicial</button>
   </div>
 </div>
 
@@ -339,11 +342,10 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 </div>
 
 <!-- PAINEL ADM -->
-<div class="pov" id="povAdm" onclick="closePanel()"></div>
 <div class="panel" id="admPanel">
   <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-x" onclick="closePanel()">✕</button></div>
   <div class="ptabs">
-    <button class="ptab active" id="ptMov"    onclick="setPTab('mov')">🔔 Movim.</button>
+    <button class="ptab active" id="ptMov"   onclick="setPTab('mov')">🔔 Movim.</button>
     <button class="ptab"        id="ptAlerta" onclick="setPTab('alerta')">⚠️ Alertas</button>
     <button class="ptab"        id="ptCompras" onclick="setPTab('compras')">🛒 Compras</button>
     <button class="ptab"        id="ptConfig" onclick="setPTab('config')">⚙️ Config</button>
@@ -356,34 +358,31 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
   <div class="qr-box">
     <h3>📱 Link do Sistema</h3>
     <p>Escaneie ou compartilhe para acessar</p>
-    <div class="qr-wrap"><img id="qrImg" src="" alt="QR Code"></div>
+    <div class="qr-wrap" id="qrWrap"></div>
     <div class="qr-url" id="qrUrl"></div>
     <button class="qr-copy" onclick="copyLink()">📋 Copiar link</button>
-    <button class="qr-wa" onclick="shareWA()">📤 Enviar pelo WhatsApp</button>
     <button class="qr-close-btn" onclick="closeQR()">Fechar</button>
   </div>
 </div>
 
-<!-- BARCODE SCANNER -->
+<!-- BARCODE SCANNER MODAL -->
 <div id="ovBarcode">
   <div class="barcode-modal">
-    <div style="text-align:center;color:#fff;font-size:17px;font-weight:700;margin-bottom:12px">📷 Leitor de Código de Barras</div>
+    <div style="text-align:center;color:#fff;font-size:17px;font-weight:700;margin-bottom:12px">
+      📷 Leitor de Código de Barras
+    </div>
     <video id="barcodeVideo" autoplay playsinline muted></video>
     <div id="barcodeStatus">Iniciando câmera...</div>
     <div class="barcode-search">
-      <input type="text" id="inpBuscaCod" placeholder="Nome ou código de barras..." autocomplete="off"
-        oninput="buscaAoVivo(this.value)"
+      <input type="text" id="inpBuscaCod" placeholder="Ou digite o código / nome..." autocomplete="off"
         onkeydown="if(event.key==='Enter')buscaManual()">
-      <button onclick="buscaManual()">🔍</button>
+      <button onclick="buscaManual()">🔍 Buscar</button>
     </div>
-    <div id="barcodeResultados" style="max-height:260px;overflow-y:auto;margin-top:4px"></div>
-    <div id="barcodeWebArea" style="display:none;margin-top:6px"></div>
     <button class="barcode-close" onclick="closeBarcodeScanner()">✕ Fechar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<div id="debugBar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e1e1e;color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;z-index:9999;max-height:180px;overflow-y:auto;border-top:2px solid #0f0"></div>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -452,37 +451,56 @@ let filtro="all",editId=null,movId=null,movTipo="ent";
 let pTab="mov",unsub=null,unsubU=null,barcodeStream=null;
 let barcodeBuffer="",barcodeTimer=null;
 
-// CACHE multi-versao
+// ── CACHE ─────────────────────────────────────────────────────────
 function lsg(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
 function lss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function saveCache(){lss("hum_c6",{meds,movs})}
 function loadCache(){
   for(const k of["hum_c6","hum_est_v5","hum_est_v4","hum_est_v3","est_cache_v2"]){
-    try{const d=JSON.parse(localStorage.getItem(k));if(d&&Array.isArray(d.meds)&&d.meds.length>0){meds=d.meds;movs=d.movs||[];lss("hum_c6",{meds,movs});return true}}catch(e){}
-  }return false;
+    try{
+      const d=JSON.parse(localStorage.getItem(k));
+      if(d&&Array.isArray(d.meds)&&d.meds.length>0){
+        meds=d.meds;movs=d.movs||[];
+        lss("hum_c6",{meds,movs});
+        return true;
+      }
+    }catch(e){}
+  }
+  return false;
 }
 function sessSave(d){["hum_s6","hum_sess_v5","hum_sess_v4"].forEach(k=>lss(k,d))}
 function sessLoad(){
   for(const k of["hum_s6","hum_sess_v5","hum_sess_v4","hum_sess_v3","est_sess_v2","est_sess_v1_b"]){
     try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.u)return d}catch(e){}
-  }return null;
+  }
+  return null;
 }
 
-// UTILITARIOS
+// ── UTILITÁRIOS ───────────────────────────────────────────────────
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const toArr=v=>{if(!v)return[];if(Array.isArray(v))return v.filter(x=>x!=null);if(typeof v==="object")return Object.values(v).filter(x=>x!=null);return[]};
+const toArr=v=>{
+  if(!v)return[];
+  if(Array.isArray(v))return v.filter(x=>x!=null);
+  if(typeof v==="object")return Object.values(v).filter(x=>x!=null);
+  return[];
+};
 const nomeMed=m=>m.n||m.name||m.medicamento||"—";
 const qtdMed=m=>m.q!=null?m.q:(m.qty!=null?m.qty:0);
 const valMed=m=>m.v||m.val||m.validade||"";
 const setSP=(s,t)=>{const p=document.getElementById("spPill");if(p){p.className="sp "+s;p.textContent=t}};
 const showToast=msg=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800)};
 const maskV=el=>{let v=el.value.replace(/[^0-9]/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
-const fmt=v=>{if(!v)return"—";const d=new Date(typeof v==="number"?v:v);if(isNaN(d.getTime()))return"—";return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
+const fmt=v=>{
+  if(!v)return"—";
+  const d=new Date(typeof v==="number"?v:v);
+  if(isNaN(d.getTime()))return"—";
+  return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+};
 window.ovClick=(e,id)=>{if(e.target.id===id)closeOv(id)};
 window.closeOv=id=>document.getElementById(id).classList.remove("open");
 window.maskV=maskV;
 
-// STATUS
+// ── STATUS ────────────────────────────────────────────────────────
 function status(m){
   if(!m)return"ok";
   const q=qtdMed(m);
@@ -498,15 +516,22 @@ function status(m){
   return"ok";
 }
 
-// FIREBASE SALVAR
-function saveAll(){setSP("sync","⏳");saveCache();set(REF,{meds,movs}).then(()=>setSP("ok","✅ Ao vivo")).catch(()=>setSP("err","❌ Erro"))}
+// ── FIREBASE SALVAR ───────────────────────────────────────────────
+function saveAll(){
+  setSP("sync","⏳");
+  saveCache();
+  set(REF,{meds,movs}).then(()=>setSP("ok","✅ Ao vivo")).catch(()=>setSP("err","❌ Erro"));
+}
 function saveUsers(){set(UREF,USUARIOS).catch(()=>{});lss("hum_u6",USUARIOS)}
 
-// FIREBASE LISTENER
-function mostrarLista(){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex"}
+// ── FIREBASE LISTENERS ────────────────────────────────────────────
+function mostrarLista(){
+  document.getElementById("skeleton").style.display="none";
+  document.getElementById("list").style.display="flex";
+}
 
 function startListener(){
-  if(unsub)return; // listener já ativo — não recriar
+  if(unsub)return; // ← NÃO recria se já existe
   setSP("sync","⏳");
   unsub=onValue(REF,snap=>{
     try{
@@ -526,7 +551,8 @@ function startListener(){
       console.error("Firebase erro:",e);
       if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS));
     }
-    saveCache(); mostrarLista();
+    saveCache();
+    mostrarLista();
     setSP("ok","✅ Ao vivo");
     if(isAdm)checkDot();
     render();
@@ -535,47 +561,56 @@ function startListener(){
     setSP("err","❌ Offline");
     unsub=null; // permite reconexão
     if(meds.length===0){loadCache();if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS))}
-    mostrarLista(); render();
+    mostrarLista();render();
     setTimeout(()=>{if(curUser&&!unsub)startListener()},5000);
   });
 }
 
 function startUsersL(){
-  if(unsubU)return; // listener já ativo — não recriar
+  if(unsubU)return; // ← NÃO recria se já existe
   unsubU=onValue(UREF,snap=>{
-    try{const d=snap.val();if(d){const a=toArr(d);if(a.length>0){USUARIOS=a;lss("hum_u6",USUARIOS);}}}catch(e){}
+    try{
+      const d=snap.val();
+      if(d){const a=toArr(d);if(a.length>0){USUARIOS=a;lss("hum_u6",USUARIOS)}}
+    }catch(e){}
   },()=>{});
 }
 
-// LOGIN
+// ── LOGIN ─────────────────────────────────────────────────────────
 window.doLogin=function(){
   const p=document.getElementById("inpSenha").value.trim();
-  const msg=document.getElementById("msgLogin");msg.textContent="";
+  const msg=document.getElementById("msgLogin");
+  msg.textContent="";
   if(!p){msg.textContent="Digite a senha";return}
   const cu=lsg("hum_u6")||lsg("hum_usr_v5")||lsg("hum_usr_v4");
   if(cu&&cu.length>0)USUARIOS=cu;
   const u=USUARIOS.find(x=>x.pass===p);
   if(!u){msg.textContent="Senha incorreta";return}
-  curUser=u.name;isAdm=(u.role==="adm");sessSave({u:curUser,a:isAdm});startApp();
+  curUser=u.name;isAdm=(u.role==="adm");
+  sessSave({u:curUser,a:isAdm});
+  startApp();
 };
 
 window.doLogout=function(){
   if(!confirm("Deseja sair?"))return;
   try{localStorage.removeItem("hum_s6")}catch(e){}
-  if(unsub)try{unsub()}catch(e){}; if(unsubU)try{unsubU()}catch(e){};
-  unsub=unsubU=null;curUser=null;isAdm=false;
+  if(unsub){try{unsub()}catch(e){}}
+  if(unsubU){try{unsubU()}catch(e){}}
+  unsub=null;unsubU=null;
+  curUser=null;isAdm=false;
   document.getElementById("appMain").style.display="none";
   document.getElementById("scrLogin").classList.add("active");
   document.getElementById("inpSenha").value="";
   document.getElementById("msgLogin").textContent="";
 };
 
-// START APP
+// ── START APP ─────────────────────────────────────────────────────
 function startApp(){
   document.getElementById("scrLogin").classList.remove("active");
   document.getElementById("appMain").style.display="block";
   const badge=document.getElementById("userBadge");
-  badge.textContent=curUser;badge.className="badge "+(isAdm?"badge-adm":"badge-user");
+  badge.textContent=curUser;
+  badge.className="badge "+(isAdm?"badge-adm":"badge-user");
   if(isAdm){
     document.getElementById("btnPanel").style.display="flex";
     document.getElementById("fabBtn").style.display="flex";
@@ -588,12 +623,12 @@ function startApp(){
   const cu=lsg("hum_u6")||lsg("hum_usr_v5")||lsg("hum_usr_v4");
   if(cu&&cu.length>0)USUARIOS=cu;
   if(loadCache()&&meds.length>0){mostrarLista();render()}
-  if(!unsub)startListener();
-  if(!unsubU)startUsersL();
+  if(!unsub)startListener();   // ← só inicia se não existir
+  if(!unsubU)startUsersL();    // ← só inicia se não existir
   if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
 }
 
-// SESSION RESTORE
+// ── SESSION RESTORE ───────────────────────────────────────────────
 (function(){
   const s=sessLoad();if(!s)return;
   const cu=lsg("hum_u6")||lsg("hum_usr_v5")||lsg("hum_usr_v4");
@@ -602,60 +637,101 @@ function startApp(){
   if(u){curUser=s.u;isAdm=s.a||u.role==="adm";startApp()}
 })();
 
-// ONLINE/OFFLINE
-window.addEventListener("online",()=>{document.getElementById("offlineBar").style.display="none";if(curUser&&!unsub)startListener();});
-window.addEventListener("offline",()=>{document.getElementById("offlineBar").style.display="block"});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();});
+// ── ONLINE/OFFLINE ────────────────────────────────────────────────
+window.addEventListener("online",()=>{
+  document.getElementById("offlineBar").style.display="none";
+  if(curUser&&!unsub)startListener();
+});
+window.addEventListener("offline",()=>{
+  document.getElementById("offlineBar").style.display="block";
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();
+});
 if(!navigator.onLine)document.getElementById("offlineBar").style.display="block";
 
-// RENDER
+// ── RENDER ────────────────────────────────────────────────────────
 window.render=function(){
   const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
   const ord={expired:0,zero:1,soon:2,low:3,ok:4};
   const list=meds.filter(m=>{
-    if(!m)return false;
-    const n=nomeMed(m);if(!n||n==="—")return false;
+    if(!m||typeof m!=="object")return false;
+    const n=nomeMed(m);
     const st=status(m);
-    const ms=n.toLowerCase().includes(q)||(m.cod||"").includes(q);
-    const mf=filtro==="all"||(filtro==="expired"&&st==="expired")||(filtro==="soon"&&st==="soon")||(filtro==="zero"&&st==="zero")||(filtro==="ok"&&(st==="ok"||st==="low"));
+    const ms=(n==="—"?true:n.toLowerCase().includes(q))||(m.cod||"").includes(q);
+    const mf=filtro==="all"
+      ||(filtro==="expired"&&st==="expired")
+      ||(filtro==="soon"&&st==="soon")
+      ||(filtro==="zero"&&st==="zero")
+      ||(filtro==="ok"&&(st==="ok"||st==="low"));
     return ms&&mf;
   }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
+
   document.getElementById("stTot").textContent=meds.length;
   document.getElementById("stSoon").textContent=meds.filter(m=>status(m)==="soon").length;
   document.getElementById("stAlt").textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+
   const el=document.getElementById("list");
-  if(!list.length){el.innerHTML='<div class="empty">🔍 Nenhum medicamento encontrado</div>';return}
+  if(!list.length){
+    el.innerHTML='<div class="empty">🔍 Nenhum medicamento encontrado</div>';
+    return;
+  }
+
   const icoMap={ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"};
   const icoClsMap={ok:"ico-ok",soon:"ico-soon",expired:"ico-exp",zero:"ico-zero",low:"ico-soon"};
   const txtClsMap={ok:"tok",soon:"tso",expired:"tex",zero:"tze",low:"tso"};
   const lblMap={ok:"OK",soon:"Vence em breve",expired:"VENCIDO",zero:"Sem estoque",low:"Estoque baixo"};
+
   el.innerHTML=list.map(m=>{
     const st=status(m),n=nomeMed(m),q=qtdMed(m),v=valMed(m);
     const vl=st==="expired"?"VENCIDO":(v||"—");
     const qcls=q===0?"qz":(m.min&&q<=m.min?"qlo":"");
-    return`<div class="card ${st}"><div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div><div class="cbody"><div class="cname">${n}</div><div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.cod?" · 🔖 "+m.cod:""}</div><div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div><div class="cacts"><button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>${isAdm?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button><button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button><button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>':""}</div></div><div class="cright"><span class="qty ${qcls}">${q}x</span></div></div>`;
+    return`<div class="card ${st}">
+      <div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div>
+      <div class="cbody">
+        <div class="cname">${n}</div>
+        <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.cod?" · 🔖 "+m.cod:""}</div>
+        <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div>
+        <div class="cacts">
+          <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
+          ${isAdm
+            ?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button>'
+            +'<button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button>'
+            +'<button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>'
+            :""}
+        </div>
+      </div>
+      <div class="cright"><span class="qty ${qcls}">${q}x</span></div>
+    </div>`;
   }).join("");
 };
 
-// EVENT DELEGATION
+// ── EVENT DELEGATION ─────────────────────────────────────────────
 document.addEventListener("click",function(e){
-  const btn=e.target.closest("[data-action]");if(!btn)return;
+  const btn=e.target.closest("[data-action]");
+  if(!btn)return;
   e.stopPropagation();
   const a=btn.dataset.action,id=btn.dataset.id;
-  if(a==="mov")openMovModal(id);
-  else if(a==="hist")openHist(id);
-  else if(a==="edit")openMedModal(id);
-  else if(a==="del")delMed(id);
+  if(a==="mov")   openMovModal(id);
+  else if(a==="hist")  openHist(id);
+  else if(a==="edit")  openMedModal(id);
+  else if(a==="del")   delMed(id);
   else if(a==="selmed")selecionarMed(id);
-  else if(a==="buscar-web")buscarNaInternet(btn.dataset.cod);
+  else if(a==="buscar-web")  buscarNaInternet(btn.dataset.cod);
   else if(a==="cadastrar-cod")abrirCadastroComCod(btn.dataset.nom||"",btn.dataset.cod||"");
 });
 
-window.setF=function(el,f){filtro=f;document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));el.classList.add("active");render()};
+window.setF=function(el,f){
+  filtro=f;
+  document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  render();
+};
 
-// MODAL MEDICAMENTO
+// ── MODAL MEDICAMENTO ─────────────────────────────────────────────
 window.openMedModal=function(id=null){
-  editId=id;const m=id?meds.find(x=>String(x.id)===String(id)):null;
+  editId=id;
+  const m=id?meds.find(x=>String(x.id)===String(id)):null;
   document.getElementById("medModalTitle").textContent=m?"Editar medicamento":"Novo medicamento";
   document.getElementById("mNome").value=m?nomeMed(m):"";
   document.getElementById("mQtd").value=m?qtdMed(m):"";
@@ -673,19 +749,26 @@ window.saveMed=function(){
   const v=document.getElementById("mVenc").value.trim();
   const min=parseInt(document.getElementById("mMin").value)||0;
   const cod=document.getElementById("mCod").value.trim();
-  if(editId){const i=meds.findIndex(x=>String(x.id)===String(editId));if(i>=0)meds[i]={...meds[i],n,q,v,min,cod}}
-  else{const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;meds.push({id:nid,n,q,v,min,cod})}
+  if(editId){
+    const i=meds.findIndex(x=>String(x.id)===String(editId));
+    if(i>=0)meds[i]={...meds[i],n,q,v,min,cod};
+  }else{
+    const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;
+    meds.push({id:nid,n,q,v,min,cod});
+  }
   document.getElementById("medConfirmTxt").textContent=editId?"✅ Atualizado!":"✅ Cadastrado!";
   document.getElementById("medConfirm").style.display="block";
-  saveAll();render();setTimeout(()=>{document.getElementById("medConfirm").style.display="none";closeOv("ovMed")},1500);
+  saveAll();render();
+  setTimeout(()=>{document.getElementById("medConfirm").style.display="none";closeOv("ovMed")},1500);
 };
 window.delMed=function(id){
   const m=meds.find(x=>String(x.id)===String(id));
-  if(!confirm("Excluir "+JSON.stringify(m?nomeMed(m):id)+"?"))return;
-  meds=meds.filter(x=>String(x.id)!==String(id));saveAll();render();showToast("🗑️ Removido");
+  if(!confirm("Excluir "+(m?nomeMed(m):id)+"?"))return;
+  meds=meds.filter(x=>String(x.id)!==String(id));
+  saveAll();render();showToast("🗑️ Removido");
 };
 
-// MOVIMENTACAO
+// ── MOVIMENTAÇÃO ──────────────────────────────────────────────────
 window.openMovModal=function(id){
   const m=meds.find(x=>String(x.id)===String(id));
   if(!m){showToast("Medicamento não encontrado");return}
@@ -694,7 +777,8 @@ window.openMovModal=function(id){
   document.getElementById("movEst").textContent="Estoque atual: "+qtdMed(m)+" unidades";
   document.getElementById("movQtd").value="";
   document.getElementById("movConfirm").style.display="none";
-  selTipo("ent");document.getElementById("ovMov").classList.add("open");
+  selTipo("ent");
+  document.getElementById("ovMov").classList.add("open");
   setTimeout(()=>document.getElementById("movQtd").focus(),100);
 };
 window.selTipo=function(t){
@@ -718,10 +802,11 @@ window.saveMov=function(){
   document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?"📥 Entrada de "+q+"x registrada!":"📤 Saída de "+q+"x registrada!";
   document.getElementById("movConfirmSub").textContent="Novo estoque: "+meds[i].q+" unidades";
   document.getElementById("movConfirm").style.display="block";
-  saveAll();render();setTimeout(()=>{document.getElementById("movConfirm").style.display="none";closeOv("ovMov")},1800);
+  saveAll();render();
+  setTimeout(()=>{document.getElementById("movConfirm").style.display="none";closeOv("ovMov")},1800);
 };
 
-// HISTORICO
+// ── HISTÓRICO ─────────────────────────────────────────────────────
 function normMov(mv){
   const n=mv.mn||mv.medName||mv.name||mv.n||"—";
   const mid=String(mv.mid||mv.medId||"");
@@ -741,13 +826,23 @@ window.openHist=function(id){
   const m=meds.find(x=>String(x.id)===String(id));if(!m)return;
   document.getElementById("histTitle").textContent="📋 "+nomeMed(m);
   const h=movs.filter(mv=>String(mv.mid||mv.medId||"")===String(id)).reverse().map(normMov);
-  document.getElementById("histContent").innerHTML=h.length?h.map(mv=>`<div class="hi ${mv.tipo}"><div class="hi-top"><span class="hi-tipo ${mv.tipo}">${mv.tipo==="ent"?"📥 Entrada":"📤 Saída"}</span><span class="hi-qtd">${mv.tipo==="ent"?"+":"-"}${mv.q}</span></div><div class="hi-info">${fmt(mv.ts)} · <b>${mv.resp}</b> · ${mv.antes}→${mv.depois}</div></div>`).join(""):'<div class="empty">Sem movimentações registradas</div>';
+  document.getElementById("histContent").innerHTML=h.length
+    ?h.map(mv=>`<div class="hi ${mv.tipo}"><div class="hi-top"><span class="hi-tipo ${mv.tipo}">${mv.tipo==="ent"?"📥 Entrada":"📤 Saída"}</span><span class="hi-qtd">${mv.tipo==="ent"?"+":"-"}${mv.q}</span></div><div class="hi-info">${fmt(mv.ts)} · <b>${mv.resp}</b> · ${mv.antes}→${mv.depois}</div></div>`).join("")
+    :'<div class="empty">Sem movimentações registradas</div>';
   document.getElementById("ovHist").classList.add("open");
 };
 
-// PAINEL ADM
-window.openPanel=function(){if(!isAdm)return;document.getElementById("povAdm").classList.add("open");document.getElementById("admPanel").classList.add("open");renderPTab()};
-window.closePanel=function(){document.getElementById("povAdm").classList.remove("open");document.getElementById("admPanel").classList.remove("open")};
+// ── PAINEL ADM ────────────────────────────────────────────────────
+window.openPanel=function(){
+  if(!isAdm)return;
+  document.getElementById("povAdm").classList.add("open");
+  document.getElementById("admPanel").classList.add("open");
+  renderPTab();
+};
+window.closePanel=function(){
+  document.getElementById("povAdm").classList.remove("open");
+  document.getElementById("admPanel").classList.remove("open");
+};
 window.setPTab=function(t){
   pTab=t;
   [["ptMov","mov"],["ptAlerta","alerta"],["ptCompras","compras"],["ptConfig","config"]].forEach(([el,v])=>{
@@ -755,13 +850,19 @@ window.setPTab=function(t){
   });
   renderPTab();
 };
-function checkDot(){const a=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;document.getElementById("ndot").style.display=a>0?"block":"none"}
-
+function checkDot(){
+  const a=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+  document.getElementById("ndot").style.display=a>0?"block":"none";
+}
 function renderPTab(){
   const body=document.getElementById("pBody");if(!body)return;
   if(pTab==="mov"){
     const list=[...movs].reverse().slice(0,200).map(normMov);
-    body.innerHTML='<button style="width:100%;padding:10px;background:var(--red-bg);color:var(--red);border:1px solid #fecaca;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="clearMovs()">🗑️ Limpar histórico</button>'+(list.length?list.map(mv=>'<div class="ni mov-'+mv.tipo+'"><p>'+mv.nome+' <span style="float:right;font-weight:700;color:'+(mv.tipo==="ent"?"var(--green)":"var(--red)")+'">'+(mv.tipo==="ent"?"+":"-")+mv.q+'</span></p><span>'+fmt(mv.ts)+' · <b>'+mv.resp+'</b> · '+mv.antes+'→'+mv.depois+'</span></div>').join(""):'<div class="pe">Sem movimentações</div>');
+    body.innerHTML=
+      '<button style="width:100%;padding:10px;background:var(--red-bg);color:var(--red);border:1px solid #fecaca;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="clearMovs()">🗑️ Limpar histórico</button>'
+      +(list.length
+        ?list.map(mv=>'<div class="ni mov-'+mv.tipo+'"><p>'+mv.nome+' <span style="float:right;font-weight:700;color:'+(mv.tipo==="ent"?"var(--green)":"var(--red)")+'">'+(mv.tipo==="ent"?"+":"-")+mv.q+'</span></p><span>'+fmt(mv.ts)+' · <b>'+mv.resp+'</b> · '+mv.antes+'→'+mv.depois+'</span></div>').join("")
+        :'<div class="pe">Sem movimentações</div>');
   }else if(pTab==="alerta"){
     let h="";
     meds.filter(m=>status(m)==="expired").forEach(m=>h+='<div class="ni" style="border-left:3px solid var(--red)"><p>⚠️ VENCIDO: '+nomeMed(m)+'</p><span>Val: '+valMed(m)+'</span></div>');
@@ -771,12 +872,34 @@ function renderPTab(){
     body.innerHTML=h||'<div class="pe">✅ Nenhum alerta</div>';
   }else if(pTab==="compras"){
     const need=meds.filter(m=>qtdMed(m)===0||(m.min&&qtdMed(m)<=m.min));
-    const txt="🛒 *Lista de Compras — Humanae*\n"+need.map(m=>"• "+nomeMed(m)+": "+qtdMed(m)+" un.").join("\n");
-    body.innerHTML=need.length?need.map(m=>'<div class="ni"><p>'+nomeMed(m)+'</p><span>'+qtdMed(m)+' un.</span></div>').join("")+'<button onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent('+JSON.stringify(txt)+'),\'_blank\')" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>':'<div class="pe">✅ Estoque em dia!</div>';
+    const txt="🛒 *Lista de Compras — Humanae*
+"+need.map(m=>"• "+nomeMed(m)+": "+qtdMed(m)+" un.").join("
+");
+    body.innerHTML=need.length
+      ?need.map(m=>'<div class="ni"><p>'+nomeMed(m)+'</p><span>'+qtdMed(m)+' un.</span></div>').join("")
+        +'<button onclick="window.open('https://wa.me/?text='+encodeURIComponent('+JSON.stringify(txt)+'),'_blank')" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>'
+      :'<div class="pe">✅ Estoque em dia!</div>';
   }else if(pTab==="config"){
     const isMaster=curUser===MASTER;
     const vis=isMaster?USUARIOS.filter(u=>u.name!==MASTER):USUARIOS.filter(u=>u.name===curUser);
-    body.innerHTML='<div style="background:var(--green-bg);border-radius:10px;padding:14px;margin-bottom:12px"><h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>'+vis.map(u=>'<div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--g200)"><label style="font-size:13px;font-weight:700;color:var(--g700);display:block;margin-bottom:8px">👤 '+u.name+' '+(u.role==="adm"?"🔐 ADM":"👁️ Usuário")+'</label>'+(isMaster?'<div style="font-size:12px;color:var(--g500);margin-bottom:8px">Senha atual: <b style="font-family:monospace">'+u.pass+'</b></div>':'')+'<div style="display:flex;gap:6px"><input type="password" id="np_'+u.name+'" placeholder="Nova senha" style="flex:1;height:42px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;outline:none" onkeydown="if(event.key===\'Enter\')trocarSenha(\''+u.name+'\')"><button onclick="trocarSenha(\''+u.name+'\')" style="padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button></div></div>').join('')+'<div id="msgSenha" style="font-size:13px;text-align:center;margin-top:4px;min-height:18px;font-weight:600"></div></div><div style="background:var(--blue-bg);border-radius:10px;padding:14px"><h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4><p style="font-size:12px;color:var(--g700);margin-bottom:6px"><b>Android (Chrome):</b> Menu ⋮ → "Adicionar à tela inicial"</p><p style="font-size:12px;color:var(--g700)"><b>iPhone (Safari):</b> Compartilhar ↑ → "Adicionar à Tela de Início"</p><button onclick="tryInstall()" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer">📲 Instalar agora</button></div>';
+    body.innerHTML=
+      '<div style="background:var(--green-bg);border-radius:10px;padding:14px;margin-bottom:12px">'
+      +'<h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>'
+      +vis.map(u=>
+        '<div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--g200)">'
+        +'<label style="font-size:13px;font-weight:700;color:var(--g700);display:block;margin-bottom:8px">👤 '+u.name+' '+(u.role==="adm"?"🔐 ADM":"👁️ Usuário")+'</label>'
+        +(isMaster?'<div style="font-size:12px;color:var(--g500);margin-bottom:8px">Senha atual: <b style="font-family:monospace">'+u.pass+'</b></div>':"")
+        +'<div style="display:flex;gap:6px">'
+        +'<input type="password" id="np_'+u.name+'" placeholder="Nova senha" style="flex:1;height:42px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;outline:none" onkeydown="if(event.key==='Enter')trocarSenha(''+u.name+'')">'
+        +'<button onclick="trocarSenha(''+u.name+'')" style="padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button>'
+        +'</div></div>'
+      ).join("")
+      +'<div id="msgSenha" style="font-size:13px;text-align:center;margin-top:4px;min-height:18px;font-weight:600"></div></div>'
+      +'<div style="background:var(--blue-bg);border-radius:10px;padding:14px">'
+      +'<h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4>'
+      +'<p style="font-size:12px;color:var(--g700);margin-bottom:6px"><b>Android (Chrome):</b> Menu ⋮ → "Adicionar à tela inicial"</p>'
+      +'<p style="font-size:12px;color:var(--g700)"><b>iPhone (Safari):</b> Compartilhar ↑ → "Adicionar à Tela de Início"</p>'
+      +'<button onclick="tryInstall()" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer">📲 Instalar agora</button></div>';
   }
 }
 window.trocarSenha=function(name){
@@ -791,14 +914,26 @@ window.trocarSenha=function(name){
 };
 window.clearMovs=function(){if(!confirm("Limpar todo o histórico?"))return;movs=[];saveAll();renderPTab();showToast("🗑️ Histórico limpo")};
 
-// QR
-window.openQR=function(){const url=window.location.href;document.getElementById("qrImg").src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url);document.getElementById("qrUrl").textContent=url;document.getElementById("qrOv").classList.add("open")};
+// ── QR CODE ───────────────────────────────────────────────────────
+window.openQR=function(){
+  const url=window.location.href;
+  document.getElementById("qrImg").src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url);
+  document.getElementById("qrUrl").textContent=url;
+  document.getElementById("qrOv").classList.add("open");
+};
 window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
 window.qrOvClick=e=>{if(e.target.id==="qrOv")closeQR()};
-window.copyLink=function(){navigator.clipboard.writeText(window.location.href).then(()=>showToast("✅ Link copiado!")).catch(()=>showToast("Link: "+window.location.href))};
-window.shareWA=function(){window.open("https://wa.me/?text="+encodeURIComponent("💊 *Estoque Humanae*\n"+window.location.href),"_blank")};
+window.copyLink=function(){
+  navigator.clipboard.writeText(window.location.href)
+    .then(()=>showToast("✅ Link copiado!"))
+    .catch(()=>showToast("Link: "+window.location.href));
+};
+window.shareWA=function(){
+  window.open("https://wa.me/?text="+encodeURIComponent("💊 *Estoque Humanae*
+"+window.location.href),"_blank");
+};
 
-// BARCODE
+// ── BARCODE SCANNER ───────────────────────────────────────────────
 window.openBarcodeScanner=function(){
   document.getElementById("ovBarcode").classList.add("open");
   document.getElementById("inpBuscaCod").value="";
@@ -807,9 +942,21 @@ window.openBarcodeScanner=function(){
   document.getElementById("barcodeStatus").textContent="Iniciando câmera...";
   if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
     navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
-      .then(s=>{barcodeStream=s;const v=document.getElementById("barcodeVideo");v.style.display="block";v.srcObject=s;v.onloadedmetadata=()=>v.play().catch(()=>{});document.getElementById("barcodeStatus").textContent="📷 Aponte para o código ou use a busca"})
-      .catch(()=>{document.getElementById("barcodeVideo").style.display="none";document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo"});
-  }else{document.getElementById("barcodeVideo").style.display="none";document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo"}
+      .then(s=>{
+        barcodeStream=s;
+        const v=document.getElementById("barcodeVideo");
+        v.style.display="block";v.srcObject=s;
+        v.onloadedmetadata=()=>v.play().catch(()=>{});
+        document.getElementById("barcodeStatus").textContent="📷 Aponte para o código ou use a busca";
+      })
+      .catch(()=>{
+        document.getElementById("barcodeVideo").style.display="none";
+        document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo";
+      });
+  }else{
+    document.getElementById("barcodeVideo").style.display="none";
+    document.getElementById("barcodeStatus").textContent="📵 Use a busca manual abaixo";
+  }
   setTimeout(()=>document.getElementById("inpBuscaCod").focus(),300);
 };
 window.closeBarcodeScanner=function(){
@@ -817,58 +964,126 @@ window.closeBarcodeScanner=function(){
   if(barcodeStream){barcodeStream.getTracks().forEach(t=>t.stop());barcodeStream=null}
   const v=document.getElementById("barcodeVideo");if(v)v.srcObject=null;
 };
-function hlTxt(txt,q){if(!txt||!q)return txt||"";const i=txt.toLowerCase().indexOf(q.toLowerCase());if(i<0)return txt;return txt.slice(0,i)+'<span class="bc-match">'+txt.slice(i,i+q.length)+'</span>'+txt.slice(i+q.length)}
+function hlTxt(txt,q){
+  if(!txt||!q)return txt||"";
+  const i=txt.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0)return txt;
+  return txt.slice(0,i)+'<span class="bc-match">'+txt.slice(i,i+q.length)+'</span>'+txt.slice(i+q.length);
+}
 window.buscaAoVivo=function(v){
   const q=v.trim(),el=document.getElementById("barcodeResultados"),wa=document.getElementById("barcodeWebArea");
-  wa.style.display="none";document.getElementById("barcodeStatus").textContent="📷 Digite o nome ou código";
+  wa.style.display="none";
+  document.getElementById("barcodeStatus").textContent="📷 Digite o nome ou código";
   if(!q){el.innerHTML="";return}
   const ql=q.toLowerCase();
-  const res=meds.filter(m=>{const c=(m.cod||"").toLowerCase(),n=nomeMed(m).toLowerCase();return c===ql||c.includes(ql)||n.includes(ql)}).slice(0,8);
+  const res=meds.filter(m=>{
+    const c=(m.cod||"").toLowerCase(),n=nomeMed(m).toLowerCase();
+    return c===ql||c.includes(ql)||n.includes(ql);
+  }).slice(0,8);
   if(!res.length){
     const ec=/^\d{8,14}$/.test(q.replace(/\s/g,""));
-    el.innerHTML='<div class="bc-notfound"><p>❌ "'+q+'" não encontrado</p>'+(ec?'<button class="bc-btn-cad" data-action="buscar-web" data-cod="'+q+'">🌐 Buscar na internet</button>':'<button class="bc-btn-cad" data-action="cadastrar-cod" data-nom="" data-cod="'+q+'">➕ Cadastrar com este nome</button>')+'</div>';
+    el.innerHTML='<div class="bc-notfound"><p>❌ "'+q+'" não encontrado</p>'
+      +(ec
+        ?'<button class="bc-btn-cad" data-action="buscar-web" data-cod="'+q+'">🌐 Buscar na internet</button>'
+        :'<button class="bc-btn-cad" data-action="cadastrar-cod" data-nom="" data-cod="'+q+'">➕ Cadastrar com este nome</button>')
+      +'</div>';
     return;
   }
-  el.innerHTML=res.map(m=>'<div class="bc-item" data-action="selmed" data-id="'+m.id+'"><div class="bc-item-nome">'+hlTxt(nomeMed(m),ql)+'</div><div class="bc-item-info">'+({ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"}[status(m)]||"")+" · "+qtdMed(m)+"x · Val: "+(valMed(m)||"—")+(m.cod?" · 🔖 "+hlTxt(m.cod,ql):"")+'</div></div>').join("");
+  el.innerHTML=res.map(m=>
+    '<div class="bc-item" data-action="selmed" data-id="'+m.id+'">'
+    +'<div class="bc-item-nome">'+hlTxt(nomeMed(m),ql)+'</div>'
+    +'<div class="bc-item-info">'+({ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"}[status(m)]||"")
+    +" · "+qtdMed(m)+"x · Val: "+(valMed(m)||"—")+(m.cod?" · 🔖 "+hlTxt(m.cod,ql):"")
+    +'</div></div>'
+  ).join("");
 };
 window.buscaManual=function(){
   const q=document.getElementById("inpBuscaCod").value.trim();if(!q)return;
   const ql=q.toLowerCase();
-  const found=meds.find(m=>(m.cod||"")===q)||meds.find(m=>(m.cod||"").toLowerCase().includes(ql))||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
+  const found=meds.find(m=>(m.cod||"")===q)
+    ||meds.find(m=>(m.cod||"").toLowerCase().includes(ql))
+    ||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
   if(found){closeBarcodeScanner();openMovModal(found.id)}
   else if(/^\d{8,14}$/.test(q.replace(/\s/g,"")))buscarNaInternet(q);
   else showToast("Medicamento não encontrado");
 };
 window.selecionarMed=function(id){closeBarcodeScanner();openMovModal(id)};
-window.abrirCadastroComCod=function(n,cod){closeBarcodeScanner();openMedModal(null);if(n)setTimeout(()=>{document.getElementById("mNome").value=n},120);if(cod)setTimeout(()=>{document.getElementById("mCod").value=cod},120)};
+window.abrirCadastroComCod=function(n,cod){
+  closeBarcodeScanner();openMedModal(null);
+  if(n)setTimeout(()=>{document.getElementById("mNome").value=n},120);
+  if(cod)setTimeout(()=>{document.getElementById("mCod").value=cod},120);
+};
 window.buscarNaInternet=async function(cod){
   const wa=document.getElementById("barcodeWebArea");
   document.getElementById("barcodeResultados").innerHTML="";
-  wa.style.display="block";wa.innerHTML='<div class="bc-loading">🌐 Buscando "'+cod+'" na internet...</div>';
+  wa.style.display="block";
+  wa.innerHTML='<div class="bc-loading">🌐 Buscando "'+cod+'" na internet...</div>';
   let n="",marca="",ok=false;
-  try{const r=await fetch("https://world.openfoodfacts.org/api/v2/product/"+cod+".json",{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.status===1&&d.product){n=d.product.product_name_pt||d.product.product_name||"";marca=d.product.brands||"";if(n)ok=true}}catch(e){}
-  if(!ok){try{const r=await fetch("https://api.upcitemdb.com/prod/trial/lookup?upc="+cod,{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.code==="OK"&&d.items?.length){n=d.items[0].title||"";marca=d.items[0].brand||"";if(n)ok=true}}catch(e){}}
-  if(ok&&n){const nl=n.toUpperCase().trim();wa.innerHTML='<div class="bc-web-result"><div class="bc-web-nome">✅ Encontrado:</div><div style="font-size:16px;font-weight:700;color:#6ee7b7;margin:6px 0">'+nl+'</div>'+(marca?'<div class="bc-web-info">Marca: '+marca+'</div>':"")+'<div class="bc-web-info">Código: '+cod+'</div><button class="bc-btn-usar" data-action="cadastrar-cod" data-nom="'+nl.replace(/"/g,"&quot;")+'" data-cod="'+cod+'">➕ Usar este nome para cadastrar</button></div>'}
-  else{wa.innerHTML='<div class="bc-notfound"><p>🔍 Código <b>'+cod+'</b> não encontrado</p><button class="bc-btn-cad" data-action="cadastrar-cod" data-nom="" data-cod="'+cod+'">➕ Cadastrar manualmente</button></div>'}
+  try{
+    const r=await fetch("https://world.openfoodfacts.org/api/v2/product/"+cod+".json",{signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    if(d.status===1&&d.product){n=d.product.product_name_pt||d.product.product_name||"";marca=d.product.brands||"";if(n)ok=true}
+  }catch(e){}
+  if(!ok){
+    try{
+      const r=await fetch("https://api.upcitemdb.com/prod/trial/lookup?upc="+cod,{signal:AbortSignal.timeout(5000)});
+      const d=await r.json();
+      if(d.code==="OK"&&d.items?.length){n=d.items[0].title||"";marca=d.items[0].brand||"";if(n)ok=true}
+    }catch(e){}
+  }
+  if(ok&&n){
+    const nl=n.toUpperCase().trim();
+    wa.innerHTML='<div class="bc-web-result">'
+      +'<div class="bc-web-nome">✅ Encontrado:</div>'
+      +'<div style="font-size:16px;font-weight:700;color:#6ee7b7;margin:6px 0">'+nl+'</div>'
+      +(marca?'<div class="bc-web-info">Marca: '+marca+'</div>':"")
+      +'<div class="bc-web-info">Código: '+cod+'</div>'
+      +'<button class="bc-btn-usar" data-action="cadastrar-cod" data-nom="'+nl.replace(/"/g,"&quot;")+'" data-cod="'+cod+'">➕ Usar este nome para cadastrar</button>'
+      +'</div>';
+  }else{
+    wa.innerHTML='<div class="bc-notfound">'
+      +'<p>🔍 Código <b>'+cod+'</b> não encontrado</p>'
+      +'<button class="bc-btn-cad" data-action="cadastrar-cod" data-nom="" data-cod="'+cod+'">➕ Cadastrar manualmente</button>'
+      +'</div>';
+  }
 };
 
-// LEITOR USB/BLUETOOTH
+// ── LEITOR USB/BLUETOOTH ──────────────────────────────────────────
 document.addEventListener("keydown",e=>{
   if(!curUser)return;
   const tag=document.activeElement?.tagName;
   if(tag==="INPUT"||tag==="TEXTAREA")return;
   if(e.key==="Enter"){
-    if(barcodeBuffer.length>=4){const cod=barcodeBuffer;barcodeBuffer="";clearTimeout(barcodeTimer);const ql=cod.toLowerCase();const found=meds.find(m=>(m.cod||"")===cod)||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));if(found){showToast("📷 "+nomeMed(found));openMovModal(found.id)}else{const s=document.getElementById("srch");if(s){s.value=cod;render();}showToast("🔍 "+cod)}}
+    if(barcodeBuffer.length>=4){
+      const cod=barcodeBuffer;barcodeBuffer="";clearTimeout(barcodeTimer);
+      const ql=cod.toLowerCase();
+      const found=meds.find(m=>(m.cod||"")===cod)||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
+      if(found){showToast("📷 "+nomeMed(found));openMovModal(found.id)}
+      else{const s=document.getElementById("srch");if(s){s.value=cod;render();}showToast("🔍 "+cod)}
+    }
     barcodeBuffer="";return;
   }
   if(e.key.length===1){barcodeBuffer+=e.key;clearTimeout(barcodeTimer);barcodeTimer=setTimeout(()=>{barcodeBuffer=""},200)}
 });
 
-// PWA
+// ── PWA ───────────────────────────────────────────────────────────
 let deferredPrompt=null;
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;document.getElementById("installBanner").style.display="flex"});
-window.addEventListener("appinstalled",()=>{document.getElementById("installBanner").style.display="none";deferredPrompt=null});
-window.tryInstall=async function(){if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById("installBanner").style.display="none"}else showToast("Menu do navegador → 'Adicionar à tela inicial'")};
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById("installBanner").style.display="flex";
+});
+window.addEventListener("appinstalled",()=>{
+  document.getElementById("installBanner").style.display="none";
+  deferredPrompt=null;
+});
+window.tryInstall=async function(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    document.getElementById("installBanner").style.display="none";
+  }else showToast("Menu do navegador → 'Adicionar à tela inicial'");
+};
 document.getElementById("installBtn").onclick=()=>tryInstall();
 document.getElementById("installDismiss").onclick=()=>{document.getElementById("installBanner").style.display="none"};
 
