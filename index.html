@@ -383,13 +383,6 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 </div>
 
 <div class="toast" id="toast"></div>
-<div id="logPanel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#111;color:#0f0;font-family:monospace;font-size:11px;padding:8px;max-height:160px;overflow-y:auto;border-top:2px solid #0f0">
-  <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-    <b>LOG</b>
-    <button onclick="document.getElementById('logPanel').style.display='none'" style="background:none;border:none;color:#0f0;cursor:pointer;font-size:14px">✕</button>
-  </div>
-  <div id="logBox"></div>
-</div>
 <div id="debugBar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e1e1e;color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;z-index:9999;max-height:180px;overflow-y:auto;border-top:2px solid #0f0"></div>
 
 <script type="module">
@@ -513,18 +506,16 @@ function saveUsers(){set(UREF,USUARIOS).catch(()=>{});lss("hum_u6",USUARIOS)}
 function mostrarLista(){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex"}
 
 function startListener(){
-  if(unsub)return; // já tem listener ativo — não recria
+  if(unsub)return; // listener já ativo — não recriar
   setSP("sync","⏳");
   unsub=onValue(REF,snap=>{
     try{
       const d=snap.val();
-      log("Firebase recebeu: "+(d===null?"NULL":typeof d)+
-          (d&&d.meds?" | meds:"+toArr(d.meds).length+" | 1o:"+JSON.stringify(toArr(d.meds)[0]).slice(0,60):""));
       if(d!==null){
         const fm=toArr(d.meds),fv=toArr(d.movs);
-        if(fm.length>0) meds=fm;
-        else if(meds.length===0) meds=JSON.parse(JSON.stringify(DEFAULTS));
-        if(fv.length>0) movs=fv;
+        if(fm.length>0)meds=fm;
+        else if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS));
+        if(fv.length>0)movs=fv;
       }else{
         if(meds.length===0){
           meds=JSON.parse(JSON.stringify(DEFAULTS));
@@ -533,38 +524,26 @@ function startListener(){
       }
     }catch(e){
       console.error("Firebase erro:",e);
-      if(meds.length===0) meds=JSON.parse(JSON.stringify(DEFAULTS));
+      if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS));
     }
     saveCache(); mostrarLista();
     setSP("ok","✅ Ao vivo");
     if(isAdm)checkDot();
-    log("render() meds="+meds.length+" list filtrado="+meds.filter(m=>m&&(m.n||m.name||m.medicamento)).length);
     render();
   },(err)=>{
     console.warn("Firebase offline:",err);
     setSP("err","❌ Offline");
     unsub=null; // permite reconexão
     if(meds.length===0){loadCache();if(meds.length===0)meds=JSON.parse(JSON.stringify(DEFAULTS))}
-    mostrarLista();render();
+    mostrarLista(); render();
     setTimeout(()=>{if(curUser&&!unsub)startListener()},5000);
   });
 }
 
-// Log de diagnóstico — aparece ao pressionar duplo clique no badge do usuário
-function log(msg){
-  try{
-    const el=document.getElementById("logBox");
-    if(!el)return;
-    const d=new Date().toLocaleTimeString("pt-BR");
-    el.insertAdjacentHTML("afterbegin","<div>["+d+"] "+msg+"</div>");
-    console.log("[LOG]",msg);
-  }catch(e){}
-}
-
 function startUsersL(){
-  if(unsubU){try{unsubU()}catch(e){}unsubU=null}
+  if(unsubU)return; // listener já ativo — não recriar
   unsubU=onValue(UREF,snap=>{
-    try{const d=snap.val();if(d){const a=toArr(d);if(a.length>0){USUARIOS=a;lss("hum_u6",USUARIOS)}}}catch(e){}
+    try{const d=snap.val();if(d){const a=toArr(d);if(a.length>0){USUARIOS=a;lss("hum_u6",USUARIOS);}}}catch(e){}
   },()=>{});
 }
 
@@ -612,11 +591,6 @@ function startApp(){
   if(!unsub)startListener();
   if(!unsubU)startUsersL();
   if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
-  // Duplo clique no badge abre painel de log
-  document.getElementById("userBadge").addEventListener("dblclick",()=>{
-    const p=document.getElementById("logPanel");
-    p.style.display=p.style.display==="none"?"block":"none";
-  });
 }
 
 // SESSION RESTORE
@@ -629,13 +603,9 @@ function startApp(){
 })();
 
 // ONLINE/OFFLINE
-window.addEventListener("online",()=>{document.getElementById("offlineBar").style.display="none";if(curUser&&!unsub)startListener()});
+window.addEventListener("online",()=>{document.getElementById("offlineBar").style.display="none";if(curUser&&!unsub)startListener();});
 window.addEventListener("offline",()=>{document.getElementById("offlineBar").style.display="block"});
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"&&curUser&&!unsub){
-    startListener(); // só reconecta se perdeu conexão (unsub===null)
-  }
-});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();});
 if(!navigator.onLine)document.getElementById("offlineBar").style.display="block";
 
 // RENDER
@@ -643,13 +613,10 @@ window.render=function(){
   const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
   const ord={expired:0,zero:1,soon:2,low:3,ok:4};
   const list=meds.filter(m=>{
-    if(!m||typeof m!=="object")return false;
-    const n=nomeMed(m);
-    // aceita mesmo que nome seja "—" (medicamento com campo inesperado)
-    // só filtra se o item for completamente nulo/vazio
-    if(!n&&!m.n&&!m.name&&!m.medicamento&&!m.id)return false;
+    if(!m)return false;
+    const n=nomeMed(m);if(!n||n==="—")return false;
     const st=status(m);
-    const ms=(n||"").toLowerCase().includes(q)||(m.cod||"").includes(q);
+    const ms=n.toLowerCase().includes(q)||(m.cod||"").includes(q);
     const mf=filtro==="all"||(filtro==="expired"&&st==="expired")||(filtro==="soon"&&st==="soon")||(filtro==="zero"&&st==="zero")||(filtro==="ok"&&(st==="ok"||st==="low"));
     return ms&&mf;
   }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
@@ -657,20 +624,13 @@ window.render=function(){
   document.getElementById("stSoon").textContent=meds.filter(m=>status(m)==="soon").length;
   document.getElementById("stAlt").textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
   const el=document.getElementById("list");
-  if(!list.length){
-    const diag=meds.length>0
-      ?"⚠️ "+meds.length+" meds no banco mas nenhum passou o filtro. 1o item: "+JSON.stringify(meds[0]).slice(0,100)
-      :"📭 Nenhum medicamento carregado ainda";
-    el.innerHTML='<div class="empty">🔍 Nenhum medicamento encontrado</div><div id="diagMsg" style="font-size:11px;color:#aaa;padding:8px 16px;word-break:break-all">'+diag+'</div>';
-    log("RENDER VAZIO: meds="+meds.length+" list="+list.length);
-    return;
-  }
+  if(!list.length){el.innerHTML='<div class="empty">🔍 Nenhum medicamento encontrado</div>';return}
   const icoMap={ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"};
   const icoClsMap={ok:"ico-ok",soon:"ico-soon",expired:"ico-exp",zero:"ico-zero",low:"ico-soon"};
   const txtClsMap={ok:"tok",soon:"tso",expired:"tex",zero:"tze",low:"tso"};
   const lblMap={ok:"OK",soon:"Vence em breve",expired:"VENCIDO",zero:"Sem estoque",low:"Estoque baixo"};
   el.innerHTML=list.map(m=>{
-    const st=status(m),n=nomeMed(m)||(m.name||m.medicamento||m.titulo||String(m.id)||"?"),q=qtdMed(m),v=valMed(m);
+    const st=status(m),n=nomeMed(m),q=qtdMed(m),v=valMed(m);
     const vl=st==="expired"?"VENCIDO":(v||"—");
     const qcls=q===0?"qz":(m.min&&q<=m.min?"qlo":"");
     return`<div class="card ${st}"><div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div><div class="cbody"><div class="cname">${n}</div><div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.cod?" · 🔖 "+m.cod:""}</div><div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div><div class="cacts"><button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>${isAdm?'<button class="abtn ahist" data-action="hist" data-id="'+m.id+'">📋 Histórico</button><button class="abtn" data-action="edit" data-id="'+m.id+'">✏️ Editar</button><button class="abtn adel" data-action="del" data-id="'+m.id+'">🗑️</button>':""}</div></div><div class="cright"><span class="qty ${qcls}">${q}x</span></div></div>`;
