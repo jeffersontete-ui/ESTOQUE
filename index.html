@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-title" content="Estoque">
 <meta name="theme-color" content="#1a9e6b">
 <title>Estoque</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--green:#1a9e6b;--green-d:#0f6e4a;--green-bg:#e6f7f1;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--blue:#185fa5;--blue-bg:#e6f1fb;--purple:#7c3aed;--purple-bg:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--r:14px;--rs:8px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -206,6 +208,17 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 .skl{height:12px;border-radius:6px;background:var(--g200);animation:pulse 1.2s infinite}
 .w80{width:80%}.w50{width:50%}.w30{width:30%}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* BARCODE SCANNER */
+#ovBarcode{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:none;align-items:flex-end}
+#ovBarcode.open{display:flex}
+.barcode-modal{background:#111;border-radius:22px 22px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
+#barcodeVideo{width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover;margin-bottom:12px}
+#barcodeStatus{text-align:center;color:#fff;font-size:14px;margin-bottom:12px;padding:8px;background:rgba(255,255,255,.1);border-radius:8px}
+.barcode-search{display:flex;gap:8px;margin-bottom:10px}
+.barcode-search input{flex:1;height:46px;border-radius:8px;border:none;padding:0 12px;font-size:16px;background:#fff}
+.barcode-search button{padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.barcode-close{width:100%;padding:12px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -233,6 +246,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
   </div>
 </div>
 
+<div id="offlineBar" style="display:none;background:var(--amber);color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:700">📶 Sem internet — trabalhando offline</div>
 <!-- ===== APP PRINCIPAL ===== -->
 <div id="appMain" style="display:none">
   <div class="hdr">
@@ -273,6 +287,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
   </div>
   <div class="list" id="list" style="display:none"></div>
   <button class="fab" id="fabBtn" onclick="openMedModal()" style="display:none">+</button>
+<button class="fab" id="fabBar" onclick="openBarcodeScanner()" style="display:none;bottom:90px;background:var(--blue);font-size:20px">📷</button>
 </div>
 
 <!-- MODAL MEDICAMENTO -->
@@ -324,10 +339,10 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 <div class="panel" id="admPanel">
   <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-x" onclick="closePanel()">✕</button></div>
   <div class="ptabs">
-    <button class="ptab active" id="ptMov" onclick="setPTab('mov')">🔔 Movim.</button>
-    <button class="ptab" id="ptCad" onclick="setPTab('cad')">👤 Cadastros</button>
-    <button class="ptab" id="ptUsers" onclick="setPTab('users')">👥 Usuários</button>
-    <button class="ptab" id="ptAlert" onclick="setPTab('alert')">⚠️ Alertas</button>
+    <button class="ptab active" id="ptMov"   onclick="setPTab('mov')">🔔 Movim.</button>
+    <button class="ptab"        id="ptAlerta" onclick="setPTab('alerta')">⚠️ Alertas</button>
+    <button class="ptab"        id="ptCompras" onclick="setPTab('compras')">🛒 Compras</button>
+    <button class="ptab"        id="ptConfig" onclick="setPTab('config')">⚙️ Config</button>
   </div>
   <div class="pbody" id="pBody"></div>
 </div>
@@ -341,6 +356,23 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <div class="qr-url" id="qrUrl"></div>
     <button class="qr-copy" onclick="copyLink()">📋 Copiar link</button>
     <button class="qr-close-btn" onclick="closeQR()">Fechar</button>
+  </div>
+</div>
+
+<!-- BARCODE SCANNER MODAL -->
+<div id="ovBarcode">
+  <div class="barcode-modal">
+    <div style="text-align:center;color:#fff;font-size:17px;font-weight:700;margin-bottom:12px">
+      📷 Leitor de Código de Barras
+    </div>
+    <video id="barcodeVideo" autoplay playsinline muted></video>
+    <div id="barcodeStatus">Iniciando câmera...</div>
+    <div class="barcode-search">
+      <input type="text" id="inpBuscaCod" placeholder="Ou digite o código / nome..." autocomplete="off"
+        onkeydown="if(event.key==='Enter')buscaManual()">
+      <button onclick="buscaManual()">🔍 Buscar</button>
+    </div>
+    <button class="barcode-close" onclick="closeBarcodeScanner()">✕ Fechar</button>
   </div>
 </div>
 
@@ -465,11 +497,16 @@ async function save(){
 // ===== LOGIN =====
 // switchTab removido - cadastro só pelo ADM
 
-// Usuários fixos do sistema
+// Usuários fixos — senhas podem ser alteradas pelo ADM
+let SENHAS={Jefferson:"2407","D.Humanae":"1991",ADM:"9876"};
+const SENHAS_KEY="est_senhas_v1";
+try{const s=localStorage.getItem(SENHAS_KEY);if(s)SENHAS={...SENHAS,...JSON.parse(s)};}catch(e){}
+const saveSenhas=()=>{try{localStorage.setItem(SENHAS_KEY,JSON.stringify(SENHAS));}catch(e){}};
+
 const USUARIOS=[
-  {name:"Jefferson",pass:"2407",isAdm:true},
-  {name:"D.Humanae",pass:"1991",isAdm:false,somenteSaida:true},
-  {name:"ADM",pass:"9876",isAdm:true}
+  {name:"Jefferson",isAdm:true},
+  {name:"D.Humanae",isAdm:false,somenteSaida:true},
+  {name:"ADM",isAdm:true}
 ];
 
 window.doLogin=async()=>{
@@ -478,8 +515,8 @@ window.doLogin=async()=>{
   if(!pass)return setMsg("Digite sua senha");
   const btn=document.getElementById("btnEnt");
   btn.disabled=true;
-  // Verificar nos usuários fixos
-  const u=USUARIOS.find(x=>x.pass===pass);
+  // Verificar nos usuários fixos com senhas dinâmicas
+  const u=USUARIOS.find(x=>SENHAS[x.name]===pass);
   btn.disabled=false;
   if(!u){
     setMsg("❌ Senha incorreta");
@@ -507,7 +544,7 @@ function startApp(){
   document.getElementById("scrLogin").className="screen";
   document.getElementById("appMain").style.display="block";
   const b=document.getElementById("userBadge");
-  if(isAdm){b.textContent="ADM";b.className="badge badge-adm";document.getElementById("btnPanel").style.display="flex";document.getElementById("fabBtn").style.display="flex";}
+  if(isAdm){b.textContent="ADM";b.className="badge badge-adm";document.getElementById("btnPanel").style.display="flex";document.getElementById("fabBtn").style.display="flex";document.getElementById("fabBar").style.display="flex";}
   else{b.textContent=curUser;b.className="badge badge-user";document.getElementById("btnPanel").style.display="none";document.getElementById("fabBtn").style.display="none";}
   const cached=loadCache();
   if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
@@ -648,6 +685,134 @@ window.delMed=async id=>{
 };
 
 // ===== PAINEL ADM =====
+// ===== LIMPAR HISTÓRICO =====
+window.limparHistorico=async()=>{
+  if(!confirm("Apagar todo o histórico de movimentações? Esta ação não pode ser desfeita."))return;
+  movs=[];
+  save();
+  showToast("✅ Histórico limpo!");
+  renderPTab();
+};
+
+// ===== TROCAR SENHA =====
+window.trocarSenha=(nome)=>{
+  const inp=document.getElementById("senha_"+nome);
+  const nova=inp.value.trim();
+  const msg=document.getElementById("msgSenha");
+  if(!nova||nova.length<4){msg.style.color="var(--red)";msg.textContent="Mínimo 4 dígitos";return;}
+  // Verificar se senha já está em uso por outro usuário
+  const emUso=USUARIOS.find(u=>u.name!==nome&&SENHAS[u.name]===nova);
+  if(emUso){msg.style.color="var(--red)";msg.textContent="Senha já usada por "+emUso.name;return;}
+  SENHAS[nome]=nova;
+  saveSenhas();
+  inp.value="";
+  msg.style.color="var(--green)";
+  msg.textContent="✅ Senha de "+nome+" alterada!";
+  setTimeout(()=>{msg.textContent="";},3000);
+};
+
+// ===== LEITOR DE CÓDIGO DE BARRAS =====
+window.openBarcodeScanner=()=>{
+  document.getElementById("ovBarcode").classList.add("open");
+  startCamera();
+};
+
+window.closeBarcodeScanner=()=>{
+  stopCamera();
+  document.getElementById("ovBarcode").classList.remove("open");
+};
+
+window.buscaManual=()=>{
+  const txt=document.getElementById("inpBuscaCod").value.trim();
+  if(!txt)return;
+  processarCodigo(txt);
+};
+
+const processarCodigo=(cod)=>{
+  stopCamera();
+  document.getElementById("ovBarcode").classList.remove("open");
+  // Buscar por código de barras ou nome
+  const found=meds.find(m=>
+    m.n.toLowerCase().includes(cod.toLowerCase())||
+    (m.cod&&m.cod===cod)
+  );
+  if(found){
+    showToast("✅ "+found.n+" encontrado!");
+    openMovModal(found.id);
+  } else {
+    if(confirm(`"${cod}" não encontrado.\nCadastrar novo medicamento?`)){
+      openMedModal();
+      setTimeout(()=>{
+        const inp=document.getElementById("mNome");
+        if(inp)inp.value=cod.toUpperCase();
+      },300);
+    }
+  }
+};
+
+let cameraStream=null;
+let scanInterval=null;
+
+const startCamera=async()=>{
+  const video=document.getElementById("barcodeVideo");
+  const status=document.getElementById("barcodeStatus");
+  status.textContent="📷 Iniciando câmera...";
+  try{
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:"environment",width:640,height:480}
+    });
+    video.srcObject=cameraStream;
+    video.play();
+    status.textContent="🔍 Aponte para o código de barras";
+    // Escanear a cada 500ms usando ZXing
+    if(window.ZXing){
+      const hints=new Map();
+      const formats=[
+        ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.DATA_MATRIX
+      ];
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,formats);
+      const reader=new ZXing.MultiFormatReader();
+      reader.setHints(hints);
+      const canvas=document.createElement("canvas");
+      scanInterval=setInterval(()=>{
+        if(video.readyState===video.HAVE_ENOUGH_DATA){
+          canvas.width=video.videoWidth;
+          canvas.height=video.videoHeight;
+          const ctx=canvas.getContext("2d");
+          ctx.drawImage(video,0,0);
+          try{
+            const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+            const lum=ZXing.RGBLuminanceSource?
+              new ZXing.RGBLuminanceSource(imgData.data,canvas.width,canvas.height):null;
+            if(lum){
+              const bmp=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+              const result=reader.decode(bmp);
+              if(result){
+                clearInterval(scanInterval);
+                status.textContent="✅ Código: "+result.getText();
+                setTimeout(()=>processarCodigo(result.getText()),500);
+              }
+            }
+          }catch(e){}
+        }
+      },500);
+    }
+  }catch(e){
+    status.textContent="❌ Câmera não disponível — use busca manual";
+    video.style.display="none";
+  }
+};
+
+const stopCamera=()=>{
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  const video=document.getElementById("barcodeVideo");
+  if(video){video.srcObject=null;video.style.display="block";}
+};
+
+
 window.openPanel=()=>{
   document.getElementById("admPanel").classList.add("open");
   document.getElementById("ndot").style.display="none";
@@ -657,7 +822,7 @@ window.openPanel=()=>{
 window.closePanel=()=>document.getElementById("admPanel").classList.remove("open");
 window.setPTab=t=>{
   pTab=t;
-  ["mov","cad","users","alert"].forEach(x=>{
+  ["mov","alerta","compras","config"].forEach(x=>{
     const el=document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1));
     if(el)el.className="ptab"+(t===x?" active":"");
   });
@@ -667,114 +832,140 @@ window.setPTab=t=>{
 function renderPTab(){
   const body=document.getElementById("pBody");
   if(pTab==="mov"){
-    const all=[...movs].reverse().slice(0,80);
-    body.innerHTML=all.length?all.map(h=>{
-      const m=meds.find(x=>x.id===h.mid);
-      return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;
-    }).join(""):"<div class=\"pe\">Nenhuma movimentação ainda.</div>";
-  } else if(pTab==="cad"){
-    const cads=[...logs].filter(l=>l.tipo==="cadastro").reverse();
-    body.innerHTML=`
-      <div class="quick-add">
-        <h4>➕ Cadastrar usuário (ADM)</h4>
-        <input type="text" id="qaName" placeholder="Nome do usuário" autocomplete="off">
-        <input type="password" id="qaPass" placeholder="Senha (números)" inputmode="numeric">
-        <button class="quick-add-btn" onclick="quickAddUser()">Cadastrar</button>
-        <div class="quick-add-msg" id="qaMsg"></div>
-      </div>
-      ${cads.length?cads.map(l=>`<div class="ni cad-u"><p>👤 ${l.nome} se cadastrou</p><div class="ni-time">🕐 ${fmt(l.dt)}</div></div>`).join(""):"<div class=\"pe\">Nenhum cadastro registrado.</div>"}`;
-  } else if(pTab==="users"){
-    body.innerHTML=users.length?users.map(u=>{
-      const p=u.perms||DEFAULT_PERMS;
-      return`<div class="user-card">
-        <div class="user-top"><div><div class="user-name">👤 ${u.name}</div><div class="user-meta">Senha: ${u.pass} • ${fmt(u.dt)}</div></div><span class="ustatus ${u.blocked?"u-blocked":"u-ok"}">${u.blocked?"Bloqueado":"Ativo"}</span></div>
-        <div class="uacts">
-          <button class="ua ${u.blocked?"ua-unblock":"ua-block"}" onclick="toggleBlock('${u.id}')">${u.blocked?"✅ Desbloquear":"🚫 Bloquear"}</button>
-          <button class="ua ua-del" onclick="delUser('${u.id}')">🗑️ Excluir</button>
-        </div>
-        <div class="ptitle">Permissões</div>
-        <div class="prow"><span class="prow-label">👁️ Ver estoque</span><label class="toggle"><input type="checkbox" ${p.verEstoque?"checked":""} onchange="togglePerm('${u.id}','verEstoque',this.checked)"><span class="tslider"></span></label></div>
-        <div class="prow"><span class="prow-label">📥 Movimentar</span><label class="toggle"><input type="checkbox" ${p.movimentar?"checked":""} onchange="togglePerm('${u.id}','movimentar',this.checked)"><span class="tslider"></span></label></div>
-        <div class="prow"><span class="prow-label">📋 Ver histórico</span><label class="toggle"><input type="checkbox" ${p.verHistorico?"checked":""} onchange="togglePerm('${u.id}','verHistorico',this.checked)"><span class="tslider"></span></label></div>
-        <div class="prow"><span class="prow-label">👤 Ver responsável</span><label class="toggle"><input type="checkbox" ${p.verResponsavel?"checked":""} onchange="togglePerm('${u.id}','verResponsavel',this.checked)"><span class="tslider"></span></label></div>
-      </div>`;
-    }).join(""):"<div class=\"pe\">Nenhum usuário cadastrado.</div>";
-  } else {
+    const all=[...movs].reverse().slice(0,100);
+    body.innerHTML=all.length?
+      `<button onclick="limparHistorico()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#fee2e2;color:#991b1b;font-weight:700;cursor:pointer;margin-bottom:10px">🗑️ Limpar histórico de movimentações</button>`+
+      all.map(h=>{const m=meds.find(x=>x.id===h.mid);return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;}).join(""):
+      `<div class="pe">Nenhuma movimentação ainda.</div>`;
+  } else if(pTab==="alerta"){
     const exp=meds.filter(m=>status(m)==="expired");
     const soon=meds.filter(m=>status(m)==="soon");
-    const zero=meds.filter(m=>status(m)==="zero");
+    const zero=meds.filter(m=>m.q<=0);
+    const baixo=meds.filter(m=>m.min>0&&m.q>0&&m.q<=m.min);
     const its=[
       ...exp.map(m=>`<div class="ni alerta"><p>⚠️ VENCIDO — ${m.n}</p><span>Validade: ${m.v}</span></div>`),
-      ...soon.map(m=>{const d=parseV(m.v);const days=Math.floor((d-new Date())/86400000);return`<div class="ni alerta-w"><p>🕐 Vence em ${days} dias — ${m.n}</p><span>Validade: ${m.v}</span></div>`;}),
-      ...zero.map(m=>`<div class="ni alerta"><p>📭 Sem estoque — ${m.n}</p></div>`)
+      ...soon.map(m=>{const d=parseV(m.v);const days=d?Math.floor((d-new Date())/86400000):0;return`<div class="ni alerta-w"><p>🕐 Vence em ${days} dias — ${m.n}</p><span>Validade: ${m.v}</span></div>`;}),
+      ...zero.map(m=>`<div class="ni alerta"><p>📭 Sem estoque — ${m.n}</p></div>`),
+      ...baixo.map(m=>`<div class="ni alerta-w"><p>⬇️ Estoque baixo — ${m.n}</p><span>${m.q} un. (mín: ${m.min})</span></div>`)
     ];
-    body.innerHTML=its.length?its.join(""):"<div class=\"pe\">✅ Nenhum alerta!</div>";
+    body.innerHTML=its.length?its.join(""):`<div class="pe">✅ Nenhum alerta!</div>`;
+  } else if(pTab==="compras"){
+    const zerados=meds.filter(m=>m.q<=0);
+    const baixo=meds.filter(m=>m.min>0&&m.q>0&&m.q<=m.min);
+    const lista=[...zerados,...baixo];
+    const texto="🛒 *Lista de Compras — Estoque*
+
+"+
+      lista.map(m=>`• ${m.n}: ${m.q===0?"ZERADO":`${m.q} un. (mín: ${m.min})`}`).join("
+")+
+      "
+
+_Gerado em "+new Date().toLocaleDateString("pt-BR")+"_";
+    body.innerHTML=lista.length?`
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${lista.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;background:var(--red-bg);border-radius:8px;padding:10px 12px"><span style="font-size:13px;font-weight:600;color:var(--red)">💊 ${m.n}</span><span style="font-size:12px;color:var(--g500)">${m.q===0?"📭 ZERADO":`⬇️ ${m.q}un`}</span></div>`).join("")}
+        <button onclick="navigator.clipboard.writeText(${JSON.stringify(texto)}).then(()=>showToast('✅ Lista copiada!'))" style="padding:12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;margin-top:8px">📋 Copiar lista</button>
+        <button onclick="window.open('https://wa.me/?text='+encodeURIComponent(${JSON.stringify(texto)}),'_blank')" style="padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer">📤 Enviar pelo WhatsApp</button>
+      </div>`:`<div class="pe">✅ Estoque em dia!</div>`;
+  } else if(pTab==="config"){
+    body.innerHTML=`
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:var(--green-bg);border-radius:10px;padding:14px">
+          <h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>
+          ${USUARIOS.map(u=>`
+            <div style="margin-bottom:10px">
+              <label style="font-size:12px;font-weight:600;color:var(--g700);display:block;margin-bottom:4px">👤 ${u.name}</label>
+              <div style="display:flex;gap:6px">
+                <input type="password" id="senha_${u.name}" placeholder="Nova senha" inputmode="numeric" maxlength="8"
+                  style="flex:1;height:40px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;background:#fff;outline:none">
+                <button onclick="trocarSenha('${u.name}')"
+                  style="padding:0 14px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Salvar</button>
+              </div>
+            </div>`).join("")}
+          <div id="msgSenha" style="font-size:12px;text-align:center;margin-top:4px;min-height:16px"></div>
+        </div>
+        <div style="background:var(--blue-bg);border-radius:10px;padding:14px">
+          <h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4>
+          <p style="font-size:12px;color:var(--g700);margin-bottom:8px"><b>Android:</b> Chrome → menu ⋮ → "Adicionar à tela inicial"</p>
+          <p style="font-size:12px;color:var(--g700)"><b>iPhone:</b> Safari → compartilhar ↑ → "Adicionar à Tela de Início"</p>
+        </div>
+      </div>`;
   }
 }
 
-// Cadastro rápido pelo ADM no painel
 
-window.toggleBlock=async id=>{
-  const u=users.find(x=>x.id===id);if(!u)return;
-  u.blocked=!u.blocked;await save();
-  showToast(u.blocked?`🚫 ${u.name} bloqueado`:`✅ ${u.name} desbloqueado`);
-  renderPTab();
-};
-window.delUser=async id=>{
-  const u=users.find(x=>x.id===id);if(!u)return;
-  if(!confirm(`Excluir "${u.name}"?`))return;
-  users=users.filter(x=>x.id!==id);await save();showToast("Usuário excluído");renderPTab();
-};
-window.togglePerm=async(uid,perm,val)=>{
-  const u=users.find(x=>x.id===uid);if(!u)return;
-  if(!u.perms)u.perms={...DEFAULT_PERMS};
-  u.perms[perm]=val;await save();showToast("✅ Permissão atualizada");
-};
 
-// ===== QR CODE =====
-window.openQR=()=>{
-  const url=window.location.href.split("?")[0];
-  document.getElementById("qrUrl").textContent=url;
-  document.getElementById("qrOv").classList.add("open");
-  const wrap=document.getElementById("qrWrap");
-  wrap.innerHTML="";
-  const img=new Image();
-  img.style.cssText="width:180px;height:180px;border-radius:8px";
-  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
-  wrap.appendChild(img);
-};
-window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
-window.qrOvClick=e=>{if(e.target===document.getElementById("qrOv"))closeQR();};
-window.copyLink=()=>{
-  const url=document.getElementById("qrUrl").textContent;
-  navigator.clipboard.writeText(url).then(()=>showToast("✅ Link copiado!")).catch(()=>{
-    const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);showToast("✅ Link copiado!");
-  });
-};
+// ===== OFFLINE DETECTION =====
+window.addEventListener("online",()=>{
+  const b=document.getElementById("offlineBar");if(b)b.style.display="none";
+  if(curUser&&!unsub)startListener();
+  showToast("✅ Online — sincronizando...");
+});
+window.addEventListener("offline",()=>{
+  const b=document.getElementById("offlineBar");if(b)b.style.display="block";
+  showToast("📶 Sem internet — modo offline");
+});
+if(!navigator.onLine){const b=document.getElementById("offlineBar");if(b)b.style.display="block";}
 
-// ===== FILTROS =====
-window.setF=(btn,f)=>{document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filter=f;render();};
-
-// ===== MODAIS =====
-window.ovClick=(e,id)=>{if(e.target===document.getElementById(id))closeOv(id);};
-window.closeOv=id=>document.getElementById(id).classList.remove("open");
-
-// ===== NOTIFICAÇÕES =====
-const pushNotif=(title,body)=>{if("Notification"in window&&Notification.permission==="granted")new Notification(title,{body,tag:"est-"+Date.now()});};
+// ===== LEITOR USB/BLUETOOTH =====
+// Captura códigos digitados por leitores de código de barras (USB/BT)
+// Leitores digitam muito rápido (< 100ms entre teclas) e enviam Enter
+let barcodeBuffer="";
+let barcodeTimer=null;
+document.addEventListener("keydown",(e)=>{
+  // Só captura se não estiver em um input/textarea
+  const tag=document.activeElement?.tagName;
+  if(tag==="INPUT"||tag==="TEXTAREA")return;
+  // Só captura se o app estiver aberto (usuário logado)
+  if(!curUser)return;
+  
+  if(e.key==="Enter"){
+    // Enter = fim do código de barras
+    if(barcodeBuffer.length>=4){
+      const cod=barcodeBuffer;
+      barcodeBuffer="";
+      clearTimeout(barcodeTimer);
+      // Buscar medicamento
+      const found=meds.find(m=>
+        m.n.toLowerCase().includes(cod.toLowerCase())||
+        (m.cod&&m.cod===cod)
+      );
+      if(found){
+        showToast("📷 "+found.n);
+        openMovModal(found.id);
+      } else {
+        // Não encontrou - mostrar na busca
+        const srch=document.getElementById("srch");
+        if(srch){srch.value=cod;render();}
+        showToast("🔍 Buscando: "+cod);
+      }
+    }
+    barcodeBuffer="";
+    return;
+  }
+  
+  // Acumular caracteres
+  if(e.key.length===1){
+    barcodeBuffer+=e.key;
+    // Limpar buffer se demorar mais de 200ms (digitação humana)
+    clearTimeout(barcodeTimer);
+    barcodeTimer=setTimeout(()=>{barcodeBuffer="";},200);
+  }
+});
 
 // ===== VISIBILIDADE =====
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"&&curUser){
-    if(!unsub){startListener();}
-    else{fetchFresh().then(()=>{render();setSP("ok","✅ Ao vivo");});}
-  }
+  if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();
 });
-setInterval(()=>{if(curUser&&document.visibilityState==="visible"&&document.getElementById("spPill").className.includes("err"))startListener();},30000);
+setInterval(()=>{
+  if(curUser&&document.visibilityState==="visible"){
+    const sp=document.getElementById("spPill");
+    if(sp&&sp.className.includes("err"))startListener();
+  }
+},30000);
 
 // ===== INICIALIZAÇÃO =====
-// Limpar caches de versões antigas
-['est_cache_v1','est_v7_cache','estoque_cache_v5','est_sess_v1','est_sess_v1_b',
- 'est_v7_sess','est_v7_sess_b'].forEach(k=>{
+['est_cache_v1','est_v7_cache','estoque_cache_v5','est_sess_v1','est_sess_v1_b'].forEach(k=>{
   try{localStorage.removeItem(k);sessionStorage.removeItem(k);}catch(e){}
 });
 const sess=sessLoad();
