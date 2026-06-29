@@ -386,7 +386,7 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,onValue,set,off}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import{getDatabase,ref,onValue,set}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // ===== CONFIG FIREBASE =====
 const FB={
@@ -449,8 +449,15 @@ const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verRe
 // ===== FIREBASE =====
 
 
+// ===== NOTIFICAÇÕES PUSH =====
+const pushNotif=(title,body)=>{
+  if("Notification"in window&&Notification.permission==="granted"){
+    new Notification(title,{body,icon:"icon-192.png"});
+  }
+};
+
 function startListener(){
-  if(unsub){try{off(REF,unsub)}catch(e){}unsub=null;}
+  if(unsub){try{unsub();}catch(e){}unsub=null;}
   firstSnap=true;
   unsub=onValue(REF,snap=>{
     const d=snap.val();
