@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Humanae">
+<meta name="theme-color" content="#1a9e6b">
+<title>Estoque — Humanae</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<style>
+:root{--green:#1a9e6b;--green-d:#0f6e4a;--green-bg:#e6f7f1;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--blue:#185fa5;--blue-bg:#e6f1fb;--purple:#7c3aed;--purple-bg:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;--g400:#9ca3af;--g500:#6b7280;--g700:#374151;--g900:#111827;--r:14px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--g900)}
+
+/* ===== LOGIN ===== */
+.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0f6e4a,#1a9e6b)}
+.screen.active{display:flex}
+.box{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,.2)}
+.llogo{text-align:center;margin-bottom:12px}
+.llogo img{width:140px;height:auto}
+.box h2{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px;color:var(--g900)}
+.box p{text-align:center;font-size:13px;color:var(--g500);margin-bottom:22px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--g700);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field input{width:100%;height:50px;border-radius:var(--rs);border:1.5px solid var(--g200);padding:0 14px;font-size:22px;color:var(--g900);background:var(--g50);outline:none;text-align:center;letter-spacing:6px}
+.field input:focus{border-color:var(--green);background:#fff}
+.btn{width:100%;height:50px;border-radius:var(--r);border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:active{background:var(--green-d)}
+.msg{font-size:13px;text-align:center;margin-top:10px;min-height:18px;font-weight:500;color:var(--red)}
+.lnote{font-size:12px;color:var(--g400);text-align:center;margin-top:12px;padding:8px;background:var(--g100);border-radius:8px}
+
+/* ===== INSTALL BANNER ===== */
+#installBanner{display:none;background:var(--green);color:#fff;padding:10px 16px;align-items:center;gap:10px;font-size:13px;font-weight:600}
+#installBanner button{margin-left:auto;background:#fff;color:var(--green);border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+#installBanner .ib-x{background:transparent;color:rgba(255,255,255,.7);font-size:18px;padding:0 4px;margin-left:0}
+
+/* ===== HEADER ===== */
+.hdr{background:#fff;padding:12px 16px 10px;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-title{display:flex;align-items:center;gap:8px}
+.hdr-title h1{font-size:19px;font-weight:700}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.badge-adm{background:var(--purple);color:#fff}
+.badge-user{background:var(--blue);color:#fff}
+.sp{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--g100);color:var(--g500)}
+.sp.ok{background:var(--green-bg);color:var(--green)}
+.sp.err{background:var(--red-bg);color:var(--red)}
+.sp.sync{background:var(--amber-bg);color:var(--amber)}
+.hdr-r{display:flex;align-items:center;gap:6px}
+.icon-btn{width:38px;height:38px;border-radius:50%;background:var(--g100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;position:relative;flex-shrink:0}
+.icon-btn:active{background:var(--g200)}
+.ndot{width:10px;height:10px;background:var(--red);border-radius:50%;position:absolute;top:4px;right:4px;border:2px solid #fff;display:none}
+.search-wrap{position:relative}
+.search-wrap input{width:100%;height:40px;border-radius:20px;border:1px solid var(--g200);background:var(--g100);padding:0 16px 0 38px;font-size:15px;outline:none}
+.search-wrap input::placeholder{color:var(--g400)}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px}
+
+/* ===== OFFLINE BAR ===== */
+#offlineBar{display:none;background:var(--amber);color:#fff;text-align:center;padding:7px;font-size:13px;font-weight:700}
+
+/* ===== STATS ===== */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
+.stat{background:#fff;border-radius:var(--rs);padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.stat-n{font-size:22px;font-weight:800;line-height:1}
+.stat-l{font-size:10px;color:var(--g500);margin-top:2px}
+.sn{color:var(--green)}.sw{color:var(--amber)}.sd{color:var(--red)}
+
+/* ===== FILTROS ===== */
+.filters{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fb{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1px solid var(--g200);background:#fff;font-size:13px;color:var(--g500);cursor:pointer;font-weight:500;white-space:nowrap}
+.fb.active{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ===== LISTA ===== */
+.list{padding:0 16px 100px;display:flex;flex-direction:column;gap:8px}
+.card{background:#fff;border-radius:var(--r);padding:13px 14px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid transparent;display:flex;align-items:flex-start;gap:11px}
+.card.ok{border-left-color:var(--green)}.card.soon{border-left-color:var(--amber)}.card.expired,.card.zero{border-left-color:var(--red)}
+.cico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;margin-top:2px}
+.ico-ok{background:var(--green-bg)}.ico-soon{background:var(--amber-bg)}.ico-exp,.ico-zero{background:var(--red-bg)}
+.cbody{flex:1;min-width:0}
+.cname{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csub{font-size:12px;margin-top:2px}
+.tok{color:var(--green)}.tso{color:var(--amber)}.tex{color:var(--red);font-weight:600}.tze{color:var(--g400)}
+.cvenc{font-size:15px;font-weight:700;margin-top:4px}
+.vok{color:var(--green)}.vso{color:var(--amber)}.vex{color:var(--red)}.vze{color:var(--g400)}
+.clm{font-size:11px;color:var(--g400);margin-top:4px}
+.cacts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.abtn{padding:6px 11px;border-radius:6px;font-size:12px;border:1px solid var(--g200);background:var(--g50);color:var(--g500);cursor:pointer;font-weight:500}
+.abtn:active{background:var(--g200)}
+.adel{color:var(--red);border-color:#fecaca;background:var(--red-bg)}
+.ahist{color:var(--purple);border-color:#ddd6fe;background:var(--purple-bg)}
+.cright{flex-shrink:0;padding-top:2px}
+.qty{font-size:15px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--g100);color:var(--g700)}
+.qty.qz{background:var(--red-bg);color:var(--red)}
+.qty.qlo{background:var(--amber-bg);color:var(--amber)}
+
+/* ===== FAB ===== */
+.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--green);border:none;box-shadow:0 4px 16px rgba(26,158,107,.45);color:#fff;font-size:28px;cursor:pointer;z-index:200;display:none;align-items:center;justify-content:center}
+.fab:active{transform:scale(.94)}
+#fabBar{bottom:90px;background:var(--blue);font-size:20px}
+
+/* ===== SKELETON ===== */
+.sk{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.skc{background:#fff;border-radius:var(--r);padding:16px;border-left:4px solid var(--g200);display:flex;gap:12px;align-items:center}
+.ski{width:40px;height:40px;border-radius:50%;background:var(--g200);flex-shrink:0;animation:pulse 1.2s infinite}
+.skb{flex:1;display:flex;flex-direction:column;gap:8px}
+.skl{height:12px;border-radius:6px;background:var(--g200);animation:pulse 1.2s infinite}
+.w80{width:80%}.w50{width:50%}.w30{width:30%}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ===== MODAIS ===== */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:22px 22px 0 0;padding:22px 20px 40px;width:100%;max-height:92vh;overflow-y:auto}
+.mh{width:36px;height:4px;background:var(--g300);border-radius:2px;margin:0 auto 18px}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:18px}
+.mfield{margin-bottom:14px}
+.mfield label{display:block;font-size:13px;font-weight:600;color:var(--g700);margin-bottom:5px}
+.mfield input{width:100%;height:48px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none}
+.mfield input:focus{border-color:var(--green);background:#fff}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mbtn{width:100%;height:52px;border-radius:var(--r);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-top:6px}
+.mbtn-green{background:var(--green)}.mbtn-green:active{background:var(--green-d)}
+.mbtn-red{background:var(--red)}
+.mbtn-amber{background:var(--amber)}
+.mcan{width:100%;height:44px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:16px;cursor:pointer;margin-top:10px}
+.back-home{width:100%;height:44px;border-radius:var(--r);background:var(--g100);border:none;color:var(--g700);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.mt2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.mtt{height:52px;border-radius:var(--rs);border:2px solid var(--g200);background:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.mtt.ent.sel{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.mtt.sai.sel{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.mtt:not(.sel){color:var(--g400)}
+.confirm-ok{display:none;background:var(--green-bg);border:1px solid #6ee7b7;border-radius:var(--rs);padding:12px;text-align:center;margin-bottom:14px}
+.confirm-ok p{font-size:14px;font-weight:700;color:var(--green-d)}
+.confirm-ok span{font-size:12px;color:var(--g500)}
+
+/* ===== HISTÓRICO ===== */
+.hi{background:var(--g50);border-radius:var(--rs);padding:11px 14px;margin-bottom:8px}
+.hi.ent{border-left:3px solid var(--green)}.hi.sai{border-left:3px solid var(--red)}
+.hi-top{display:flex;align-items:center;justify-content:space-between}
+.hi-tipo{font-size:13px;font-weight:700}
+.hi-tipo.ent{color:var(--green)}.hi-tipo.sai{color:var(--red)}
+.hi-qtd{font-size:15px;font-weight:700}
+.hi-info{font-size:12px;color:var(--g500);margin-top:3px}
+
+/* ===== PAINEL ADM ===== */
+.pov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:390;display:none}
+.pov.open{display:block}
+.panel{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100%;background:#fff;z-index:400;transition:right .25s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
+.panel.open{right:0}
+.ph{padding:18px 20px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between;background:var(--green);color:#fff}
+.ph h3{font-size:17px;font-weight:700}
+.ph-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer}
+.ptabs{display:flex;border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none;background:var(--g50)}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{flex-shrink:0;height:44px;border:none;background:none;font-size:11px;font-weight:700;color:var(--g400);cursor:pointer;border-bottom:2px solid transparent;padding:0 10px;white-space:nowrap}
+.ptab.active{color:var(--green);border-bottom-color:var(--green)}
+.pbody{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.ni{background:var(--g50);border-radius:var(--rs);padding:12px 14px}
+.ni.mov-e{border-left:3px solid var(--green)}.ni.mov-s{border-left:3px solid var(--red)}
+.ni p{font-size:14px;font-weight:600}.ni span{font-size:12px;color:var(--g500);margin-top:3px;display:block}
+.pe{text-align:center;color:var(--g400);padding:32px 20px;font-size:14px}
+
+/* ===== QR ===== */
+.qr-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.qr-ov.open{display:flex}
+.qr-box{background:#fff;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center}
+.qr-box h3{font-size:18px;font-weight:700;margin-bottom:4px}
+.qr-box p{font-size:13px;color:var(--g500);margin-bottom:20px}
+.qr-wrap{background:var(--g50);border-radius:16px;padding:20px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;min-height:140px}
+.qr-wrap img{max-width:180px;border-radius:8px}
+.qr-url{font-size:11px;color:var(--g400);word-break:break-all;margin-bottom:14px;padding:8px 12px;background:var(--g100);border-radius:8px}
+.qr-copy{width:100%;height:44px;border-radius:var(--r);background:var(--green);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.qr-wa{width:100%;height:44px;border-radius:var(--r);background:#25d366;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.qr-close-btn{width:100%;height:40px;border-radius:var(--r);background:transparent;border:1px solid var(--g200);color:var(--g500);font-size:15px;cursor:pointer}
+
+/* ===== BARCODE SCANNER ===== */
+#ovBarcode{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:none;align-items:flex-end}
+#ovBarcode.open{display:flex}
+.barcode-modal{background:#111;border-radius:22px 22px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
+#barcodeVideo{width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover;margin-bottom:12px}
+#barcodeStatus{text-align:center;color:#fff;font-size:14px;margin-bottom:12px;padding:8px;background:rgba(255,255,255,.1);border-radius:8px}
+.barcode-search{display:flex;gap:8px;margin-bottom:10px}
+.barcode-search input{flex:1;height:46px;border-radius:8px;border:none;padding:0 12px;font-size:16px;background:#fff}
+.barcode-search button{padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.barcode-close{width:100%;padding:12px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.bc-item{background:rgba(255,255,255,.12);border-radius:9px;padding:11px 13px;margin-bottom:6px;cursor:pointer;border:1px solid rgba(255,255,255,.15);transition:.15s}
+.bc-item:active{background:rgba(255,255,255,.25)}
+.bc-item-nome{font-size:14px;font-weight:700;color:#fff}
+.bc-item-info{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px}
+.bc-empty{text-align:center;color:rgba(255,255,255,.45);font-size:13px;padding:14px}
+.bc-match{color:#6ee7b7;font-weight:700}
+.bc-notfound{background:rgba(255,255,255,.07);border-radius:10px;padding:14px;margin-top:4px;text-align:center}
+.bc-notfound p{color:rgba(255,255,255,.6);font-size:13px;margin-bottom:10px}
+.bc-btn-cad{width:100%;padding:12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px}
+.bc-btn-cad:active{background:var(--green-d)}
+.bc-btn-web{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.bc-web-result{background:rgba(255,255,255,.1);border-radius:9px;padding:12px;margin-top:6px;text-align:left}
+.bc-web-nome{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.bc-web-info{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px}
+.bc-btn-usar{width:100%;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.bc-loading{text-align:center;color:rgba(255,255,255,.5);font-size:13px;padding:12px;animation:pulse2 1s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;opacity:0;transition:all .25s;z-index:700;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;color:var(--g400);padding:36px 16px;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER (PWA) -->
+<div id="installBanner">
+  <span>📲 Instale o app Humanae na tela inicial!</span>
+  <button id="installBtn">Instalar</button>
+  <button class="ib-x" id="installDismiss">✕</button>
+</div>
+
+<!-- LOGIN -->
+<div class="screen active" id="scrLogin">
+  <div class="box">
+    <div class="llogo"><img src="icon-512.png" alt="Humanae" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:52px">💊</span></div>
+    <h2>Drogaria Humanae</h2>
+    <p>Controle de estoque</p>
+    <div class="field">
+      <label>Senha de acesso</label>
+      <input type="password" id="inpSenha" placeholder="••••" inputmode="numeric"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-green" onclick="doLogin()">Entrar</button>
+    <div class="msg" id="msgLogin"></div>
+    <div class="lnote">Para cadastrar usuários, contate o ADM</div>
+  </div>
+</div>
+
+<!-- OFFLINE BAR -->
+<div id="offlineBar">📶 Sem internet — trabalhando offline</div>
+
+<!-- APP PRINCIPAL -->
+<div id="appMain" style="display:none">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-title">
+        <span style="font-size:22px">💊</span>
+        <h1>Estoque</h1>
+        <span class="badge" id="userBadge">ADM</span>
+      </div>
+      <div class="hdr-r">
+        <span class="sp sync" id="spPill">⏳</span>
+        <button class="icon-btn" id="btnPanel" onclick="openPanel()" style="display:none" title="Painel ADM">🔔<span class="ndot" id="ndot"></span></button>
+        <button class="icon-btn" onclick="openQR()" title="Compartilhar link">🔗</button>
+        <button class="icon-btn" onclick="doLogout()" title="Sair">🚪</button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="si">🔍</span>
+      <input type="text" id="srch" placeholder="Buscar medicamento..." oninput="render()" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n sn" id="stTot">—</div><div class="stat-l">Cadastrados</div></div>
+    <div class="stat"><div class="stat-n sw" id="stSoon">—</div><div class="stat-l">Vence em breve</div></div>
+    <div class="stat"><div class="stat-n sd" id="stAlt">—</div><div class="stat-l">Atenção</div></div>
+  </div>
+
+  <div class="filters">
+    <button class="fb active" onclick="setF(this,'all')">Todos</button>
+    <button class="fb" onclick="setF(this,'expired')">⚠️ Vencidos</button>
+    <button class="fb" onclick="setF(this,'soon')">🕐 Vence em breve</button>
+    <button class="fb" onclick="setF(this,'zero')">📭 Sem estoque</button>
+    <button class="fb" onclick="setF(this,'ok')">✅ OK</button>
+  </div>
+
+  <div class="sk" id="skeleton">
+    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+    <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
+  </div>
+  <div class="list" id="list" style="display:none"></div>
+
+  <button class="fab" id="fabBtn" onclick="openMedModal()" style="display:none">+</button>
+  <button class="fab" id="fabBar" onclick="openBarcodeScanner()" style="display:none">📷</button>
+</div>
+
+<!-- MODAL MEDICAMENTO -->
+<div class="ov" id="ovMed" onclick="ovClick(event,'ovMed')">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2 id="medModalTitle">Novo medicamento</h2>
+    <div class="mfield"><label>Nome</label><input type="text" id="mNome" placeholder="Ex: Paracetamol 500mg" autocomplete="off"></div>
+    <div class="frow">
+      <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
+      <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
+    </div>
+    <div class="mfield"><label>Estoque mínimo</label><input type="number" id="mMin" placeholder="5" min="0" inputmode="numeric"></div>
+    <div class="mfield"><label>Código de barras (opcional)</label><input type="text" id="mCod" placeholder="7891000315507" autocomplete="off"></div>
+    <div class="confirm-ok" id="medConfirm"><p id="medConfirmTxt"></p></div>
+    <button class="mbtn mbtn-green" onclick="saveMed()">💾 Salvar</button>
+    <button class="mcan" onclick="closeOv('ovMed')">Cancelar</button>
+    <button class="back-home" onclick="closeOv('ovMed')">🏠 Tela inicial</button>
+  </div>
+</div>
+
+<!-- MODAL MOVIMENTAÇÃO -->
+<div class="ov" id="ovMov" onclick="ovClick(event,'ovMov')">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2 id="movNome" style="font-size:15px;margin-bottom:4px"></h2>
+    <div id="movEst" style="font-size:13px;color:var(--g500);margin-bottom:14px"></div>
+    <div class="mt2">
+      <button class="mtt ent sel" id="btnEnt2" onclick="selTipo('ent')">📥 Entrada</button>
+      <button class="mtt sai" id="btnSai" onclick="selTipo('sai')">📤 Saída</button>
+    </div>
+    <div class="mfield"><label>Quantidade</label><input type="number" id="movQtd" placeholder="0" min="1" inputmode="numeric"></div>
+    <div class="confirm-ok" id="movConfirm"><p id="movConfirmTxt"></p><span id="movConfirmSub"></span></div>
+    <button class="mbtn mbtn-green" id="btnConfMov" onclick="saveMov()">✅ Confirmar entrada</button>
+    <button class="mcan" onclick="closeOv('ovMov')">Cancelar</button>
+    <button class="back-home" onclick="closeOv('ovMov')">🏠 Tela inicial</button>
+  </div>
+</div>
+
+<!-- MODAL HISTÓRICO -->
+<div class="ov" id="ovHist" onclick="ovClick(event,'ovHist')">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2 id="histTitle">Histórico</h2>
+    <div id="histContent"></div>
+    <button class="mcan" onclick="closeOv('ovHist')">Fechar</button>
+  </div>
+</div>
+
+<!-- PAINEL ADM -->
+<div class="pov" id="povAdm" onclick="closePanel()"></div>
+<div class="panel" id="admPanel">
+  <div class="ph"><h3>🔐 Painel ADM</h3><button class="ph-x" onclick="closePanel()">✕</button></div>
+  <div class="ptabs">
+    <button class="ptab active" id="ptMov"    onclick="setPTab('mov')">🔔 Movim.</button>
+    <button class="ptab"        id="ptAlerta" onclick="setPTab('alerta')">⚠️ Alertas</button>
+    <button class="ptab"        id="ptCompras" onclick="setPTab('compras')">🛒 Compras</button>
+    <button class="ptab"        id="ptConfig" onclick="setPTab('config')">⚙️ Config</button>
+  </div>
+  <div class="pbody" id="pBody"></div>
+</div>
+
+<!-- QR CODE -->
+<div class="qr-ov" id="qrOv" onclick="qrOvClick(event)">
+  <div class="qr-box">
+    <h3>📱 Link do Sistema</h3>
+    <p>Escaneie ou compartilhe para acessar</p>
+    <div class="qr-wrap"><img id="qrImg" src="" alt="QR Code"></div>
+    <div class="qr-url" id="qrUrl"></div>
+    <button class="qr-copy" onclick="copyLink()">📋 Copiar link</button>
+    <button class="qr-wa" onclick="shareWA()">📤 Enviar pelo WhatsApp</button>
+    <button class="qr-close-btn" onclick="closeQR()">Fechar</button>
+  </div>
+</div>
+
+<!-- BARCODE SCANNER -->
+<div id="ovBarcode">
+  <div class="barcode-modal">
+    <div style="text-align:center;color:#fff;font-size:17px;font-weight:700;margin-bottom:12px">📷 Leitor de Código de Barras</div>
+    <video id="barcodeVideo" autoplay playsinline muted></video>
+    <div id="barcodeStatus">Iniciando câmera...</div>
+    <div class="barcode-search">
+      <input type="text" id="inpBuscaCod" placeholder="Nome ou código de barras..." autocomplete="off"
+        oninput="buscaAoVivo(this.value)"
+        onkeydown="if(event.key==='Enter')buscaManual()">
+      <button onclick="buscaManual()">🔍</button>
+    </div>
+    <div id="barcodeResultados" style="max-height:260px;overflow-y:auto;margin-top:4px"></div>
+    <div id="barcodeWebArea" style="display:none;margin-top:6px"></div>
+    <button class="barcode-close" onclick="closeBarcodeScanner()">✕ Fechar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,onValue,set}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ===== FIREBASE =====
+const db=getDatabase(initializeApp({
+  apiKey:"AIzaSyC3nXsBC2ARX8IOLITHUtovPn4DONEQe7g",
+  authDomain:"estoque-remedios-7b785.firebaseapp.com",
+  databaseURL:"https://estoque-remedios-7b785-default-rtdb.firebaseio.com",
+  projectId:"estoque-remedios-7b785",
+  storageBucket:"estoque-remedios-7b785.firebasestorage.app",
+  messagingSenderId:"1005921072336",
+  appId:"1:1005921072336:web:964ca0ae079b5e796e5ad5"
+}));
+const REF=ref(db,"estoque/dados");
+const UREF=ref(db,"estoque/users");
+
+// ===== USUÁRIOS =====
+const MASTER="Jefferson";
+let USUARIOS=[
+  {name:"Jefferson",pass:"2407",role:"adm"},
+  {name:"Marconi",pass:"9876",role:"adm"},
+  {name:"Marcelo",pass:"1991",role:"adm"},
+  {name:"D.Humanae",pass:"1234",role:"user"}
+];
+// Senhas em memória (espelho do USUARIOS)
+const SENHAS=()=>Object.fromEntries(USUARIOS.map(u=>[u.name,u.pass]));
+
+// ===== DEFAULTS =====
+const DEFAULTS=[
+  {id:1,n:"ESCITALOPRAM 10MG",q:10,v:"12/27",min:5,cod:""},
+  {id:2,n:"ESCITALOPRAM 20MG",q:8,v:"06/27",min:3,cod:""},
+  {id:3,n:"QUETIAPINA 25MG",q:15,v:"09/27",min:5,cod:""},
+  {id:4,n:"QUETIAPINA 100MG",q:12,v:"03/27",min:5,cod:""},
+  {id:5,n:"QUETIAPINA 200MG",q:6,v:"08/27",min:3,cod:""},
+  {id:6,n:"ARIPIPRAZOL 10MG",q:4,v:"11/26",min:3,cod:""},
+  {id:7,n:"ARIPIPRAZOL 15MG",q:2,v:"08/26",min:3,cod:""},
+  {id:8,n:"RISPERIDONA 2MG",q:20,v:"01/28",min:5,cod:""},
+  {id:9,n:"RISPERIDONA 3MG",q:14,v:"07/27",min:5,cod:""},
+  {id:10,n:"HALOPERIDOL 1MG",q:18,v:"02/28",min:5,cod:""},
+  {id:11,n:"CLONAZEPAM 0,5MG",q:25,v:"05/28",min:10,cod:""},
+  {id:12,n:"CLONAZEPAM 2MG",q:30,v:"10/27",min:10,cod:""},
+  {id:13,n:"DIAZEPAM 5MG",q:22,v:"04/28",min:8,cod:""},
+  {id:14,n:"LORAZEPAM 1MG",q:16,v:"12/27",min:5,cod:""},
+  {id:15,n:"ALPRAZOLAM 0,25MG",q:11,v:"08/27",min:5,cod:""},
+  {id:16,n:"ALPRAZOLAM 0,5MG",q:9,v:"06/27",min:5,cod:""},
+  {id:17,n:"ZOLPIDEM 10MG",q:8,v:"11/27",min:5,cod:""},
+  {id:18,n:"VENLAFAXINA 75MG",q:5,v:"09/27",min:3,cod:""},
+  {id:19,n:"VENLAFAXINA 150MG",q:3,v:"10/26",min:3,cod:""},
+  {id:20,n:"DULOXETINA 30MG",q:7,v:"03/28",min:3,cod:""},
+  {id:21,n:"DULOXETINA 60MG",q:4,v:"07/27",min:3,cod:""},
+  {id:22,n:"SERTRALINA 50MG",q:19,v:"01/28",min:8,cod:""},
+  {id:23,n:"SERTRALINA 100MG",q:13,v:"06/28",min:5,cod:""},
+  {id:24,n:"FLUOXETINA 20MG",q:21,v:"02/28",min:8,cod:""},
+  {id:25,n:"PAROXETINA 20MG",q:10,v:"08/27",min:5,cod:""},
+  {id:26,n:"AMITRIPTILINA 25MG",q:17,v:"11/27",min:5,cod:""},
+  {id:27,n:"NORTRIPTILINA 25MG",q:8,v:"05/27",min:3,cod:""},
+  {id:28,n:"BUPROPIONA 150MG",q:6,v:"09/27",min:3,cod:""},
+  {id:29,n:"BUPROPIONA 300MG",q:4,v:"12/27",min:3,cod:""},
+  {id:30,n:"CARBONATO DE LITIO",q:24,v:"04/28",min:8,cod:""},
+  {id:31,n:"VALPROATO 250MG",q:11,v:"07/27",min:5,cod:""},
+  {id:32,n:"VALPROATO 500MG",q:9,v:"10/27",min:5,cod:""},
+  {id:33,n:"CARBAMAZEPINA 200MG",q:15,v:"03/28",min:5,cod:""},
+  {id:34,n:"CLINDAMICINA 300MG",q:0,v:"12/26",min:3,cod:""}
+];
+
+// ===== ESTADO =====
+let meds=[],movs=[];
+let curUser=null,isAdm=false;
+let filter="all",editId=null,movId=null,movTipo="ent";
+let pTab="mov",unsub=null,unsubU=null;
+let barcodeStream=null,barcodeBuffer="",barcodeTimer=null;
+
+// ===== CACHE & SESSÃO =====
+const CK="hum_est_v4",SK="hum_sess_v4",UK="hum_usr_v4";
+const lsg=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const lss=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const saveCache=()=>lss(CK,{meds,movs});
+const loadCache=()=>{const d=lsg(CK);if(d&&d.meds?.length){meds=d.meds;movs=d.movs||[];return true}return false};
+const sessSave=d=>lss(SK,d);
+const sessLoad=()=>lsg(SK);
+
+// ===== UTILIDADES =====
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// Firebase pode devolver objeto {0:{...}} em vez de array — normaliza
+const toArr=v=>{if(!v)return[];if(Array.isArray(v))return v.filter(Boolean);return Object.values(v)};
+const setSP=(s,t)=>{const p=document.getElementById("spPill");if(p){p.className="sp "+s;p.textContent=t}};
+const showToast=msg=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800)};
+const maskV=el=>{let v=el.value.replace(/\D/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
+const fmt=v=>{if(!v)return"—";const d=new Date(v);if(isNaN(d.getTime()))return"—";return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
+window.ovClick=(e,id)=>{if(e.target.id===id&&!e.target.closest('button'))closeOv(id)};
+window.closeOv=id=>document.getElementById(id).classList.remove("open");
+
+// ===== STATUS MEDICAMENTO =====
+function status(m){
+  if(!m.q||m.q===0) return "zero";
+  const[mo,yr]=(m.v||"").split("/").map(Number);
+  if(!mo||!yr) return "ok";
+  const days=(new Date(2000+yr,mo-1,28)-new Date())/86400000;
+  if(days<0) return "expired";
+  if(days<=90) return "soon";
+  if(m.min&&m.q<=m.min) return "low";
+  return "ok";
+}
+
+// ===== FIREBASE =====
+function saveAll(){
+  setSP("sync","⏳");
+  saveCache();
+  set(REF,{meds,movs})
+    .then(()=>setSP("ok","✅ Ao vivo"))
+    .catch(()=>setSP("err","❌ Erro ao salvar"));
+}
+function saveUsers(){
+  set(UREF,USUARIOS).catch(()=>{});
+  lss(UK,USUARIOS);
+}
+
+function startListener(){
+  if(unsub){try{unsub()}catch(e){}unsub=null}
+  setSP("sync","⏳");
+  unsub=onValue(REF,snap=>{
+    const d=snap.val();
+    if(d!==null){
+      const fm=toArr(d.meds);
+      const fv=toArr(d.movs);
+      if(fm.length>0) meds=fm;
+      else if(meds.length===0) meds=JSON.parse(JSON.stringify(DEFAULTS));
+      if(fv.length>0) movs=fv;
+    } else {
+      if(meds.length===0) meds=JSON.parse(JSON.stringify(DEFAULTS));
+      set(REF,{meds,movs});
+    }
+    saveCache();
+    document.getElementById("skeleton").style.display="none";
+    document.getElementById("list").style.display="flex";
+    setSP("ok","✅ Ao vivo");
+    if(isAdm) checkDot();
+    render();
+  },()=>{
+    setSP("err","❌ Offline");
+    loadCache();
+    if(meds.length===0) meds=JSON.parse(JSON.stringify(DEFAULTS));
+    document.getElementById("skeleton").style.display="none";
+    document.getElementById("list").style.display="flex";
+    render();
+    setTimeout(()=>{if(curUser)startListener()},5000);
+  });
+}
+function startUsersL(){
+  if(unsubU){try{unsubU()}catch(e){}unsubU=null}
+  unsubU=onValue(UREF,snap=>{
+    const d=snap.val();
+    if(d){const arr=Array.isArray(d)?d.filter(Boolean):Object.values(d);if(arr.length>0){USUARIOS=arr;lss(UK,USUARIOS)}}
+  },()=>{});
+}
+
+// ===== LOGIN =====
+window.doLogin=function(){
+  const p=document.getElementById("inpSenha").value.trim();
+  const msg=document.getElementById("msgLogin");
+  msg.textContent="";
+  if(!p){msg.textContent="Digite a senha";return}
+  const cu=lsg(UK);if(cu&&cu.length>0)USUARIOS=cu;
+  const u=USUARIOS.find(x=>x.pass===p);
+  if(!u){msg.textContent="Senha incorreta";return}
+  curUser=u.name;isAdm=(u.role==="adm");
+  sessSave({u:curUser,a:isAdm});
+  startApp();
+};
+
+// ===== LOGOUT =====
+window.doLogout=function(){
+  if(!confirm("Deseja sair?"))return;
+  try{localStorage.removeItem(SK)}catch(e){}
+  if(unsub)unsub();if(unsubU)unsubU();
+  curUser=null;isAdm=false;
+  document.getElementById("appMain").style.display="none";
+  document.getElementById("scrLogin").classList.add("active");
+  document.getElementById("inpSenha").value="";
+  document.getElementById("msgLogin").textContent="";
+};
+
+// ===== START APP =====
+function startApp(){
+  document.getElementById("scrLogin").classList.remove("active");
+  document.getElementById("appMain").style.display="block";
+  const badge=document.getElementById("userBadge");
+  badge.textContent=curUser;
+  badge.className="badge "+(isAdm?"badge-adm":"badge-user");
+  if(isAdm){
+    document.getElementById("btnPanel").style.display="flex";
+    document.getElementById("fabBtn").style.display="flex";
+    document.getElementById("fabBar").style.display="flex";
+  }
+  const cu=lsg(UK);if(cu&&cu.length>0)USUARIOS=cu;
+  loadCache();
+  if(meds.length>0){
+    document.getElementById("skeleton").style.display="none";
+    document.getElementById("list").style.display="flex";
+    render();
+  }
+  startListener();
+  startUsersL();
+  reqNotif();
+}
+
+// ===== SESSION RESTORE =====
+(function(){
+  const s=sessLoad();if(!s)return;
+  const cu=lsg(UK);if(cu&&cu.length>0)USUARIOS=cu;
+  const u=USUARIOS.find(x=>x.name===s.u);
+  if(u){curUser=s.u;isAdm=s.a;startApp()}
+})();
+
+// ===== RENDER =====
+window.render=function(){
+  const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
+  const ord={expired:0,zero:1,soon:2,low:3,ok:4};
+  const list=meds.filter(m=>{
+    const st=status(m);
+    const ms=m.n.toLowerCase().includes(q)||(m.cod||"").includes(q);
+    const mf=filter==="all"||(filter==="expired"&&st==="expired")||(filter==="soon"&&st==="soon")||(filter==="zero"&&st==="zero")||(filter==="ok"&&(st==="ok"||st==="low"));
+    return ms&&mf;
+  }).sort((a,b)=>(ord[status(a)]||4)-(ord[status(b)]||4));
+
+  document.getElementById("stTot").textContent=meds.length;
+  document.getElementById("stSoon").textContent=meds.filter(m=>status(m)==="soon").length;
+  document.getElementById("stAlt").textContent=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+
+  const el=document.getElementById("list");
+  if(!list.length){el.innerHTML=`<div class="empty">🔍 Nenhum medicamento encontrado</div>`;return}
+
+  const icoMap={ok:"✅",soon:"⏰",expired:"⚠️",zero:"📭",low:"📉"};
+  const icoClsMap={ok:"ico-ok",soon:"ico-soon",expired:"ico-exp",zero:"ico-zero",low:"ico-soon"};
+  const txtClsMap={ok:"tok",soon:"tso",expired:"tex",zero:"tze",low:"tso"};
+  const lbl={ok:"OK",soon:"Vence em breve",expired:"VENCIDO",zero:"Sem estoque",low:"Estoque baixo"};
+
+  el.innerHTML=list.map(m=>{
+    const st=status(m);
+    const vl=st==="expired"?"VENCIDO":(m.v||"—");
+    const qcls=m.q===0?"qz":(m.min&&m.q<=m.min?"qlo":"");
+    return`<div class="card ${st}">
+      <div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div>
+      <div class="cbody">
+        <div class="cname">${m.n}</div>
+        <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lbl[st]||"OK"}</span>${m.cod?` · 🔖 ${m.cod}`:""}</div>
+        <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?` · Mín: ${m.min}`:""}</div>
+        <div class="cacts">
+          <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
+          ${isAdm?`<button class="abtn ahist" data-action="hist" data-id="${m.id}">📋 Histórico</button>
+          <button class="abtn" data-action="edit" data-id="${m.id}">✏️ Editar</button>
+          <button class="abtn adel" data-action="del" data-id="${m.id}">🗑️</button>`:""}
+        </div>
+      </div>
+      <div class="cright"><span class="qty ${qcls}">${m.q}x</span></div>
+    </div>`;
+  }).join("");
+};
+
+
+// ── EVENT DELEGATION ─────────────────────────────────────────────
+// Captura TODOS os cliques de botões com data-action — funciona
+// 100% com type="module" sem depender de onclick global
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('[data-action]');
+  if(!btn)return;
+  e.stopPropagation();
+  const action=btn.dataset.action;
+  const id=btn.dataset.id;
+  if(action==='mov')    openMovModal(id);
+  if(action==='hist')   openHist(id);
+  if(action==='edit')   openMedModal(id);
+  if(action==='del')    delMed(id);
+  if(action==='selmed') selecionarMed(id);
+});
+
+window.setF=function(el,f){
+  filter=f;
+  document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  render();
+};
+
+// ===== MODAL MEDICAMENTO =====
+window.openMedModal=function(id=null){
+  editId=id;
+  const m=id?meds.find(x=>String(x.id)===String(id)):null;
+  document.getElementById("medModalTitle").textContent=m?"Editar medicamento":"Novo medicamento";
+  document.getElementById("mNome").value=m?m.n:"";
+  document.getElementById("mQtd").value=m?m.q:"";
+  document.getElementById("mVenc").value=m?m.v:"";
+  document.getElementById("mMin").value=m?(m.min||""):"";
+  document.getElementById("mCod").value=m?(m.cod||""):"";
+  document.getElementById("medConfirm").style.display="none";
+  document.getElementById("ovMed").classList.add("open");
+  setTimeout(()=>document.getElementById("mNome").focus(),100);
+};
+
+window.saveMed=function(){
+  const n=document.getElementById("mNome").value.trim();
+  const q=parseInt(document.getElementById("mQtd").value)||0;
+  const v=document.getElementById("mVenc").value.trim();
+  const min=parseInt(document.getElementById("mMin").value)||0;
+  const cod=document.getElementById("mCod").value.trim();
+  if(!n){showToast("Digite o nome do medicamento");return}
+  if(editId){
+    const i=meds.findIndex(x=>String(x.id)===String(editId));
+    if(i>=0)meds[i]={...meds[i],n,q,v,min,cod};
+  } else {
+    const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;
+    meds.push({id:nid,n,q,v,min,cod});
+  }
+  const conf=document.getElementById("medConfirm");
+  document.getElementById("medConfirmTxt").textContent=editId?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!";
+  conf.style.display="block";
+  saveAll();render();
+  setTimeout(()=>{conf.style.display="none";closeOv("ovMed")},1500);
+};
+
+window.delMed=function(id){
+  if(!confirm("Excluir este medicamento?"))return;
+  meds=meds.filter(m=>String(m.id)!==String(id));
+  saveAll();render();showToast("🗑️ Removido");
+};
+
+// ===== MOVIMENTAÇÃO =====
+window.openMovModal=function(id){
+  movId=id;movTipo="ent";
+  const m=meds.find(x=>String(x.id)===String(id));if(!m)return;
+  document.getElementById("movNome").textContent=m.n;
+  document.getElementById("movEst").textContent=`Estoque atual: ${m.q} unidades`;
+  document.getElementById("movQtd").value="";
+  document.getElementById("movConfirm").style.display="none";
+  selTipo("ent");
+  document.getElementById("ovMov").classList.add("open");
+  setTimeout(()=>document.getElementById("movQtd").focus(),100);
+};
+
+window.selTipo=function(t){
+  movTipo=t;
+  document.getElementById("btnEnt2").className="mtt ent"+(t==="ent"?" sel":"");
+  document.getElementById("btnSai").className="mtt sai"+(t==="sai"?" sel":"");
+  const btn=document.getElementById("btnConfMov");
+  if(t==="ent"){btn.textContent="✅ Confirmar entrada";btn.className="mbtn mbtn-green"}
+  else{btn.textContent="✅ Confirmar saída";btn.className="mbtn mbtn-red"}
+};
+
+window.saveMov=function(){
+  const q=parseInt(document.getElementById("movQtd").value)||0;
+  if(q<=0){showToast("Digite uma quantidade");return}
+  const i=meds.findIndex(x=>String(x.id)===String(movId));if(i<0)return;
+  if(movTipo==="sai"&&q>meds[i].q){showToast("⚠️ Quantidade maior que o estoque!");return}
+  const prev=meds[i].q;
+  meds[i].q+=(movTipo==="ent"?q:-q);
+  if(meds[i].q<0)meds[i].q=0;
+  movs.push({id:uid(),mid:movId,mn:meds[i].n,tipo:movTipo==="ent"?"ent":"sai",qtd:q,antes:prev,depois:meds[i].q,resp:curUser,ts:new Date().toISOString(),
+    medId:movId,medName:meds[i].n,type:movTipo==="ent"?"entrada":"saida",qty:q,before:prev,after:meds[i].q,user:curUser});
+  if(movs.length>500)movs=movs.slice(-500);
+  const conf=document.getElementById("movConfirm");
+  document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?`📥 Entrada de ${q}x registrada!`:`📤 Saída de ${q}x registrada!`;
+  document.getElementById("movConfirmSub").textContent=`Novo estoque: ${meds[i].q} unidades`;
+  conf.style.display="block";
+  saveAll();render();
+  setTimeout(()=>{conf.style.display="none";closeOv("ovMov")},1800);
+};
+
+// ===== HISTÓRICO =====
+window.openHist=function(id){
+  const m=meds.find(x=>String(x.id)===String(id));if(!m)return;
+  document.getElementById("histTitle").textContent=`📋 ${m.n}`;
+  const h=movs.filter(mv=>String(mv.mid||mv.medId||"")===String(id)).reverse().map(normMov);
+  document.getElementById("histContent").innerHTML=h.length?h.map(mv=>`
+    <div class="hi ${mv.tipo}">
+      <div class="hi-top">
+        <span class="hi-tipo ${mv.tipo}">${mv.tipo==="ent"?"📥 Entrada":"📤 Saída"}</span>
+        <span class="hi-qtd">${mv.tipo==="ent"?"+":"-"}${mv.qtd}</span>
+      </div>
+      <div class="hi-info">${fmt(mv.ts)} · <b>${mv.resp}</b> · ${mv.antes}→${mv.depois}</div>
+    </div>`).join(""):`<div class="empty">Sem movimentações registradas</div>`;
+  document.getElementById("ovHist").classList.add("open");
+};
+
+// ===== PAINEL ADM =====
+window.openPanel=function(){
+  if(!isAdm)return;
+  document.getElementById("povAdm").classList.add("open");
+  document.getElementById("admPanel").classList.add("open");
+  renderPTab();
+};
+window.closePanel=function(){
+  document.getElementById("povAdm").classList.remove("open");
+  document.getElementById("admPanel").classList.remove("open");
+};
+window.setPTab=function(t){
+  pTab=t;
+  ["mov","alerta","compras","config"].forEach(x=>{
+    document.getElementById("pt"+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle("active",x===t);
+  });
+  renderPTab();
+};
+function checkDot(){
+  const a=meds.filter(m=>["expired","zero","low"].includes(status(m))).length;
+  document.getElementById("ndot").style.display=a>0?"block":"none";
+}
+// Normaliza movimentação — compatível com TODOS os formatos históricos do Firebase
+function normMov(mv){
+  // Nome: tenta todos os campos possíveis em ordem de prioridade
+  const nome = mv.mn || mv.medName || mv.name || mv.n || mv.medicamento || null;
+  // Se não achou nome pelo campo, tenta buscar pelo id do med na lista
+  const mid = mv.mid || mv.medId || mv.medicamentoId || null;
+  const medObj = (!nome && mid) ? meds.find(x=>x.id==mid) : null;
+  const nomeResolvido = nome || (medObj ? medObj.n : "—");
+
+  // Tipo: normaliza para "ent" ou "sai"
+  const tipoRaw = mv.tipo || mv.type || "saida";
+  const tipo = (tipoRaw==="entrada"||tipoRaw==="ent") ? "ent" : "sai";
+
+  // Quantidade
+  const qtd = mv.qtd ?? mv.qty ?? mv.quantidade ?? 0;
+
+  // Antes/depois do estoque
+  const antes  = mv.antes  ?? mv.before  ?? mv.estoqueAntes  ?? "?";
+  const depois = mv.depois ?? mv.after   ?? mv.estoqueDepois ?? "?";
+
+  // Responsável
+  const resp = mv.resp || mv.user || mv.usuario || mv.responsavel || "?";
+
+  // Timestamp: aceita ISO string, número ou nulo
+  let ts = mv.ts || mv.timestamp || mv.data || null;
+  if(typeof ts === "number") ts = new Date(ts).toISOString();
+
+  return {id:mv.id||ts||Date.now(), nome:nomeResolvido, mid, tipo, qtd, antes, depois, resp, ts};
+}
+
+function renderPTab(){
+  const body=document.getElementById("pBody");
+  if(pTab==="mov"){
+    const list=[...movs].reverse().slice(0,200).map(normMov);
+    body.innerHTML=`<button style="width:100%;padding:10px;background:var(--red-bg);color:var(--red);border:1px solid #fecaca;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:4px" onclick="clearMovs()">🗑️ Limpar histórico</button>`+
+      (list.length?list.map(mv=>`<div class="ni mov-${mv.tipo}"><p>${mv.nome} <span style="float:right;font-weight:700;color:${mv.tipo==="ent"?'var(--green)':'var(--red)'}">${mv.tipo==="ent"?"+":"-"}${mv.qtd}</span></p><span>${fmt(mv.ts)} · <b>${mv.resp}</b> · ${mv.antes}→${mv.depois}</span></div>`).join(""):
+      `<div class="pe">Sem movimentações</div>`);
+  } else if(pTab==="alerta"){
+    let h="";
+    meds.filter(m=>status(m)==="expired").forEach(m=>h+=`<div class="ni" style="border-left:3px solid var(--red)"><p>⚠️ VENCIDO: ${m.n}</p><span>Validade: ${m.v}</span></div>`);
+    meds.filter(m=>m.q===0).forEach(m=>h+=`<div class="ni" style="border-left:3px solid var(--red)"><p>📭 SEM ESTOQUE: ${m.n}</p></div>`);
+    meds.filter(m=>status(m)==="soon").forEach(m=>h+=`<div class="ni" style="border-left:3px solid var(--amber)"><p>🕐 VENCE EM BREVE: ${m.n}</p><span>Validade: ${m.v}</span></div>`);
+    meds.filter(m=>status(m)==="low").forEach(m=>h+=`<div class="ni" style="border-left:3px solid var(--amber)"><p>📉 ESTOQUE BAIXO: ${m.n}</p><span>${m.q} un / mín ${m.min}</span></div>`);
+    body.innerHTML=h||`<div class="pe">✅ Nenhum alerta</div>`;
+  } else if(pTab==="compras"){
+    const need=meds.filter(m=>m.q===0||(m.min&&m.q<=m.min));
+    const texto=`🛒 *Lista de Compras — Humanae*\n${need.map(m=>`• ${m.n}: ${m.q} un.`).join("\n")}`;
+    body.innerHTML=need.length
+      ?`${need.map(m=>`<div class="ni"><p>${m.n}</p><span>${m.q} un.</span></div>`).join("")}
+        <button onclick="window.open('https://wa.me/?text='+encodeURIComponent(${JSON.stringify(texto)}),'_blank')" style="width:100%;padding:12px;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:700;cursor:pointer;margin-top:8px">📤 Enviar pelo WhatsApp</button>`
+      :`<div class="pe">✅ Estoque em dia!</div>`;
+  } else if(pTab==="config"){
+    const isMaster=curUser===MASTER;
+    const vis=isMaster?USUARIOS.filter(u=>u.name!==MASTER):USUARIOS.filter(u=>u.name===curUser);
+    body.innerHTML=`
+      <div style="background:var(--green-bg);border-radius:10px;padding:14px;margin-bottom:12px">
+        <h4 style="font-size:13px;font-weight:700;color:var(--green-d);margin-bottom:10px">🔑 Alterar senhas</h4>
+        ${isMaster?`<div style="background:#fff3cd;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:12px;color:#92400e">🔐 Modo administrador master</div>`:""}
+        ${vis.map(u=>`<div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--g200)">
+          <label style="font-size:13px;font-weight:700;color:var(--g700);display:block;margin-bottom:8px">👤 ${u.name} ${u.role==="adm"?"🔐 ADM":"👁️ Usuário"}</label>
+          ${isMaster?`<div style="font-size:12px;color:var(--g500);margin-bottom:8px">Senha atual: <b style="font-family:monospace">${u.pass}</b></div>`:""}
+          <div style="display:flex;gap:6px">
+            <input type="password" id="np_${u.name}" placeholder="Nova senha (mín. 3 caracteres)" style="flex:1;height:42px;border-radius:8px;border:1px solid var(--g200);padding:0 10px;font-size:15px;outline:none"
+              onkeydown="if(event.key==='Enter')trocarSenha('${u.name}')">
+            <button onclick="trocarSenha('${u.name}')" style="padding:0 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button>
+          </div>
+        </div>`).join("")}
+        <div id="msgSenha" style="font-size:13px;text-align:center;margin-top:4px;min-height:18px;font-weight:600"></div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:10px;padding:14px">
+        <h4 style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📱 Instalar como app</h4>
+        <p style="font-size:12px;color:var(--g700);margin-bottom:8px"><b>Android (Chrome):</b> Menu ⋮ → "Adicionar à tela inicial"</p>
+        <p style="font-size:12px;color:var(--g700)"><b>iPhone (Safari):</b> Compartilhar ↑ → "Adicionar à Tela de Início"</p>
+        <button onclick="tryInstall()" style="width:100%;margin-top:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer">📲 Instalar agora</button>
+      </div>`;
+  }
+}
+window.trocarSenha=function(name){
+  const inp=document.getElementById("np_"+name);if(!inp)return;
+  const np=inp.value.trim();
+  const msg=document.getElementById("msgSenha");
+  if(!np||np.length<3){msg.textContent="Senha muito curta (mín. 3 caracteres)";msg.style.color="var(--red)";return}
+  if(USUARIOS.some(u=>u.name!==name&&u.pass===np)){msg.textContent="Essa senha já está em uso";msg.style.color="var(--red)";return}
+  const i=USUARIOS.findIndex(u=>u.name===name);if(i<0)return;
+  USUARIOS[i].pass=np;
+  saveUsers();renderPTab();
+  msg.textContent=`✅ Senha de ${name} alterada!`;msg.style.color="var(--green)";
+  setTimeout(()=>msg.textContent="",3000);
+};
+window.clearMovs=function(){
+  if(!confirm("Limpar todo o histórico?"))return;
+  movs=[];saveAll();renderPTab();showToast("🗑️ Histórico limpo");
+};
+
+// ===== QR CODE =====
+window.openQR=function(){
+  const url=window.location.href;
+  document.getElementById("qrImg").src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+  document.getElementById("qrUrl").textContent=url;
+  document.getElementById("qrOv").classList.add("open");
+};
+window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
+window.qrOvClick=e=>{if(e.target.id==="qrOv")closeQR()};
+window.copyLink=function(){
+  navigator.clipboard.writeText(window.location.href)
+    .then(()=>showToast("✅ Link copiado!"))
+    .catch(()=>showToast("Link: "+window.location.href,5000));
+};
+window.shareWA=function(){
+  const txt=`💊 *Estoque Humanae*\nAcesse pelo link:\n${window.location.href}`;
+  window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank");
+};
+
+// ===== NOTIFICAÇÕES =====
+function reqNotif(){
+  if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
+}
+
+// ===== BARCODE SCANNER (câmera) =====
+window.openBarcodeScanner=function(){
+  document.getElementById("ovBarcode").classList.add("open");
+  document.getElementById("inpBuscaCod").value="";
+  document.getElementById("barcodeResultados").innerHTML="";
+  document.getElementById("barcodeStatus").textContent="Iniciando câmera...";
+  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}})
+      .then(s=>{
+        barcodeStream=s;
+        const v=document.getElementById("barcodeVideo");
+        v.style.display="block";
+        v.srcObject=s;
+        v.onloadedmetadata=()=>v.play().catch(()=>{});
+        document.getElementById("barcodeStatus").textContent="📷 Aponte para o código ou use a busca abaixo";
+      })
+      .catch(err=>{
+        console.warn("Câmera:",err);
+        document.getElementById("barcodeVideo").style.display="none";
+        document.getElementById("barcodeStatus").textContent="📵 Câmera indisponível — use a busca manual abaixo";
+      });
+  } else {
+    document.getElementById("barcodeStatus").textContent="📵 Câmera não disponível — use a busca manual abaixo";
+  }
+  setTimeout(()=>document.getElementById("inpBuscaCod").focus(),300);
+};
+
+window.closeBarcodeScanner=function(){
+  document.getElementById("ovBarcode").classList.remove("open");
+  if(barcodeStream){barcodeStream.getTracks().forEach(t=>t.stop());barcodeStream=null}
+  const v=document.getElementById("barcodeVideo");
+  if(v)v.srcObject=null;
+  document.getElementById("barcodeResultados").innerHTML="";
+};
+
+// ─── Destaque de texto ──────────────────────────────────────────
+function hlTxt(txt,q){
+  if(!txt||!q)return txt||"";
+  const idx=txt.toLowerCase().indexOf(q.toLowerCase());
+  if(idx<0)return txt;
+  return txt.slice(0,idx)+'<span class="bc-match">'+txt.slice(idx,idx+q.length)+'</span>'+txt.slice(idx+q.length);
+}
+
+// ─── Busca local em tempo real ───────────────────────────────────
+window.buscaAoVivo=function(val){
+  const q=val.trim();
+  const el=document.getElementById("barcodeResultados");
+  const wa=document.getElementById("barcodeWebArea");
+  wa.style.display="none";
+  // Limpa status para não duplicar mensagem
+  document.getElementById("barcodeStatus").textContent="📷 Digite o nome ou código";
+  if(!q){el.innerHTML="";return}
+
+  const ql=q.toLowerCase();
+  const resultados=meds.filter(m=>{
+    const codM=(m.cod||m.barcode||m.codigo||"").toString().toLowerCase();
+    const nomeM=(m.n||m.name||"").toLowerCase();
+    return codM===ql||codM.includes(ql)||nomeM.includes(ql);
+  }).slice(0,8);
+
+  if(!resultados.length){
+    // Verificar se parece código de barras (só números, 8+ dígitos)
+    const eCodBarras=/^\d{8,14}$/.test(q.replace(/\s/g,""));
+    el.innerHTML=`<div class="bc-notfound">
+      <p>❌ "${q}" não encontrado no estoque</p>
+      ${eCodBarras?
+        `<button class="bc-btn-cad" onclick="buscarNaInternet('${q}')">🌐 Buscar na internet</button>`:
+        `<button class="bc-btn-cad" onclick="abrirCadastroComCod('','${q.replace(/'/g,"\'")}')">➕ Cadastrar medicamento</button>`
+      }
+    </div>`;
+    return;
+  }
+
+  el.innerHTML=resultados.map(m=>{
+    const cod=(m.cod||m.barcode||m.codigo||"");
+    const st=status(m);
+    const stTxt={ok:"✅ OK",soon:"⏰ Vence em breve",expired:"⚠️ VENCIDO",zero:"📭 Sem estoque",low:"📉 Baixo"}[st]||"";
+    return`<div class="bc-item" data-action="selmed" data-id="${m.id}">
+      <div class="bc-item-nome">${hlTxt(m.n||"",ql)}</div>
+      <div class="bc-item-info">${stTxt} · ${m.q||0}x · Val: ${m.v||"—"}${cod?` · 🔖 ${hlTxt(cod,ql)}`:""}
+      </div>
+    </div>`;
+  }).join("");
+};
+
+// ─── Busca ao pressionar Enter / botão ──────────────────────────
+window.buscaManual=function(){
+  const q=document.getElementById("inpBuscaCod").value.trim();
+  if(!q)return;
+  const ql=q.toLowerCase();
+  const found=
+    meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString()===q)||
+    meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString().toLowerCase().includes(ql))||
+    meds.find(m=>(m.n||m.name||"").toLowerCase().includes(ql));
+  if(found){closeBarcodeScanner();openMovModal(found.id)}
+  else{
+    const eCodBarras=/^\d{8,14}$/.test(q.replace(/\s/g,""));
+    if(eCodBarras) buscarNaInternet(q);
+    else showToast("Medicamento não encontrado no estoque");
+  }
+};
+
+// ─── Seleciona da lista local ────────────────────────────────────
+window.selecionarMed=function(id){
+  closeBarcodeScanner();
+  openMovModal(id);
+};
+
+// ─── Abre cadastro pré-preenchido com código ─────────────────────
+window.abrirCadastroComCod=function(nome,cod){
+  closeBarcodeScanner();
+  openMedModal(null);
+  if(nome) setTimeout(()=>{document.getElementById("mNome").value=nome;},120);
+  if(cod)  setTimeout(()=>{document.getElementById("mCod").value=cod;},120);
+};
+
+// ─── Busca código de barras na internet (Open Food Facts + Cosmos) ──
+window.buscarNaInternet=async function(cod){
+  const wa=document.getElementById("barcodeWebArea");
+  const el=document.getElementById("barcodeResultados");
+  el.innerHTML="";
+  wa.style.display="block";
+  wa.innerHTML=`<div class="bc-loading">🌐 Buscando código ${cod} na internet...</div>`;
+
+  let nome="", descricao="", encontrado=false;
+
+  // Tentativa 1: Open Food Facts (boa para medicamentos e produtos Brasil)
+  try{
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${cod}.json`,{signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    if(d.status===1&&d.product){
+      nome=d.product.product_name_pt||d.product.product_name||d.product.generic_name||"";
+      descricao=d.product.brands||"";
+      if(nome) encontrado=true;
+    }
+  }catch(e){}
+
+  // Tentativa 2: Cosmos API (banco de dados de produtos brasileiros)
+  if(!encontrado){
+    try{
+      const r=await fetch(`https://api.cosmos.bluesoft.com.br/gtins/${cod}`,{
+        headers:{"X-Cosmos-Token":""},
+        signal:AbortSignal.timeout(5000)
+      });
+      if(r.ok){
+        const d=await r.json();
+        nome=d.description||d.comercial_name||"";
+        descricao=d.brand?.name||"";
+        if(nome) encontrado=true;
+      }
+    }catch(e){}
+  }
+
+  // Tentativa 3: Open Product Data
+  if(!encontrado){
+    try{
+      const r=await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${cod}`,{signal:AbortSignal.timeout(5000)});
+      const d=await r.json();
+      if(d.code==="OK"&&d.items?.length){
+        nome=d.items[0].title||"";
+        descricao=d.items[0].brand||"";
+        if(nome) encontrado=true;
+      }
+    }catch(e){}
+  }
+
+  if(encontrado&&nome){
+    // Limpa o nome: remove palavras genéricas desnecessárias
+    const nomeLimpo=nome.toUpperCase().trim();
+    wa.innerHTML=`
+      <div class="bc-web-result">
+        <div class="bc-web-nome">✅ Produto encontrado:</div>
+        <div style="font-size:16px;font-weight:700;color:#6ee7b7;margin:6px 0">${nomeLimpo}</div>
+        ${descricao?`<div class="bc-web-info">Marca: ${descricao}</div>`:""}
+        <div class="bc-web-info">Código: ${cod}</div>
+        <button class="bc-btn-usar" onclick="abrirCadastroComCod('${nomeLimpo.replace(/'/g,"\'")}','${cod}')">
+          ➕ Usar este nome para cadastrar
+        </button>
+      </div>`;
+  } else {
+    wa.innerHTML=`
+      <div class="bc-notfound">
+        <p>🔍 Código <b>${cod}</b> não encontrado na internet</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px">
+          Pode ser código de medicamento controlado (não está em bases públicas)
+        </p>
+        <button class="bc-btn-cad" onclick="abrirCadastroComCod('','${cod}')">
+          ➕ Cadastrar manualmente com este código
+        </button>
+      </div>`;
+  }
+};
+
+// ===== LEITOR USB/BLUETOOTH =====
+document.addEventListener("keydown",e=>{
+  const tag=document.activeElement?.tagName;
+  if(tag==="INPUT"||tag==="TEXTAREA")return;
+  if(!curUser)return;
+  if(e.key==="Enter"){
+    if(barcodeBuffer.length>=4){
+      const cod=barcodeBuffer;
+      barcodeBuffer="";clearTimeout(barcodeTimer);
+      const codL=cod.toLowerCase();
+      const found=
+        meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString()===cod)||
+        meds.find(m=>(m.cod||m.barcode||m.codigo||"").toString().toLowerCase().includes(codL))||
+        meds.find(m=>(m.n||m.name||"").toLowerCase().includes(codL));
+      if(found){showToast("📷 "+found.n);openMovModal(found.id)}
+      else{const s=document.getElementById("srch");if(s){s.value=cod;render()}showToast("🔍 Buscando: "+cod)}
+    }
+    barcodeBuffer="";return;
+  }
+  if(e.key.length===1){
+    barcodeBuffer+=e.key;
+    clearTimeout(barcodeTimer);
+    barcodeTimer=setTimeout(()=>{barcodeBuffer=""},200);
+  }
+});
+
+// ===== PWA — INSTALL PROMPT =====
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById("installBanner").style.display="flex";
+});
+window.addEventListener("appinstalled",()=>{
+  document.getElementById("installBanner").style.display="none";
+  deferredPrompt=null;showToast("✅ App instalado com sucesso!");
+});
+window.tryInstall=async function(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    const{outcome}=await deferredPrompt.userChoice;
+    if(outcome==="accepted")showToast("✅ App instalado!");
+    deferredPrompt=null;
+    document.getElementById("installBanner").style.display="none";
+  } else {
+    showToast("Use o menu do navegador → 'Adicionar à tela inicial'");
+  }
+};
+document.getElementById("installBtn").onclick=()=>tryInstall();
+document.getElementById("installDismiss").onclick=()=>{document.getElementById("installBanner").style.display="none"};
+
+// ===== ONLINE/OFFLINE =====
+window.addEventListener("online",()=>{
+  document.getElementById("offlineBar").style.display="none";
+  if(curUser&&!unsub)startListener();
+  showToast("✅ Online — sincronizando...");
+});
+window.addEventListener("offline",()=>{
+  document.getElementById("offlineBar").style.display="block";
+  showToast("📶 Sem internet — modo offline");
+});
+if(!navigator.onLine)document.getElementById("offlineBar").style.display="block";
+
+// ===== VISIBILIDADE =====
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&curUser&&!unsub)startListener();
+});
+setInterval(()=>{
+  if(curUser&&document.visibilityState==="visible"){
+    const sp=document.getElementById("spPill");
+    if(sp&&sp.className.includes("err"))startListener();
+  }
+},30000);
+
+</script>
+</body>
+</html>
