@@ -301,7 +301,9 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
   <div class="modal">
     <div class="mh"></div>
     <h2 id="medModalTitle">Novo medicamento</h2>
+    <button class="abtn" id="btnScanEdit" onclick="scanParaAtualizar()" style="display:none;width:100%;margin-bottom:14px;background:var(--blue-bg);border-color:var(--blue);color:var(--blue);padding:10px;font-size:13px">📷 Escanear / digitar código de barras para atualizar</button>
     <div class="mfield"><label>Nome</label><input type="text" id="mNome" placeholder="Ex: Paracetamol 500mg" autocomplete="off"></div>
+    <div class="mfield"><label>Fabricante</label><input type="text" id="mFab" placeholder="Ex: EMS, Eurofarma, Medley..." autocomplete="off"></div>
     <div class="frow">
       <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
       <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
@@ -471,6 +473,7 @@ let curUser=null,isAdm=false;
 let filtro="all",editId=null,movId=null,movTipo="ent";
 let pTab="mov",unsub=null,unsubU=null,barcodeStream=null;
 let barcodeBuffer="",barcodeTimer=null;
+let modoScanEdicao=false;
 
 // CACHE
 function lsg(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
@@ -560,7 +563,7 @@ window.render=function(){
       <div class="cico ${icoClsMap[st]||"ico-ok"}">${icoMap[st]||"✅"}</div>
       <div class="cbody">
         <div class="cname">${n}</div>
-        <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.cod?" · 🔖 "+m.cod:""}</div>
+        <div class="csub"><span class="${txtClsMap[st]||"tok"}">${lblMap[st]||"OK"}</span>${m.fab?" · 🏭 "+m.fab:""}${m.cod?" · 🔖 "+m.cod:""}</div>
         <div class="cvenc ${st==="expired"?"vex":st==="soon"?"vso":"vok"}">Val: ${vl}${m.min?" · Mín: "+m.min:""}</div>
         <div class="cacts">
           <button class="abtn" data-action="mov" data-id="${m.id}">📦 Movimentar</button>
@@ -702,9 +705,13 @@ window.openMedModal=function(id=null){
   document.getElementById("mNome").value=m?nomeMed(m):"";
   document.getElementById("mQtd").value=m?qtdMed(m):"";
   document.getElementById("mVenc").value=m?valMed(m):"";
+  const mFab=document.getElementById("mFab");if(mFab)mFab.value=m?(m.fab||""):"";
   // mMin e mCod são opcionais (esta versão do HTML pode não ter)
   const mMin=document.getElementById("mMin");if(mMin)mMin.value=m?(m.min||""):"";
   const mCod=document.getElementById("mCod");if(mCod)mCod.value=m?(m.cod||""):"";
+  // Botão de scan para atualizar: só Jefferson, só em edição de item existente
+  const btnScan=document.getElementById("btnScanEdit");
+  if(btnScan)btnScan.style.display=(curUser===MASTER&&m)?"block":"none";
   document.getElementById("medConfirm").style.display="none";
   document.getElementById("ovMed").classList.add("open");
   setTimeout(()=>document.getElementById("mNome").focus(),100);
@@ -714,12 +721,14 @@ window.saveMed=function(){
   if(!n){showToast("Digite o nome");return}
   const q=parseInt(document.getElementById("mQtd").value)||0;
   const v=document.getElementById("mVenc").value.trim();
+  const mFab=document.getElementById("mFab");
   const mMin=document.getElementById("mMin");
   const mCod=document.getElementById("mCod");
+  const fab=mFab?mFab.value.trim():"";
   const min=mMin?parseInt(mMin.value)||0:0;
   const cod=mCod?mCod.value.trim():"";
-  if(editId){const i=meds.findIndex(x=>String(x.id)===String(editId));if(i>=0)meds[i]={...meds[i],n,q,v,min,cod}}
-  else{const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;meds.push({id:nid,n,q,v,min,cod})}
+  if(editId){const i=meds.findIndex(x=>String(x.id)===String(editId));if(i>=0)meds[i]={...meds[i],n,q,v,fab,min,cod}}
+  else{const nid=meds.length>0?Math.max(...meds.map(x=>Number(x.id)||0))+1:1;meds.push({id:nid,n,q,v,fab,min,cod})}
   ordenarMeds(); // mantém a lista sempre em ordem alfabética
   document.getElementById("medConfirmTxt").textContent=editId?"✅ Atualizado!":"✅ Cadastrado!";
   document.getElementById("medConfirm").style.display="block";
@@ -892,6 +901,14 @@ window.qrOvClick=e=>{if(e.target.id==="qrOv")closeQR()};
 window.copyLink=function(){navigator.clipboard.writeText(window.location.href).then(()=>showToast("✅ Link copiado!")).catch(()=>showToast("Link: "+window.location.href))};
 
 // BARCODE
+// Botão dentro do modal Editar — escaneia/digita código e
+// preenche o cadastro já aberto com os dados buscados na internet
+window.scanParaAtualizar=function(){
+  modoScanEdicao=true;
+  openBarcodeScanner();
+  document.getElementById("barcodeStatus").textContent="📷 Aponte a câmera ou digite o código deste produto";
+};
+
 window.openBarcodeScanner=function(){
   document.getElementById("ovBarcode").classList.add("open");
   document.getElementById("inpBuscaCod").value="";
@@ -907,9 +924,18 @@ window.closeBarcodeScanner=function(){
   document.getElementById("ovBarcode").classList.remove("open");
   if(barcodeStream){barcodeStream.getTracks().forEach(t=>t.stop());barcodeStream=null}
   const v=document.getElementById("barcodeVideo");if(v)v.srcObject=null;
+  modoScanEdicao=false; // garante que cancelar o scanner não deixe o modo preso
 };
 window.buscaManual=function(){
   const q=document.getElementById("inpBuscaCod").value.trim();if(!q)return;
+  // Modo "scan para atualizar" disparado de dentro do modal Editar:
+  // não procura outro item, apenas usa o código para buscar dados
+  // na internet e preencher o cadastro que já está aberto
+  if(modoScanEdicao){
+    modoScanEdicao=false;
+    preencherEdicaoComCodigo(q);
+    return;
+  }
   const ql=q.toLowerCase();
   const eCodBarras=/^\d{8,14}$/.test(q.replace(/\s/g,""));
   // Código de barras com correspondência exata = item já cadastrado
@@ -949,6 +975,26 @@ window.atualizarCadastroPelaInternet=async function(medId,cod){
   }else{
     showToast("🔍 Código não encontrado na internet — abrindo cadastro atual");
     openMedModal(medId);
+  }
+};
+
+// Usado pelo botão "Escanear/digitar código de barras" dentro do modal Editar.
+// Busca o código na internet e preenche o cadastro JÁ ABERTO (editId atual),
+// sem fechar o modal de edição nem trocar de item.
+window.preencherEdicaoComCodigo=async function(cod){
+  document.getElementById("barcodeStatus").textContent="🌐 Buscando dados do produto...";
+  let n="",marca="",ok=false;
+  try{const r=await fetch("https://world.openfoodfacts.org/api/v2/product/"+cod+".json",{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.status===1&&d.product){n=d.product.product_name_pt||d.product.product_name||"";marca=d.product.brands||"";if(n)ok=true}}catch(e){}
+  if(!ok){try{const r=await fetch("https://api.upcitemdb.com/prod/trial/lookup?upc="+cod,{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.code==="OK"&&d.items?.length){n=d.items[0].title||"";marca=d.items[0].brand||"";if(n)ok=true}}catch(e){}}
+  closeBarcodeScanner();
+  const mCod=document.getElementById("mCod");if(mCod)mCod.value=cod;
+  if(ok&&n){
+    document.getElementById("mNome").value=n.toUpperCase().trim();
+    const mFab=document.getElementById("mFab");
+    if(mFab&&marca)mFab.value=marca;
+    showToast("🌐 Dados atualizados — confira e salve");
+  }else{
+    showToast("🔍 Código não encontrado na internet — atualize manualmente");
   }
 };
 window.selecionarMed=function(id){closeBarcodeScanner();openMovModal(id)};
