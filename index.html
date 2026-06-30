@@ -911,16 +911,45 @@ window.closeBarcodeScanner=function(){
 window.buscaManual=function(){
   const q=document.getElementById("inpBuscaCod").value.trim();if(!q)return;
   const ql=q.toLowerCase();
-  // Código de barras com correspondência exata = item já cadastrado, abre direto a movimentação
+  const eCodBarras=/^\d{8,14}$/.test(q.replace(/\s/g,""));
+  // Código de barras com correspondência exata = item já cadastrado
   const exato=meds.find(m=>(m.cod||"")===q);
   const found=exato||meds.find(m=>(m.cod||"").toLowerCase().includes(ql))||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
   if(found){
-    closeBarcodeScanner();
-    showToast("📦 "+nomeMed(found)+" — atualize o estoque");
-    openMovModal(found.id);
+    if(exato&&eCodBarras&&curUser===MASTER){
+      // Jefferson + código de barras exato → atualiza o cadastro buscando na internet
+      atualizarCadastroPelaInternet(found.id,q);
+    }else{
+      closeBarcodeScanner();
+      showToast("📦 "+nomeMed(found)+" — atualize o estoque");
+      openMovModal(found.id);
+    }
   }
-  else if(/^\d{8,14}$/.test(q.replace(/\s/g,"")))buscarNaInternet(q);
+  else if(eCodBarras)buscarNaInternet(q);
   else showToast("Medicamento não encontrado");
+};
+
+// Jefferson: ao bater código de item já cadastrado, busca dados atualizados
+// na internet e abre o cadastro para edição com os campos pré-preenchidos
+window.atualizarCadastroPelaInternet=async function(medId,cod){
+  document.getElementById("barcodeStatus").textContent="🌐 Atualizando cadastro via internet...";
+  let n="",ok=false;
+  try{const r=await fetch("https://world.openfoodfacts.org/api/v2/product/"+cod+".json",{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.status===1&&d.product){n=d.product.product_name_pt||d.product.product_name||"";if(n)ok=true}}catch(e){}
+  if(!ok){try{const r=await fetch("https://api.upcitemdb.com/prod/trial/lookup?upc="+cod,{signal:AbortSignal.timeout(5000)});const d=await r.json();if(d.code==="OK"&&d.items?.length){n=d.items[0].title||"";if(n)ok=true}}catch(e){}}
+  closeBarcodeScanner();
+  const m=meds.find(x=>String(x.id)===String(medId));
+  if(!m)return;
+  if(ok&&n){
+    const nl=n.toUpperCase().trim();
+    openMedModal(medId);
+    setTimeout(()=>{
+      document.getElementById("mNome").value=nl;
+      showToast("🌐 Dados atualizados da internet — confira e salve");
+    },120);
+  }else{
+    showToast("🔍 Código não encontrado na internet — abrindo cadastro atual");
+    openMedModal(medId);
+  }
 };
 window.selecionarMed=function(id){closeBarcodeScanner();openMovModal(id)};
 window.abrirCadastroComCod=function(n,cod){
@@ -943,7 +972,19 @@ document.addEventListener("keydown",e=>{
   if(!curUser)return;
   const tag=document.activeElement?.tagName;if(tag==="INPUT"||tag==="TEXTAREA")return;
   if(e.key==="Enter"){
-    if(barcodeBuffer.length>=4){const cod=barcodeBuffer;barcodeBuffer="";clearTimeout(barcodeTimer);const ql=cod.toLowerCase();const found=meds.find(m=>(m.cod||"")===cod)||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));if(found){showToast("📷 "+nomeMed(found));openMovModal(found.id)}else{const s=document.getElementById("srch");if(s){s.value=cod;render();}showToast("🔍 "+cod)}}
+    if(barcodeBuffer.length>=4){
+      const cod=barcodeBuffer;barcodeBuffer="";clearTimeout(barcodeTimer);
+      const ql=cod.toLowerCase();
+      const exato=meds.find(m=>(m.cod||"")===cod);
+      const found=exato||meds.find(m=>nomeMed(m).toLowerCase().includes(ql));
+      if(found){
+        if(exato&&curUser===MASTER){
+          atualizarCadastroPelaInternet(found.id,cod);
+        }else{
+          showToast("📷 "+nomeMed(found));openMovModal(found.id);
+        }
+      }else{const s=document.getElementById("srch");if(s){s.value=cod;render();}showToast("🔍 "+cod)}
+    }
     barcodeBuffer="";return;
   }
   if(e.key.length===1){barcodeBuffer+=e.key;clearTimeout(barcodeTimer);barcodeTimer=setTimeout(()=>{barcodeBuffer=""},200)}
