@@ -458,6 +458,34 @@ const pushNotif=(title,body)=>{
   }
 };
 
+// ===== RENDER =====
+window.render=()=>{
+  const p=myPerms();
+  if(!p.verEstoque&&!isAdm){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔒 Sem permissão para ver o estoque</div>';return;}
+  const q=document.getElementById("srch").value.toLowerCase();
+  let data=meds.filter(m=>m.n.toLowerCase().includes(q));
+  if(filter!=="all")data=data.filter(m=>status(m)===filter);
+  const exp=meds.filter(m=>status(m)==="expired").length;
+  const soon=meds.filter(m=>status(m)==="soon").length;
+  const zero=meds.filter(m=>status(m)==="zero").length;
+  document.getElementById("stats").innerHTML=`<div class="stat"><div class="stat-n sn">${meds.length}</div><div class="stat-l">Cadastrados</div></div><div class="stat"><div class="stat-n sw">${soon}</div><div class="stat-l">Vence em breve</div></div><div class="stat"><div class="stat-n sd">${exp+zero}</div><div class="stat-l">Atenção</div></div>`;
+  const ord={expired:0,zero:1,soon:2,ok:3};
+  data.sort((a,b)=>ord[status(a)]-ord[status(b)]||a.n.localeCompare(b.n));
+  if(!data.length){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔍 Nenhum encontrado</div>';return;}
+  document.getElementById("list").innerHTML=data.map(m=>{
+    const s=status(m),lb=subLbl(m),ic=ico(s),qz=m.q<=0,vc=vC(s);
+    const lm=[...movs].reverse().find(x=>x.mid===m.id);
+    const sp=isAdm||p.verResponsavel;
+    const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
+    const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
+    const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
+    const labStr=m.lab?` <span style="font-weight:400;color:var(--g500)">${m.lab}</span>`:"";
+    const codStr=m.cod?`<div style="font-size:11px;color:var(--g400);margin-top:2px">🔖 ${m.cod}</div>`:"";
+    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}${labStr}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
+  }).join("");
+};
+
+
 function startListener(){
   if(unsub){try{unsub();}catch(e){}unsub=null;}
   firstSnap=true;
@@ -565,33 +593,6 @@ function startApp(){
   if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
   startListener();
 }
-
-// ===== RENDER =====
-window.render=()=>{
-  const p=myPerms();
-  if(!p.verEstoque&&!isAdm){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔒 Sem permissão para ver o estoque</div>';return;}
-  const q=document.getElementById("srch").value.toLowerCase();
-  let data=meds.filter(m=>m.n.toLowerCase().includes(q));
-  if(filter!=="all")data=data.filter(m=>status(m)===filter);
-  const exp=meds.filter(m=>status(m)==="expired").length;
-  const soon=meds.filter(m=>status(m)==="soon").length;
-  const zero=meds.filter(m=>status(m)==="zero").length;
-  document.getElementById("stats").innerHTML=`<div class="stat"><div class="stat-n sn">${meds.length}</div><div class="stat-l">Cadastrados</div></div><div class="stat"><div class="stat-n sw">${soon}</div><div class="stat-l">Vence em breve</div></div><div class="stat"><div class="stat-n sd">${exp+zero}</div><div class="stat-l">Atenção</div></div>`;
-  const ord={expired:0,zero:1,soon:2,ok:3};
-  data.sort((a,b)=>ord[status(a)]-ord[status(b)]||a.n.localeCompare(b.n));
-  if(!data.length){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔍 Nenhum encontrado</div>';return;}
-  document.getElementById("list").innerHTML=data.map(m=>{
-    const s=status(m),lb=subLbl(m),ic=ico(s),qz=m.q<=0,vc=vC(s);
-    const lm=[...movs].reverse().find(x=>x.mid===m.id);
-    const sp=isAdm||p.verResponsavel;
-    const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
-    const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
-    const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
-    const labStr=m.lab?` <span style="font-weight:400;color:var(--g500)">${m.lab}</span>`:"";
-    const codStr=m.cod?`<div style="font-size:11px;color:var(--g400);margin-top:2px">🔖 ${m.cod}</div>`:"";
-    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}${labStr}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
-  }).join("");
-};
 
 // ===== HELPERS STATUS =====
 const parseV=v=>{const p=v.split("/");if(p.length!==2)return null;const m=parseInt(p[0]),y=parseInt(p[1]);if(isNaN(m)||isNaN(y))return null;return new Date(2000+y,m-1,1);};
