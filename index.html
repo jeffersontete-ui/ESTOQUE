@@ -301,31 +301,15 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
   <div class="modal">
     <div class="mh"></div>
     <h2 id="medModalTitle">Novo medicamento</h2>
-    <div class="mfield">
-      <label>Nome do medicamento</label>
-      <input type="text" id="mNome" placeholder="Ex: PARACETAMOL 500MG" autocomplete="off"
-        oninput="this.value=this.value.toUpperCase()">
-    </div>
-    <div class="mfield">
-      <label>Laboratório / Fabricante</label>
-      <input type="text" id="mFab" placeholder="Ex: BIOSINTÉTICA, EMS, EUROFARMA..." autocomplete="off"
-        oninput="this.value=this.value.toUpperCase()">
-    </div>
-    <div class="mfield">
-      <label>Código de barras</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="mCod" placeholder="Digite ou escaneie o código" autocomplete="off"
-          style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();saveMed()}">
-        <button type="button" onclick="scanCodBarrasCadastro()" title="Escanear"
-          style="width:44px;height:48px;border-radius:var(--rs);border:1px solid var(--g200);background:var(--blue-bg);color:var(--blue);font-size:20px;cursor:pointer;flex-shrink:0">📷</button>
-      </div>
-    </div>
+    <div class="mfield"><label>Nome</label><input type="text" id="mNome" placeholder="Ex: PARACETAMOL 500MG" autocomplete="off" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="mfield"><label>Laboratório</label><input type="text" id="mLab" placeholder="Ex: BIOSINTÉTICA, EMS..." autocomplete="off" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="mfield"><label>Código de barras</label><input type="text" id="mCod" placeholder="Digite ou escaneie o código" autocomplete="off"></div>
     <div class="frow">
       <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
       <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
     </div>
     <div class="confirm-ok" id="medConfirm"><p id="medConfirmTxt"></p></div>
-    <button class="mbtn mbtn-green" onclick="saveMed()">💾 Salvar</button>
+    <button class="mbtn mbtn-green" onclick="saveMed()">Salvar</button>
     <button class="mcan" onclick="closeOv('ovMed')">Cancelar</button>
     <button class="back-home" onclick="closeOv('ovMed');scrollToTop()">🏠 Tela inicial</button>
   </div>
@@ -587,7 +571,7 @@ window.render=()=>{
   const p=myPerms();
   if(!p.verEstoque&&!isAdm){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔒 Sem permissão para ver o estoque</div>';return;}
   const q=document.getElementById("srch").value.toLowerCase();
-  let data=meds.filter(m=>(m.n||'').toLowerCase().includes(q)||(m.fab||'').toLowerCase().includes(q)||(m.cod||'').includes(q));
+  let data=meds.filter(m=>m.n.toLowerCase().includes(q));
   if(filter!=="all")data=data.filter(m=>status(m)===filter);
   const exp=meds.filter(m=>status(m)==="expired").length;
   const soon=meds.filter(m=>status(m)==="soon").length;
@@ -603,11 +587,9 @@ window.render=()=>{
     const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
     const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
     const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
-    // Nome sempre em maiúsculo (compatível com itens antigos)
-    const nomeUp=(m.n||"").toUpperCase();
-    const fabStr=m.fab?(` · ${m.fab.toUpperCase()}`):"";
-    const codStr=m.cod?`<div style="font-size:11px;color:var(--g400);margin-top:3px">🔖 ${m.cod}</div>`:"";
-    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${nomeUp}<span style="font-weight:500;color:var(--g500)">${fabStr}</span></div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
+    const labStr=m.lab?` <span style="font-weight:400;color:var(--g500)">${m.lab}</span>`:"";
+    const codStr=m.cod?`<div style="font-size:11px;color:var(--g400);margin-top:2px">🔖 ${m.cod}</div>`:"";
+    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}${labStr}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
   }).join("");
 };
 
@@ -682,11 +664,8 @@ window.openMedModal=()=>{
   if(!isAdm)return;
   editId=null;
   document.getElementById("medModalTitle").textContent="Novo medicamento";
-  document.getElementById("mNome").value="";
-  document.getElementById("mQtd").value="";
-  document.getElementById("mVenc").value="";
-  const mFab=document.getElementById("mFab");if(mFab)mFab.value="";
-  const mCod=document.getElementById("mCod");if(mCod)mCod.value="";
+  document.getElementById("mNome").value="";document.getElementById("mQtd").value="";document.getElementById("mVenc").value="";
+  document.getElementById("mLab").value="";document.getElementById("mCod").value="";
   document.getElementById("medConfirm").style.display="none";
   document.getElementById("ovMed").classList.add("open");
   setTimeout(()=>document.getElementById("mNome").focus(),300);
@@ -696,35 +675,24 @@ window.openEditMed=id=>{
   const m=meds.find(x=>x.id===id);if(!m)return;
   editId=id;
   document.getElementById("medModalTitle").textContent="Editar medicamento";
-  document.getElementById("mNome").value=m.n||"";
-  document.getElementById("mQtd").value=m.q||0;
-  document.getElementById("mVenc").value=m.v||"";
-  const mFab=document.getElementById("mFab");if(mFab)mFab.value=(m.fab||"").toUpperCase();
-  const mCod=document.getElementById("mCod");if(mCod)mCod.value=m.cod||"";
+  document.getElementById("mNome").value=m.n;document.getElementById("mQtd").value=m.q;document.getElementById("mVenc").value=m.v;
+  document.getElementById("mLab").value=(m.lab||"").toUpperCase();
+  document.getElementById("mCod").value=m.cod||"";
   document.getElementById("medConfirm").style.display="none";
   document.getElementById("ovMed").classList.add("open");
-  setTimeout(()=>document.getElementById("mNome").focus(),200);
 };
 window.saveMed=async()=>{
   const n=document.getElementById("mNome").value.trim().toUpperCase();
   const q=parseInt(document.getElementById("mQtd").value);
   const v=document.getElementById("mVenc").value.trim();
-  const mFab=document.getElementById("mFab");
-  const mCod=document.getElementById("mCod");
-  const fab=(mFab?mFab.value.trim():"").toUpperCase();
-  const cod=mCod?mCod.value.trim():"";
+  const lab=document.getElementById("mLab").value.trim().toUpperCase();
+  const cod=document.getElementById("mCod").value.trim();
   if(!n)return showToast("Informe o nome");
   if(isNaN(q)||q<0)return showToast("Quantidade inválida");
   if(v&&!/^\d{2}\/\d{2}$/.test(v))return showToast("Validade: MM/AA");
   const isEdit=!!editId;
-  if(isEdit){
-    const m=meds.find(x=>x.id===editId);
-    if(m){m.n=n;m.q=q;m.v=v;m.fab=fab;m.cod=cod;}
-  }else{
-    meds.push({id:uid(),n,q,v,fab,cod});
-  }
-  // Manter sempre em ordem alfabética
-  meds.sort((a,b)=>(a.n||"").localeCompare(b.n||"","pt-BR",{sensitivity:"base"}));
+  if(isEdit){const m=meds.find(x=>x.id===editId);if(m){m.n=n;m.q=q;m.v=v;m.lab=lab;m.cod=cod;}}
+  else meds.push({id:uid(),n,q,v,lab,cod});
   document.getElementById("medConfirmTxt").textContent=isEdit?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!";
   document.getElementById("medConfirm").style.display="block";
   save(); // sem await
@@ -766,15 +734,6 @@ window.trocarSenha=(nome)=>{
 };
 
 // ===== LEITOR DE CÓDIGO DE BARRAS =====
-// Botão 📷 dentro do campo código de barras no modal de cadastro/edição
-// Abre o scanner e ao ler o código preenche o campo mCod (não move para movimentação)
-window.scanCodBarrasCadastro=function(){
-  _scanModeForm=true;
-  openBarcodeScanner();
-  document.getElementById("barcodeStatus").textContent="📷 Aponte para o código de barras do produto";
-};
-let _scanModeForm=false; // modo: captura para preencher campo do formulário
-
 window.openBarcodeScanner=()=>{
   document.getElementById("ovBarcode").classList.add("open");
   startCamera();
@@ -794,19 +753,10 @@ window.buscaManual=()=>{
 const processarCodigo=(cod)=>{
   stopCamera();
   document.getElementById("ovBarcode").classList.remove("open");
-
-  // MODO FORMULÁRIO: preenche o campo código de barras no cadastro/edição
-  if(_scanModeForm){
-    _scanModeForm=false;
-    const mCod=document.getElementById("mCod");
-    if(mCod){mCod.value=cod;showToast("📷 Código "+cod+" inserido!");}
-    return;
-  }
-
-  // MODO NORMAL: busca e abre movimentação
+  // Buscar por código de barras ou nome
   const found=meds.find(m=>
-    (m.cod&&m.cod===cod)||
-    m.n.toLowerCase().includes(cod.toLowerCase())
+    m.n.toLowerCase().includes(cod.toLowerCase())||
+    (m.cod&&m.cod===cod)
   );
   if(found){
     showToast("✅ "+found.n+" encontrado!");
@@ -815,10 +765,8 @@ const processarCodigo=(cod)=>{
     if(confirm(`"${cod}" não encontrado.\nCadastrar novo medicamento?`)){
       openMedModal();
       setTimeout(()=>{
-        const mNome=document.getElementById("mNome");
-        const mCod=document.getElementById("mCod");
-        if(mNome)mNome.value="";
-        if(mCod)mCod.value=cod;
+        const inp=document.getElementById("mNome");
+        if(inp)inp.value=cod.toUpperCase();
       },300);
     }
   }
@@ -880,7 +828,6 @@ const startCamera=async()=>{
 };
 
 const stopCamera=()=>{
-  _scanModeForm=false;
   if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
   if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
   const video=document.getElementById("barcodeVideo");
