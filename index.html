@@ -446,18 +446,8 @@ const scrollToTop=()=>window.scrollTo({top:0,behavior:"smooth"});
 const setMsg=(txt,cls="msg-err")=>{const m=document.getElementById("msgLogin");m.textContent=txt;m.className="msg "+cls};
 const fmt=iso=>{const d=new Date(iso);return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
 const maskV=el=>{let v=el.value.replace(/\D/g,"");if(v.length>=2)v=v.slice(0,2)+"/"+v.slice(2,4);el.value=v};
-const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true}:{...DEFAULT_PERMS,...(users.find(x=>x.name===curUser)?.perms||{})};
-
-// ===== FIREBASE =====
-
-
-// ===== NOTIFICAÇÕES PUSH =====
-const pushNotif=(title,body)=>{
-  if("Notification"in window&&Notification.permission==="granted"){
-    new Notification(title,{body,icon:"icon-192.png"});
-  }
-};
-
+window.ovClick=(e,id)=>{if(e.target.id===id)closeOv(id)};
+window.closeOv=id=>document.getElementById(id).classList.remove("open");
 // ===== RENDER =====
 window.render=()=>{
   const p=myPerms();
@@ -484,10 +474,27 @@ window.render=()=>{
     return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}${labStr}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
   }).join("");
 };
+window.setF=(el,f)=>{filter=f;document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));el.classList.add("active");render()};
+window.maskV=maskV;
+window.scrollToTop=scrollToTop;
+window.openQR=()=>{const url=window.location.href;const w=document.getElementById("qrWrap");if(w)w.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" style="max-width:180px;border-radius:8px" alt="QR">`;const u=document.getElementById("qrUrl");if(u)u.textContent=url;document.getElementById("qrOv").classList.add("open");};
+window.closeQR=()=>document.getElementById("qrOv").classList.remove("open");
+window.qrOvClick=e=>{if(e.target.id==="qrOv")closeQR()};
+window.copyLink=()=>{navigator.clipboard.writeText(window.location.href).then(()=>showToast("✅ Link copiado!")).catch(()=>showToast("Link: "+window.location.href));};
+const myPerms=()=>isAdm?{verEstoque:true,movimentar:true,verHistorico:true,verResponsavel:true}:{...DEFAULT_PERMS,...(users.find(x=>x.name===curUser)?.perms||{})};
 
+// ===== FIREBASE =====
+
+
+// ===== NOTIFICAÇÕES PUSH =====
+const pushNotif=(title,body)=>{
+  if("Notification"in window&&Notification.permission==="granted"){
+    new Notification(title,{body,icon:"icon-192.png"});
+  }
+};
 
 function startListener(){
-  if(unsub){try{unsub();}catch(e){}unsub=null;}
+  if(unsub)return; // listener ativo — não recriar para evitar lista piscar/sumir
   firstSnap=true;
   unsub=onValue(REF,snap=>{
     const d=snap.val();
@@ -516,6 +523,7 @@ function startListener(){
       if(document.getElementById("admPanel").classList.contains("open"))renderPTab();
     }
     prevMovLen=movs.length;prevLogsLen=logs.length;firstSnap=false;
+
     render();
   },(e)=>{
     setSP("err","❌ Offline");
@@ -541,15 +549,16 @@ async function save(){
 // switchTab removido - cadastro só pelo ADM
 
 // Usuários fixos — senhas podem ser alteradas pelo ADM
-let SENHAS={Jefferson:"2407","D.Humanae":"1991",ADM:"9876"};
+let SENHAS={Jefferson:"2407",Marconi:"9876",Marcelo:"1991","D.Humanae":"1234"};
 const SENHAS_KEY="est_senhas_v1";
 try{const s=localStorage.getItem(SENHAS_KEY);if(s)SENHAS={...SENHAS,...JSON.parse(s)};}catch(e){}
 const saveSenhas=()=>{try{localStorage.setItem(SENHAS_KEY,JSON.stringify(SENHAS));}catch(e){}};
 
 const USUARIOS=[
-  {name:"Jefferson",isAdm:true},
-  {name:"D.Humanae",isAdm:false,somenteSaida:true},
-  {name:"ADM",isAdm:true}
+  {name:"Jefferson",isAdm:true,isMaster:true},
+  {name:"Marconi",  isAdm:true,isMaster:false},
+  {name:"Marcelo",  isAdm:true,isMaster:false},
+  {name:"D.Humanae",isAdm:false,somenteSaida:true}
 ];
 
 window.doLogin=async()=>{
@@ -587,7 +596,7 @@ function startApp(){
   document.getElementById("scrLogin").className="screen";
   document.getElementById("appMain").style.display="block";
   const b=document.getElementById("userBadge");
-  if(isAdm){b.textContent="ADM";b.className="badge badge-adm";document.getElementById("btnPanel").style.display="flex";document.getElementById("fabBtn").style.display="flex";document.getElementById("fabBar").style.display="flex";}
+  if(isAdm){b.textContent=curUser;b.className="badge badge-adm";document.getElementById("btnPanel").style.display="flex";document.getElementById("fabBtn").style.display="flex";document.getElementById("fabBar").style.display="flex";}
   else{b.textContent=curUser;b.className="badge badge-user";document.getElementById("btnPanel").style.display="none";document.getElementById("fabBtn").style.display="none";}
   const cached=loadCache();
   if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
@@ -885,12 +894,10 @@ function renderPTab(){
       </div>`:`<div class="pe">✅ Estoque em dia!</div>`;
   } else if(pTab==="config"){
     const isJefferson = curUser==="Jefferson";
-    // Jefferson vê e altera todas as senhas
-    // ADM vê e altera só a própria senha
-    // Usuários para mostrar no painel de cada ADM
+    // Jefferson (master) vê todos; Marconi/Marcelo veem só a própria senha
     const usuariosVisiveis = isJefferson
-      ? USUARIOS.filter(u=>u.name!=="Jefferson") // Jefferson vê ADM e D.Humanae
-      : USUARIOS.filter(u=>u.name===curUser);    // ADM vê só a si mesmo
+      ? USUARIOS.filter(u=>u.name!=="Jefferson")
+      : USUARIOS.filter(u=>u.name===curUser);
 
     body.innerHTML=`
       <div style="display:flex;flex-direction:column;gap:12px">
