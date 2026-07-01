@@ -473,13 +473,20 @@ window.render=()=>{
     const s=status(m),lb=subLbl(m),ic=ico(s),qz=m.q<=0,vc=vC(s);
     const lm=[...movs].reverse().find(x=>String(x.mid)===String(m.id));
     const sp=isAdm||p.verResponsavel;
-    const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
+    const lmIcon=lm?.tipo==="ent"?"📥":"📤";
+    const lmQtd=lm?.qtd?` ${lm.qtd}x`:"";
+    const lmLabel=lm?.tipo==="ent"?"Entrada":"Saída";
+    const lmData=fmt(lm?.dt||lm?.ts||lm?.data||null);
+    const lmH=lm?(sp
+      ?`<div class="clm">${lmIcon}${lmQtd} ${lmLabel} — ${lm.resp} — ${lmData}</div>`
+      :`<div class="clm">${lmIcon}${lmQtd} ${lmLabel} — ${lmData}</div>`):"";
     const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
     const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
-    const labStr=m.lab?` <span style="font-weight:400;color:var(--g500)">${m.lab}</span>`:"";
+    const labStr=m.lab?`<span style="font-weight:500;color:var(--g700)">${m.lab.toUpperCase()}</span>`:"";
+    const subLine=labStr||`<span class="${lb.c}">${lb.t}</span>`;
     const codStr=m.cod?`<div style="font-size:11px;color:var(--g400);margin-top:2px">🔖 ${m.cod}</div>`:"";
     const farmStr=(m.farmacia>0)?`<div style="font-size:12px;color:var(--blue);margin-top:3px;font-weight:600">🏥 Farmácia: ${m.farmacia}x</div>`:"";
-    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}${labStr}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${farmStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
+    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}</div><div class="csub">${subLine}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${farmStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
   }).join("");
 };
 window.renderFarmacia=function(){
@@ -493,8 +500,7 @@ window.renderFarmacia=function(){
     return;
   }
   document.getElementById("list").innerHTML=data.map(m=>{
-    const farm=m.farmacia||0;
-    const total=m.q||0;
+    const farm=m.farmacia||0,total=m.q||0;
     const pct=total>0?Math.round((farm/total)*100):0;
     const cor=farm<=0?"var(--red)":farm<=2?"var(--amber)":"var(--blue)";
     const safeId=String(m.id||"");
@@ -525,15 +531,15 @@ window.openSaidaFarmacia=function(id){
   const m=meds.find(x=>String(x.id)===String(id));
   if(!m)return showToast("Medicamento não encontrado");
   if(!m.farmacia||m.farmacia<=0)return showToast("Sem estoque na farmácia");
-  const qtd=parseInt(prompt(`Retirar da farmácia\n${m.n}\nFarmácia: ${m.farmacia}x | Total: ${m.q}x\n\nQuantidade:`));
+  const qtd=parseInt(prompt("Retirar da farmácia\n"+m.n+"\nFarmácia: "+m.farmacia+"x | Total: "+m.q+"x\n\nQuantidade:"));
   if(isNaN(qtd)||qtd<=0)return;
-  if(qtd>m.farmacia)return showToast(`Máximo: ${m.farmacia}x`);
+  if(qtd>m.farmacia)return showToast("Máximo: "+m.farmacia+"x");
   m.farmacia-=qtd;
   m.q=Math.max(0,m.q-qtd);
   movs.push({id:uid(),mid:String(id),tipo:"sai",qtd,resp:curUser,dt:new Date().toISOString(),origem:"farmacia"});
   if(movs.length>500)movs=movs.slice(-500);
   save();
-  showToast(`✅ Retirado ${qtd}x — Farmácia: ${m.farmacia}x | Total: ${m.q}x`);
+  showToast("Retirado "+qtd+"x — Farmácia: "+m.farmacia+"x | Total: "+m.q+"x");
   render();
 };
 window.setF=(el,f)=>{
