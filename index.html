@@ -279,12 +279,13 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <div class="stat"><div class="stat-n sw">—</div><div class="stat-l">Vence em breve</div></div>
     <div class="stat"><div class="stat-n sd">—</div><div class="stat-l">Atenção</div></div>
   </div>
-  <div class="filters">
-    <button class="fb active" onclick="setF(this,'all')">Todos</button>
-    <button class="fb" onclick="setF(this,'expired')">⚠️ Vencidos</button>
-    <button class="fb" onclick="setF(this,'soon')">🕐 Vence em breve</button>
-    <button class="fb" onclick="setF(this,'zero')">📭 Sem estoque</button>
-    <button class="fb" onclick="setF(this,'ok')">✅ OK</button>
+  <div class="filters" id="filtersBar">
+    <button class="fb active" id="fbFarmacia" onclick="setF(this,'farmacia')" style="background:var(--blue);border-color:var(--blue);color:#fff">🏥 Farmácia</button>
+    <button class="fb" id="fbEstoque" onclick="setF(this,'all')">Estoque</button>
+    <button class="fb fbAdm" onclick="setF(this,'expired')">⚠️ Vencidos</button>
+    <button class="fb fbAdm" onclick="setF(this,'soon')">🕐 Vence em breve</button>
+    <button class="fb fbAdm" onclick="setF(this,'zero')">📭 Sem estoque</button>
+    <button class="fb fbAdm" onclick="setF(this,'ok')">✅ OK</button>
   </div>
   <div class="sk" id="skeleton">
     <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
@@ -307,6 +308,10 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <div class="frow">
       <div class="mfield"><label>Quantidade</label><input type="number" id="mQtd" placeholder="0" min="0" inputmode="numeric"></div>
       <div class="mfield"><label>Validade (MM/AA)</label><input type="text" id="mVenc" placeholder="12/27" maxlength="5" inputmode="numeric" oninput="maskV(this)"></div>
+    </div>
+    <div class="mfield" id="mFarmaciaWrap" style="display:none">
+      <label>🏥 Qtd. Farmácia <span style="font-size:11px;color:var(--g500)">(reservado para dispensação)</span></label>
+      <input type="number" id="mFarmacia" placeholder="0" min="0" inputmode="numeric">
     </div>
     <div class="confirm-ok" id="medConfirm"><p id="medConfirmTxt"></p></div>
     <button class="mbtn mbtn-green" onclick="saveMed()">Salvar</button>
@@ -410,7 +415,7 @@ const DEFAULT_PERMS={verEstoque:true,movimentar:true,verHistorico:false,verRespo
 // ===== ESTADO =====
 let meds=[],movs=[],users=[],logs=[];
 let curUser=null,isAdm=false;
-let filter="all",editId=null,movId=null,movTipo="ent";
+let filter="farmacia",editId=null,movId=null,movTipo="ent";
 let pTab="mov",unsub=null;
 let firstSnap=true,prevMovLen=0,prevLogsLen=0;
 
@@ -451,6 +456,7 @@ window.ovClick=(e,id)=>{if(e.target.id===id)closeOv(id)};
 window.closeOv=id=>document.getElementById(id).classList.remove("open");
 // ===== RENDER =====
 window.render=()=>{
+  if(filter==="farmacia"){renderFarmacia();return;}
   const p=myPerms();
   if(!p.verEstoque&&!isAdm){document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🔒 Sem permissão para ver o estoque</div>';return;}
   const q=document.getElementById("srch").value.toLowerCase();
@@ -471,12 +477,80 @@ window.render=()=>{
     const lmH=lm?(sp?`<div class="clm">${lm.tipo==="ent"?"📥":"📤"} ${lm.resp} — ${fmt(lm.dt)}</div>`:`<div class="clm">${lm.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${fmt(lm.dt)}</div>`):"";
     const actsADM=`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button><button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button><button class="abtn" onclick="openEditMed('${m.id}')">✏️</button><button class="abtn adel" onclick="delMed('${m.id}')">🗑️</button>`;
     const actsUser=(isAdm||p.movimentar?`<button class="abtn" onclick="openMovModal('${m.id}')">📥 Movimentar</button>`:"")+(!isAdm&&p.verHistorico?`<button class="abtn ahist" onclick="openHist('${m.id}')">📋 Histórico</button>`:"");
-    const labStr=m.lab?` <span style="font-weight:400;color:var(--g500)">${m.lab}</span>`:"";
+    const labStr=m.lab?`<span style="font-weight:500;color:var(--g700)">${m.lab.toUpperCase()}</span>`:"";
+    const subLine=labStr||`<span class="${lb.c}">${lb.t}</span>`;
     const codStr=m.cod?`<div style="font-size:11px;color:var(--g400);margin-top:2px">🔖 ${m.cod}</div>`:"";
-    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}${labStr}</div><div class="csub ${lb.c}">${lb.t}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUser}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
+    const farmStr=(m.farmacia>0)?`<div style="font-size:12px;color:var(--blue);margin-top:3px;font-weight:600">🏥 Farmácia: ${m.farmacia}x</div>`:"";
+    const uAtualR=USUARIOS.find(x=>x.name===curUser);
+    const somenteSaidaR=uAtualR&&uAtualR.somenteSaida;
+    const actsUserFinal=somenteSaidaR?"":actsUser;
+    return`<div class="card ${s}"><div class="cico ${ic.c}">${ic.e}</div><div class="cbody"><div class="cname">${(m.n||"").toUpperCase()}</div><div class="csub">${subLine}</div><div class="cvenc ${vc}">Validade: ${m.v}</div>${codStr}${farmStr}${lmH}<div class="cacts">${isAdm?actsADM:actsUserFinal}</div></div><div class="cright"><div class="qty ${qz?"qz":""}">${m.q}x</div></div></div>`;
   }).join("");
 };
-window.setF=(el,f)=>{filter=f;document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));el.classList.add("active");render()};
+window.renderFarmacia=function(){
+  const q=document.getElementById("srch").value.toLowerCase();
+  const data=meds
+    .filter(m=>(m.farmacia>0)||(q&&(m.n||"").toLowerCase().includes(q)))
+    .filter(m=>!q||(m.n||"").toLowerCase().includes(q))
+    .sort((a,b)=>(a.n||"").localeCompare(b.n||""));
+  if(!data.length){
+    document.getElementById("list").innerHTML='<div style="text-align:center;padding:48px;color:var(--g400)">🏥 Nenhum medicamento com quantidade de farmácia.<br><span style="font-size:13px">Edite um medicamento e defina a Qtd. Farmácia.</span></div>';
+    return;
+  }
+  document.getElementById("list").innerHTML=data.map(m=>{
+    const farm=m.farmacia||0,total=m.q||0;
+    const pct=total>0?Math.round((farm/total)*100):0;
+    const cor=farm<=0?"var(--red)":farm<=2?"var(--amber)":"var(--blue)";
+    const safeId=String(m.id||"");
+    return`<div class="card" style="border-left:4px solid var(--blue)">
+      <div class="cico" style="background:var(--blue-bg);font-size:19px">🏥</div>
+      <div class="cbody">
+        <div class="cname">${(m.n||"").toUpperCase()}${m.lab?` <span style="font-weight:400;color:var(--g500)">${m.lab}</span>`:""}</div>
+        <div style="margin-top:6px;display:flex;gap:14px;font-size:13px;color:var(--g500)">
+          <span>Total: <b style="color:var(--g900)">${total}x</b></span>
+          <span>Farmácia: <b style="color:${cor}">${farm}x</b></span>
+        </div>
+        <div style="margin-top:6px;background:var(--g200);border-radius:20px;height:6px">
+          <div style="width:${pct}%;height:100%;background:var(--blue);border-radius:20px"></div>
+        </div>
+        <div class="cacts" style="margin-top:8px">
+          ${farm>0?`<button class="abtn" style="background:var(--red-bg);border-color:#fecaca;color:var(--red)" onclick="openSaidaFarmacia('${safeId}')">📤 Retirar da farmácia</button>`:""}
+          ${isAdm?`<button class="abtn" onclick="openEditMed('${safeId}')">✏️ Editar</button>`:""}
+        </div>
+      </div>
+      <div class="cright" style="text-align:center">
+        <div style="font-size:18px;font-weight:700;color:var(--blue)">${farm}x</div>
+        <div style="font-size:10px;color:var(--g400)">farmácia</div>
+      </div>
+    </div>`;
+  }).join("");
+};
+window.openSaidaFarmacia=function(id){
+  const m=meds.find(x=>String(x.id)===String(id));
+  if(!m)return showToast("Medicamento não encontrado");
+  if(!m.farmacia||m.farmacia<=0)return showToast("Sem estoque na farmácia");
+  const qtd=parseInt(prompt("Retirar da farmácia\n"+m.n+"\nFarmácia: "+m.farmacia+"x | Total: "+m.q+"x\n\nQuantidade:"));
+  if(isNaN(qtd)||qtd<=0)return;
+  if(qtd>m.farmacia)return showToast("Máximo: "+m.farmacia+"x");
+  m.farmacia-=qtd;
+  m.q=Math.max(0,m.q-qtd);
+  movs.push({id:uid(),mid:String(id),tipo:"sai",qtd,resp:curUser,dt:new Date().toISOString(),origem:"farmacia"});
+  if(movs.length>500)movs=movs.slice(-500);
+  save();
+  showToast("Retirado "+qtd+"x — Farmácia: "+m.farmacia+"x | Total: "+m.q+"x");
+  render();
+};
+window.setF=(el,f)=>{
+  filter=f;
+  document.querySelectorAll(".fb").forEach(b=>{
+    b.classList.remove("active");
+    if(b.id==="fbFarmacia"){b.style.background="var(--blue-bg)";b.style.borderColor="var(--blue)";b.style.color="var(--blue)";}
+    else{b.style.background="";b.style.borderColor="";b.style.color="";}
+  });
+  el.classList.add("active");
+  if(f==="farmacia"){el.style.background="var(--blue)";el.style.borderColor="var(--blue)";el.style.color="#fff";}
+  render();
+};
 window.maskV=maskV;
 window.scrollToTop=scrollToTop;
 window.openQR=()=>{
@@ -603,8 +677,25 @@ function startApp(){
   document.getElementById("scrLogin").className="screen";
   document.getElementById("appMain").style.display="block";
   const b=document.getElementById("userBadge");
-  if(isAdm){b.textContent=curUser;b.className="badge badge-adm";document.getElementById("btnPanel").style.display="flex";document.getElementById("fabBtn").style.display="flex";document.getElementById("fabBar").style.display="flex";}
-  else{b.textContent=curUser;b.className="badge badge-user";document.getElementById("btnPanel").style.display="none";document.getElementById("fabBtn").style.display="none";}
+  const uAtual=USUARIOS.find(x=>x.name===curUser);
+  const somenteSaida=uAtual&&uAtual.somenteSaida;
+  if(isAdm){
+    b.textContent=curUser;b.className="badge badge-adm";
+    document.getElementById("btnPanel").style.display="flex";
+    document.getElementById("fabBtn").style.display="flex";
+    document.getElementById("fabBar").style.display="flex";
+    document.querySelectorAll(".fbAdm").forEach(el=>el.style.display="");
+  } else {
+    b.textContent=curUser;b.className="badge badge-user";
+    document.getElementById("btnPanel").style.display="none";
+    document.getElementById("fabBtn").style.display="none";
+    if(somenteSaida)document.querySelectorAll(".fbAdm").forEach(el=>el.style.display="none");
+  }
+  // Abre na Farmácia por padrão
+  filter="farmacia";
+  document.querySelectorAll(".fb").forEach(b2=>{b2.classList.remove("active");b2.style.background="";b2.style.borderColor="";b2.style.color="";});
+  const fbF=document.getElementById("fbFarmacia");
+  if(fbF){fbF.classList.add("active");fbF.style.background="var(--blue)";fbF.style.borderColor="var(--blue)";fbF.style.color="#fff";}
   const cached=loadCache();
   if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
   startListener();
@@ -684,6 +775,7 @@ window.openMedModal=()=>{
   document.getElementById("medModalTitle").textContent="Novo medicamento";
   document.getElementById("mNome").value="";document.getElementById("mQtd").value="";document.getElementById("mVenc").value="";
   document.getElementById("mLab").value="";document.getElementById("mCod").value="";
+  const wF0=document.getElementById("mFarmaciaWrap");if(wF0)wF0.style.display="none";
   document.getElementById("medConfirm").style.display="none";
   document.getElementById("ovMed").classList.add("open");
   setTimeout(()=>document.getElementById("mNome").focus(),300);
@@ -696,6 +788,8 @@ window.openEditMed=id=>{
   document.getElementById("mNome").value=m.n;document.getElementById("mQtd").value=m.q;document.getElementById("mVenc").value=m.v;
   document.getElementById("mLab").value=(m.lab||"").toUpperCase();
   document.getElementById("mCod").value=m.cod||"";
+  const wF1=document.getElementById("mFarmaciaWrap");if(wF1)wF1.style.display="block";
+  const iF1=document.getElementById("mFarmacia");if(iF1)iF1.value=m.farmacia||0;
   document.getElementById("medConfirm").style.display="none";
   document.getElementById("ovMed").classList.add("open");
 };
@@ -709,8 +803,10 @@ window.saveMed=async()=>{
   if(isNaN(q)||q<0)return showToast("Quantidade inválida");
   if(v&&!/^\d{2}\/\d{2}$/.test(v))return showToast("Validade: MM/AA");
   const isEdit=!!editId;
-  if(isEdit){const m=meds.find(x=>String(x.id)===String(editId));if(m){m.n=n;m.q=q;m.v=v;m.lab=lab;m.cod=cod;}}
-  else meds.push({id:uid(),n,q,v,lab,cod});
+  const iF2=document.getElementById("mFarmacia");
+  const farmacia=iF2?Math.max(0,parseInt(iF2.value)||0):0;
+  if(isEdit){const m=meds.find(x=>String(x.id)===String(editId));if(m){m.n=n;m.q=q;m.v=v;m.lab=lab;m.cod=cod;m.farmacia=farmacia;}}
+  else meds.push({id:uid(),n,q,v,lab,cod,farmacia:0});
   document.getElementById("medConfirmTxt").textContent=isEdit?"✅ Medicamento atualizado!":"✅ Medicamento cadastrado!";
   document.getElementById("medConfirm").style.display="block";
   save(); // sem await
