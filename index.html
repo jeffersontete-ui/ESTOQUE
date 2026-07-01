@@ -280,12 +280,12 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
     <div class="stat"><div class="stat-n sd">—</div><div class="stat-l">Atenção</div></div>
   </div>
   <div class="filters">
+    <button class="fb" id="fbFarmacia" onclick="setF(this,'farmacia')" style="background:var(--blue-bg);border-color:var(--blue);color:var(--blue)">🏥 Farmácia</button>
     <button class="fb active" onclick="setF(this,'all')">Estoque</button>
     <button class="fb" onclick="setF(this,'expired')">⚠️ Vencidos</button>
     <button class="fb" onclick="setF(this,'soon')">🕐 Vence em breve</button>
     <button class="fb" onclick="setF(this,'zero')">📭 Sem estoque</button>
     <button class="fb" onclick="setF(this,'ok')">✅ OK</button>
-    <button class="fb" id="fbFarmacia" onclick="setF(this,'farmacia')" style="background:var(--blue-bg);border-color:var(--blue);color:var(--blue)">🏥 Farmácia</button>
   </div>
   <div class="sk" id="skeleton">
     <div class="skc"><div class="ski"></div><div class="skb"><div class="skl w80"></div><div class="skl w50"></div><div class="skl w30"></div></div></div>
