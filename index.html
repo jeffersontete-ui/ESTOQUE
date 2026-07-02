@@ -331,6 +331,17 @@ html,body{min-height:100%;background:var(--g50);font-family:-apple-system,BlinkM
       <button class="mtt sai" id="btnSai" onclick="selTipo('sai')">📤 Saída</button>
     </div>
     <div class="mfield"><label>Quantidade</label><input type="number" id="movQtd" placeholder="0" min="1" inputmode="numeric"></div>
+    <div class="mfield" id="movNomeWrap" style="display:none">
+      <label>Quem está retirando</label>
+      <select id="movNomeRetirou" style="width:100%;height:48px;border-radius:var(--rs);border:1px solid var(--g200);padding:0 14px;font-size:16px;color:var(--g900);background:var(--g50);outline:none">
+        <option value="">— Selecione —</option>
+        <option value="JEFFERSON">JEFFERSON</option>
+        <option value="MARCONI">MARCONI</option>
+        <option value="MARCELO">MARCELO</option>
+        <option value="ELIARA">ELIARA</option>
+        <option value="ANDERSON">ANDERSON</option>
+      </select>
+    </div>
     <div class="confirm-ok" id="movConfirm"><p id="movConfirmTxt"></p><span id="movConfirmSub"></span></div>
     <button class="mbtn mbtn-green" id="btnConfMov" onclick="saveMov()">✅ Confirmar entrada</button>
     <button class="mcan" onclick="closeOv('ovMov')">Cancelar</button>
@@ -630,16 +641,17 @@ async function save(){
 // switchTab removido - cadastro só pelo ADM
 
 // Usuários fixos — senhas podem ser alteradas pelo ADM
-let SENHAS={Jefferson:"2407",Marconi:"9876",Marcelo:"1991","D.Humanae":"1234"};
+let SENHAS={Jefferson:"2407",Marconi:"9876",Marcelo:"1991",Eliara:"1234",Anderson:"1010"};
 const SENHAS_KEY="est_senhas_v1";
 try{const s=localStorage.getItem(SENHAS_KEY);if(s)SENHAS={...SENHAS,...JSON.parse(s)};}catch(e){}
 const saveSenhas=()=>{try{localStorage.setItem(SENHAS_KEY,JSON.stringify(SENHAS));}catch(e){}};
 
 const USUARIOS=[
-  {name:"Jefferson",isAdm:true,isMaster:true},
-  {name:"Marconi",  isAdm:true,isMaster:false},
-  {name:"Marcelo",  isAdm:true,isMaster:false},
-  {name:"D.Humanae",isAdm:false,somenteSaida:true}
+  {name:"Jefferson", isAdm:true, isMaster:true},
+  {name:"Marconi",   isAdm:true, isMaster:false},
+  {name:"Marcelo",   isAdm:true, isMaster:false},
+  {name:"Eliara",    isAdm:false,somenteSaida:true},
+  {name:"Anderson",  isAdm:false,somenteSaida:true}
 ];
 
 window.doLogin=async()=>{
@@ -665,6 +677,7 @@ window.doLogin=async()=>{
 // doCadastro removido - cadastro só pelo ADM
 
 window.doLogout=()=>{
+  if(backupInterval){clearInterval(backupInterval);backupInterval=null;}
   sessionStorage.removeItem(SK);localStorage.removeItem(SK+"_b");
   curUser=null;isAdm=false;
   document.getElementById("appMain").style.display="none";
@@ -699,6 +712,7 @@ function startApp(){
   const cached=loadCache();
   if(cached&&meds.length){document.getElementById("skeleton").style.display="none";document.getElementById("list").style.display="flex";render();}
   startListener();
+  iniciarBackup(); // inicia o ciclo de backup automático a cada hora
 }
 
 
@@ -717,8 +731,13 @@ window.openMovModal=id=>{
   document.getElementById("movNome").textContent="💊 "+m.n;
   document.getElementById("movEst").textContent="Estoque atual: "+m.q+" un.";
   document.getElementById("movQtd").value="";
+  const nomeInp=document.getElementById("movNomeRetirou");
+  const nomeWrap=document.getElementById("movNomeWrap");
+  if(nomeWrap)nomeWrap.style.display="none";
+  // ADM: limpa seleção; Eliara/Anderson: preenche automaticamente
+  if(nomeInp)nomeInp.value=isAdm?"":curUser.toUpperCase();
   document.getElementById("movConfirm").style.display="none";
-  // D.Humanae só pode dar saída
+  // D.Humanae/Eliara/Anderson só pode dar saída
   if(uAtual&&uAtual.somenteSaida){
     document.getElementById("btnEnt2").style.display="none";
     selTipo("sai");
@@ -736,6 +755,22 @@ window.selTipo=t=>{
   document.getElementById("btnConfMov").textContent=t==="ent"?"✅ Confirmar entrada":"✅ Confirmar saída";
   document.getElementById("btnConfMov").className="mbtn "+(t==="sai"?"mbtn-red":"mbtn-green");
   document.getElementById("movConfirm").style.display="none";
+  // Campo select: aparece na saída APENAS para ADM
+  // Eliara/Anderson: nome preenchido automaticamente, campo oculto
+  const wrap=document.getElementById("movNomeWrap");
+  const sel=document.getElementById("movNomeRetirou");
+  if(t==="sai"){
+    const uAtualS=USUARIOS.find(x=>x.name===curUser);
+    if(isAdm){
+      if(wrap)wrap.style.display="block";
+    } else {
+      if(wrap)wrap.style.display="none";
+      if(sel)sel.value=curUser.toUpperCase(); // preenche automaticamente
+    }
+  } else {
+    if(wrap)wrap.style.display="none";
+    if(sel)sel.value="";
+  }
 };
 window.saveMov=async()=>{
   const qtd=parseInt(document.getElementById("movQtd").value);
@@ -745,7 +780,10 @@ window.saveMov=async()=>{
   const delta=movTipo==="ent"?qtd:-qtd;
   const novaQ=Math.max(0,m.q+delta);
   m.q=novaQ;
-  movs.push({id:uid(),mid:movId,tipo:movTipo,qtd,resp:curUser,dt:new Date().toISOString()});
+  const nomeRet=document.getElementById("movNomeRetirou");
+  const retiradoPor=(nomeRet&&nomeRet.value.trim())?nomeRet.value.trim():"";
+  if(movTipo==="sai"&&!retiradoPor)return showToast("Selecione quem está retirando");
+  movs.push({id:uid(),mid:movId,tipo:movTipo,qtd,resp:curUser,retiradoPor,dt:new Date().toISOString()});
   const box=document.getElementById("movConfirm");
   document.getElementById("movConfirmTxt").textContent=movTipo==="ent"?`✅ Entrada de ${qtd} un. confirmada!`:`✅ Saída de ${qtd} un. confirmada!`;
   document.getElementById("movConfirmSub").textContent=`Novo estoque: ${novaQ} un.`;
@@ -763,7 +801,7 @@ window.openHist=id=>{
   const hist=[...movs].filter(x=>String(x.mid)===String(id)).reverse();
   const sr=isAdm||p.verResponsavel;
   document.getElementById("histContent").innerHTML=hist.length?
-    `<div class="hist-list">${hist.map(h=>`<div class="hi ${h.tipo}"><div class="hi-top"><span class="hi-tipo ${h.tipo}">${h.tipo==="ent"?"📥 ENTRADA":"📤 SAÍDA"}</span><span class="hi-qtd">${h.tipo==="ent"?"+":"-"}${h.qtd} un.</span></div>${sr?`<div class="hi-info">👤 ${h.resp}</div>`:""}<div class="hi-info">🕐 ${fmt(h.dt)}</div></div>`).join("")}</div>`:
+    `<div class="hist-list">${hist.map(h=>`<div class="hi ${h.tipo}"><div class="hi-top"><span class="hi-tipo ${h.tipo}">${h.tipo==="ent"?"📥 ENTRADA":"📤 SAÍDA"}</span><span class="hi-qtd">${h.tipo==="ent"?"+":"-"}${h.qtd} un.</span></div>${sr?`<div class="hi-info">👤 ${h.resp}</div>`:""}<div class="hi-info">🕐 ${fmt(h.dt)}</div>${(h.retiradoPor&&(isAdm||p.verResponsavel))?`<div class="hi-info">🙋 Retirado por: <b>${h.retiradoPor}</b></div>`:""}</div>`).join("")}</div>`:
     `<div style="text-align:center;padding:24px;color:var(--g400)">Sem movimentações.</div>`;
   document.getElementById("ovHist").classList.add("open");
 };
@@ -971,7 +1009,7 @@ function renderPTab(){
     const all=[...movs].reverse().slice(0,100);
     body.innerHTML=all.length?
       `<button onclick="limparHistorico()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#fee2e2;color:#991b1b;font-weight:700;cursor:pointer;margin-bottom:10px">🗑️ Limpar histórico de movimentações</button>`+
-      all.map(h=>{const m=meds.find(x=>String(x.id)===String(h.mid));return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;}).join(""):
+      all.map(h=>{const m=meds.find(x=>String(x.id)===String(h.mid));return`<div class="ni ${h.tipo==="ent"?"mov-e":"mov-s"}"><p>${h.tipo==="ent"?"📥 Entrada":"📤 Saída"} — ${m?m.n:"(removido)"}</p><span>👤 ${h.resp} • ${h.qtd} un.${h.retiradoPor?" • 🙋 "+h.retiradoPor:""}</span><div class="ni-time">🕐 ${fmt(h.dt)}</div></div>`;}).join(""):
       `<div class="pe">Nenhuma movimentação ainda.</div>`;
   } else if(pTab==="alerta"){
     const exp=meds.filter(m=>status(m)==="expired");
@@ -1099,6 +1137,30 @@ document.addEventListener("keydown",(e)=>{
     barcodeTimer=setTimeout(()=>{barcodeBuffer="";},200);
   }
 });
+
+// ===== BACKUP AUTOMÁTICO (a cada hora) =====
+function fazerBackup(){
+  if(!curUser||!meds.length)return;
+  const agora=new Date();
+  const chave=agora.getFullYear()+"-"+
+    String(agora.getMonth()+1).padStart(2,"0")+"-"+
+    String(agora.getDate()).padStart(2,"0")+"_"+
+    String(agora.getHours()).padStart(2,"0")+"h";
+  const refBackup=ref(db,"estoque/backups/"+chave);
+  set(refBackup,{meds,movs,ts:agora.toISOString(),por:curUser})
+    .then(()=>{
+      console.log("Backup automático salvo:",chave);
+      try{localStorage.setItem("ultimo_backup",chave);}catch(e){}
+    })
+    .catch(e=>console.warn("Erro no backup:",e));
+}
+// Executa 1 vez ao logar (após dados carregados) e depois a cada 1 hora
+let backupInterval=null;
+function iniciarBackup(){
+  if(backupInterval)return;
+  setTimeout(fazerBackup,10000); // 10s após login para garantir dados carregados
+  backupInterval=setInterval(fazerBackup,3600000); // a cada 1 hora
+}
 
 // ===== VISIBILIDADE =====
 document.addEventListener("visibilitychange",()=>{
