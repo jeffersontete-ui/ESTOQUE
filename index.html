@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E5C4F">
+<title>Estoque — Balcão</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<!-- ENTRADA -->
+<section id="tela-login" class="tela tela-cheia">
+  <div class="cartao-entrada">
+    <p class="marca">Estoque<span>balcão</span></p>
+    <h1 class="titulo-entrada">Entrar</h1>
+    <label class="campo">
+      <span>E-mail</span>
+      <input id="login-email" type="email" autocomplete="username" inputmode="email">
+    </label>
+    <label class="campo">
+      <span>Senha</span>
+      <input id="login-senha" type="password" autocomplete="current-password">
+    </label>
+    <p id="login-erro" class="aviso-erro" hidden></p>
+    <button id="btn-entrar" class="botao botao-principal">Entrar</button>
+  </div>
+</section>
+
+<!-- QUEM ESTÁ OPERANDO -->
+<section id="tela-operador" class="tela tela-cheia" hidden>
+  <div class="cartao-entrada">
+    <p class="marca">Estoque<span>balcão</span></p>
+    <h1 class="titulo-entrada">Quem está operando?</h1>
+    <p class="sublinha">O nome fica gravado em cada movimentação.</p>
+    <div id="lista-operadores" class="grade-operadores"></div>
+    <label class="campo">
+      <span>Ou digite um nome novo</span>
+      <input id="operador-novo" type="text" autocomplete="off" placeholder="Nome de quem está no balcão">
+    </label>
+    <button id="btn-operador" class="botao botao-principal">Começar</button>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" hidden>
+  <header class="topo">
+    <div class="topo-marca">
+      <p class="marca">Estoque<span>balcão</span></p>
+      <p id="rotulo-operador" class="operador-atual"></p>
+    </div>
+    <div class="topo-acoes">
+      <button id="btn-trocar-operador" class="botao botao-fantasma">Trocar operador</button>
+      <button id="btn-sair" class="botao botao-fantasma">Sair</button>
+    </div>
+  </header>
+
+  <div id="barra-estado" class="barra-estado" hidden></div>
+
+  <main>
+    <!-- ITENS -->
+    <section id="v-itens" class="vista">
+      <div class="cabeca-vista">
+        <h2>Itens</h2>
+        <div class="cabeca-acoes">
+          <button id="btn-escanear" class="botao botao-secundario">Escanear código</button>
+          <button id="btn-novo-item" class="botao botao-principal">Novo item</button>
+        </div>
+      </div>
+      <input id="busca" class="busca" type="search" placeholder="Buscar por nome, código de barras, M.S. ou lote" autocomplete="off">
+      <div id="itens" class="prateleira"></div>
+      <p id="itens-vazio" class="vazio" hidden>Nenhum item cadastrado ainda. Comece pelo botão <strong>Novo item</strong>.</p>
+    </section>
+
+    <!-- ALERTAS -->
+    <section id="v-alertas" class="vista" hidden>
+      <div class="cabeca-vista"><h2>Alertas</h2></div>
+      <div class="filtros" role="tablist">
+        <button class="chip chip-ativo" data-alerta="tudo">Tudo</button>
+        <button class="chip" data-alerta="vencido">Vencidos</button>
+        <button class="chip" data-alerta="vencendo">Vencendo</button>
+        <button class="chip" data-alerta="baixo">Estoque baixo</button>
+      </div>
+      <div id="alertas" class="prateleira"></div>
+      <p id="alertas-vazio" class="vazio" hidden>Nada para olhar agora. Estoque em dia.</p>
+    </section>
+
+    <!-- COMPRAS -->
+    <section id="v-compras" class="vista" hidden>
+      <div class="cabeca-vista">
+        <h2>Compras</h2>
+        <button id="btn-gerar-compras" class="botao botao-secundario">Puxar itens em falta</button>
+      </div>
+      <div id="compras" class="lista-compras"></div>
+      <p id="compras-vazio" class="vazio" hidden>Lista de compras vazia. Use <strong>Puxar itens em falta</strong> ou marque um item para comprar.</p>
+    </section>
+
+    <!-- CONTAGEM -->
+    <section id="v-contagem" class="vista" hidden>
+      <div class="cabeca-vista">
+        <h2>Modo contagem</h2>
+        <div class="cabeca-acoes">
+          <button id="btn-contagem-escanear" class="botao botao-secundario">Escanear</button>
+          <button id="btn-contagem-encerrar" class="botao botao-principal" hidden>Encerrar contagem</button>
+        </div>
+      </div>
+      <p class="sublinha">Conte prateleira por prateleira. Nada é gravado até você encerrar — aí cada diferença vira uma movimentação com o seu nome.</p>
+      <div id="contagem-inicio">
+        <button id="btn-contagem-iniciar" class="botao botao-principal">Iniciar contagem</button>
+      </div>
+      <div id="contagem-corpo" hidden>
+        <div class="placar">
+          <div><strong id="contagem-contados">0</strong><span>contados</span></div>
+          <div><strong id="contagem-difere">0</strong><span>com diferença</span></div>
+          <div><strong id="contagem-faltam">0</strong><span>não contados</span></div>
+        </div>
+        <input id="contagem-busca" class="busca" type="search" placeholder="Buscar item para contar" autocomplete="off">
+        <div id="contagem-itens" class="prateleira"></div>
+      </div>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="v-historico" class="vista" hidden>
+      <div class="cabeca-vista"><h2>Histórico</h2></div>
+      <div id="historico" class="linha-tempo"></div>
+      <p id="historico-vazio" class="vazio" hidden>Sem movimentações registradas.</p>
+    </section>
+  </main>
+
+  <nav class="navegacao">
+    <button class="nav-item nav-ativo" data-vista="itens">Itens</button>
+    <button class="nav-item" data-vista="alertas">Alertas<span id="selo-alertas" class="selo" hidden>0</span></button>
+    <button class="nav-item" data-vista="compras">Compras<span id="selo-compras" class="selo" hidden>0</span></button>
+    <button class="nav-item" data-vista="contagem">Contagem</button>
+    <button class="nav-item" data-vista="historico">Histórico</button>
+  </nav>
+</div>
+
+<!-- MODAIS (o PWA bloqueia prompt/confirm nativos) -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <h3 id="modal-titulo"></h3>
+    <div id="modal-corpo"></div>
+    <div id="modal-acoes" class="modal-acoes"></div>
+  </div>
+</div>
+
+<div id="scanner" class="modal" hidden>
+  <div class="modal-caixa modal-scanner">
+    <h3>Escanear código de barras</h3>
+    <video id="scanner-video" playsinline muted></video>
+    <p id="scanner-aviso" class="sublinha"></p>
+    <div class="modal-acoes">
+      <label class="campo campo-inline">
+        <span>Digitar o código</span>
+        <input id="scanner-manual" type="text" inputmode="numeric" autocomplete="off">
+      </label>
+      <button id="scanner-usar" class="botao botao-principal">Usar código</button>
+      <button id="scanner-fechar" class="botao botao-fantasma">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="aviso" class="aviso" hidden></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

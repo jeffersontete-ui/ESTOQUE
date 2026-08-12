@@ -1,0 +1,16 @@
+{
+  "name": "Estoque — Balcão",
+  "short_name": "Estoque",
+  "description": "Cadastro, alertas de validade, compras e contagem do estoque do balcão.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EDF1EF",
+  "theme_color": "#0E5C4F",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
